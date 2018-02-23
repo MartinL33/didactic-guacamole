@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.example.martin.test.ActivityMain">
+
+    <Button
+        android:id="@+id/idStartAndStop"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginTop="8dp"
+        android:text="@string/textStart"
+        android:visibility="visible"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+
+    <TextView
+        android:id="@+id/idStatut"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginTop="8dp"
+        android:text="@string/StatutStop"
+        app:layout_constraintBottom_toBottomOf="@+id/idStartAndStop"
+        app:layout_constraintEnd_toStartOf="@+id/idStartAndStop"
+        app:layout_constraintTop_toTopOf="@+id/idStartAndStop" />
+
+    <Button
+        android:id="@+id/idPlateforme"
+        android:layout_width="120dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:text="@string/textPlateforme"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/idChangementPlateforme"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="@+id/idPlateforme"
+        app:layout_constraintStart_toStartOf="@+id/idPlateforme"
+        app:layout_constraintTop_toTopOf="@+id/idPlateforme"
+
+        >
+        <Button
+            android:id="@+id/idPlateforme1"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/plateforme1" />
+
+        <Button
+            android:id="@+id/idPlateforme2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/plateforme2" />
+
+        <Button
+            android:id="@+id/idPlateforme4"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/plateforme4" />
+    </LinearLayout>
+
+    <android.support.constraint.ConstraintLayout
+
+        android:id="@+id/idLayoutAction"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/idChangementPlateforme">
+
+
+        <Button
+            android:id="@+id/idRestaurant"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:layout_marginTop="8dp"
+            android:text="@string/textRestaurant"
+            app:layout_constraintEnd_toEndOf="@+id/idLayoutAction"
+            app:layout_constraintTop_toTopOf="@+id/idLayoutAction" />
+
+        <Button
+            android:id="@+id/idWaiting"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:text="@string/textWaiting"
+            app:layout_constraintStart_toEndOf="@+id/idCustomer"
+            app:layout_constraintTop_toTopOf="@+id/idLayoutAction" />
+
+        <Button
+            android:id="@+id/idCustomer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:text="@string/textCustomer"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/idLayoutAction" />
+
+
+    </android.support.constraint.ConstraintLayout>
+
+    <Button
+        android:id="@+id/idHistorique"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/textHistorique"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <Button
+        android:id="@+id/idExport"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/textExport"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/idZone"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginTop="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/idStartAndStop" />
+
+</android.support.constraint.ConstraintLayout>

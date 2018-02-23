@@ -1,0 +1,66 @@
+<resources>
+    <string name="app_name">Test</string>
+    <string name="textStart">Démarrer</string>
+    <string name="textStop">Arrêter</string>
+    <string name="textRestaurant">Restaurant</string>
+    <string name="textWaiting">Attente/Pause</string>
+    <string name="textCustomer">Client</string>
+    <string name="StatutStart">"En ligne"</string>
+    <string name="StatutStop">"Hors ligne"</string>
+    <string name="TitleNotification">Texte Notification</string>
+    <string name="ContentTextNotification">"Votre position s'enregistre"</string>
+    <string name="taostGPSInactive">"Veuillez activer votre GPS."</string>
+    <string name="taostPermissionRefusee">"L'application a besoin de votre autorisation de relever votre position."</string>
+    <string name="textPlateforme">"Plateforme"</string>
+    <string name="plateforme1">"Deliveroo"</string>
+    <string name="plateforme2">"Foodora"</string>
+    <string name="plateforme4">"UberEat"</string>
+    <string name="title_activity_history">Historique</string>
+    <string name="textExport">Export</string>
+    <string name="textHistorique">Historique</string>
+    <string name="ok">Ok</string>
+    <string name="cancel">Annuler</string>
+    <string name="nameNewRestaurant">nom du restaurant</string>
+    <string name="retourSelectionDate">Selection Date</string>
+    <string name="textPasDeMouvement">"Il n'y a pas de mouvement enregistré pour cette date"</string>
+    <string name="textSelectionPlateforme">"Plateforme :"</string>
+    <string name="title_activity_new_restaurant">Nouveau Restaurant!</string>
+    <string name="select_new_restaurant">Nouveau restaurant</string>
+    <string name="textSelectRestaurant">"Veuillez selectionner le restaurant: "</string>
+
+
+
+    <string-array name="plateforme">
+        <item></item>
+        <item>Deliveroo</item>
+        <item>Foodora</item>
+        <item>UberEat</item>
+        <item>Stuart</item>
+        <item>Autre</item>
+
+    </string-array>
+
+    <string-array name="indication">
+        <item></item>
+        <item>Début enregistrement</item>
+        <item>Fin enregistrement</item>
+        <item>Restaurant</item>
+        <item>Client</item>
+        <item>Attente</item>
+        <item>Restaurant </item>
+        <item>Client</item>
+        <item>Attente</item>
+        <item></item>
+        <item></item>
+        <item>Changement plateforme: Deliveroo</item>
+        <item>Changement plateforme: Foodora</item>
+        <item>Changement plateforme: Stuart</item>
+        <item>Changement plateforme: UberEat</item>
+        <item>Changement plateforme: Autre</item>
+
+
+    </string-array>
+    <string name="title_activity_select_restaurant">Selection Restaurant</string>
+
+
+</resources>
