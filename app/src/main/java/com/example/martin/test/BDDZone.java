@@ -6,16 +6,14 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
-import static com.example.martin.test.Value.COL_LATITUDE_ZONE;
-import static com.example.martin.test.Value.COL_LONGITUDE_ZONE;
+import static com.example.martin.test.Value.COL_LATRAD_ZONE;
+import static com.example.martin.test.Value.COL_LONRAD_ZONE;
 import static com.example.martin.test.Value.COL_TEXT_ZONE;
 import static com.example.martin.test.Value.NOM_BDD_ZONE;
 import static com.example.martin.test.Value.NUM_COL_ID_ZONE;
-import static com.example.martin.test.Value.NUM_COL_LATITUDE_ZONE;
-import static com.example.martin.test.Value.NUM_COL_LONGITUDE_ZONE;
+import static com.example.martin.test.Value.NUM_COL_LATRAD_ZONE;
+import static com.example.martin.test.Value.NUM_COL_LONRAD_ZONE;
 import static com.example.martin.test.Value.NUM_COL_TEXT_ZONE;
-import static com.example.martin.test.Value.RAYONTERRE;
-import static com.example.martin.test.Value.rayonPetitCercle;
 import static com.example.martin.test.Value.SEUILZONE;
 import static com.example.martin.test.Value.TABLE_ZONE;
 import static com.example.martin.test.Value.distence2;
@@ -53,45 +51,45 @@ class BDDZone {
 		bdd.execSQL("DELETE FROM "+TABLE_ZONE);
 	}
 
-	long insertZone(double lat,double lon,String zoneName) {
-		lat=Math.toRadians(lat);
-		lon=Math.toRadians(lon);
+	long insertZone(double latDeg,double lonDeg,String zoneName) {
+		double latRad=Math.toRadians(latDeg);
+		double lonRad=Math.toRadians(lonDeg);
 
 		ContentValues content = new ContentValues();
 
-		content.put(COL_LATITUDE_ZONE, lat);
-		content.put(COL_LONGITUDE_ZONE, lon);
+		content.put(COL_LATRAD_ZONE, latRad);
+		content.put(COL_LONRAD_ZONE, latRad);
 		content.put(COL_TEXT_ZONE, zoneName);
 		return bdd.insert(TABLE_ZONE, null, content);
 	}
 
 	/**
 	 *
-	 * @param lat1  latitude en degres
-	 * @param lon1  longitude en degres
+	 * @param latDeg  latitude en degres
+	 * @param lonDeg  longitude en degres
 	 * @return une chaine de caractère correspondant à la zone indiquée par les paramétres
 	 */
-	String getTextZone(double lat1,double lon1){
-		lat1=Math.toRadians(lat1);
-		lon1=Math.toRadians(lon1);
+	String getTextZone(double latDeg,double lonDeg){
+		double latRad1=Math.toRadians(latDeg);
+		double lonRad1=Math.toRadians(lonDeg);
 
 		String res="";
-		rayonPetitCercle = (int) (RAYONTERRE*Math.cos(lat1));
+
 
 		openForRead();
 		Cursor c=bdd.rawQuery("SELECT * FROM "+TABLE_ZONE,null);
 
 		if (c.getCount()>0){
-			double lat2;
-			double lon2;
+			double latRad2;
+			double lonRad2;
 			int index=0;
 			int minDistence2=2147483646;  //valeur max int soit 21 fois le seuil de 10km
 			int d2=0;
 			for (c.moveToFirst(); !c.isAfterLast(); c.moveToNext()) {
 
-				lat2=c.getDouble(NUM_COL_LATITUDE_ZONE);
-				lon2=c.getDouble(NUM_COL_LONGITUDE_ZONE);
-				d2=distence2(lat1,lat2,lon1,lon2);
+				latRad2=c.getDouble(NUM_COL_LATRAD_ZONE);
+				lonRad2=c.getDouble(NUM_COL_LONRAD_ZONE);
+				d2=distence2(latRad1,latRad2,lonRad1,lonRad2);
 				if (d2<minDistence2) {
 					index=c.getPosition();
 					minDistence2=d2;
@@ -116,25 +114,25 @@ class BDDZone {
 		return res;
 	}
 
-	int getIdZone(double lat1,double lon1){
-		lat1=Math.toRadians(lat1);
-		lon1=Math.toRadians(lon1);
+	int getIdZone(double latDeg,double lonDeg){
+		double latRad1=Math.toRadians(latDeg);
+		double lonRad1=Math.toRadians(lonDeg);
 
 		openForRead();
-		rayonPetitCercle = (int) (RAYONTERRE*Math.cos(lat1));
+
 		int res=1;
 		Cursor c=bdd.rawQuery("SELECT * FROM "+TABLE_ZONE,null);
 
 		if (c.getCount()>0){
-			double lat2;
-			double lon2;
+			double latRad2;
+			double lonRad2;
 			int idMinDistence=-1;
 			int minDistence2=2147483646;  //valeur max int soit 21 fois le seuil de 10km
 			int d2;
 			for (c.moveToFirst(); !c.isAfterLast(); c.moveToNext()) {
-				lat2=c.getDouble(NUM_COL_LATITUDE_ZONE);
-				lon2=c.getDouble(NUM_COL_LONGITUDE_ZONE);
-				d2=distence2(lat1,lat2,lon1,lon2);
+				latRad2=c.getDouble(NUM_COL_LATRAD_ZONE);
+				lonRad2=c.getDouble(NUM_COL_LONRAD_ZONE);
+				d2=distence2(latRad1,latRad2,lonRad1,lonRad2);
 				if (d2<minDistence2) {
 					idMinDistence=c.getInt(NUM_COL_ID_ZONE);
 					minDistence2=d2;

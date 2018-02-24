@@ -40,11 +40,6 @@ class BDDAction {
 		bdd.close();
 	}
 
-	SQLiteDatabase getDbb() {
-		return bdd;
-	}
-
-
 	long insertAction(long time,int indication) {
 
 		ContentValues content = new ContentValues();

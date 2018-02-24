@@ -4,62 +4,69 @@ package com.example.martin.test;
  * Created by martin on 02/02/18.
  */
 
-public class Localisation {
+class Localisation {
 
     private int id;
     private long time;
     private double latitude;
     private double longitude;
     private int duree;
+    private int indication;
     private int idResto;
 
 
 
-    public Localisation(){}
+    Localisation(){}
 
-    public Localisation(long time,double latitude,double longitude,int duree, int idResto){
+    Localisation(long time,double latitude,double longitude,int duree, int indication, int idResto){
         this.time=time;
         this.latitude=latitude;
         this.longitude=longitude;
         this.duree=duree;
+        this.indication=indication;
         this.idResto=idResto;
     }
-    public void setId(int id){
+    void setId(int id){
         this.id=id;
     }
-    public int getId(){
+    int getId(){
         return id;
     }
 
-    public int getIdResto() {
+    int getIdResto() {
         return idResto;
     }
 
-    public long getTime(){  return time;
+    long getTime(){  return time;
     }
-    public double getLatitude(){ return latitude;}
+    double getLatitude(){ return latitude;}
 
-    public double getLongitude() {
+    double getLongitude() {
         return longitude;
     }
 
-
+    int getIndication(){
+    	return indication;
+	}
     int getDuree(){return duree;}
 
-    public void setLatitude(double latitude) {
+    void setLatitude(double latitude) {
         this.latitude = latitude;
     }
 
-    public void setLongitude(double longitude) {
+    void setLongitude(double longitude) {
         this.longitude = longitude;
 
     }
+    void setIndication(int indication){
+    	this.indication=indication;
+	}
 
-    public void setIdResto(int idResto) {
+    void setIdResto(int idResto) {
         this.idResto = idResto;
     }
 
-    public void setTime(long time) {
+    void setTime(long time) {
         this.time = time;
     }
 
@@ -78,6 +85,8 @@ public class Localisation {
         res.append(longitude);
         res.append(" duree : ");
         res.append(duree);
+        res.append(" indication: ");
+        res.append(indication);
         res.append(" idResto: ");
         res.append(idResto);
         return res.toString();

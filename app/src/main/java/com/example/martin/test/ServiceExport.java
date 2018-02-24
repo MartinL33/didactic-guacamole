@@ -16,6 +16,7 @@ import java.util.Date;
 import static com.example.martin.test.Value.NUM_COL_DUREE_LOCAL;
 import static com.example.martin.test.Value.NUM_COL_IDRESTO_LOCAL;
 import static com.example.martin.test.Value.NUM_COL_IND_ACTION;
+import static com.example.martin.test.Value.NUM_COL_IND_LOCAL;
 import static com.example.martin.test.Value.NUM_COL_LATITUDE_LOCAL;
 import static com.example.martin.test.Value.NUM_COL_LATITUDE_TEMP;
 import static com.example.martin.test.Value.NUM_COL_LONGITUDE_LOCAL;
@@ -71,6 +72,7 @@ public class ServiceExport extends IntentService {
 			t = new long[nbPoint];
 			lat = new float[nbPoint];
 			lon = new float[nbPoint];
+			int[] ind = new int[nbPoint];
 			int[] d = new int[nbPoint];
 			int[] idResto = new int[nbPoint];
 
@@ -87,6 +89,7 @@ public class ServiceExport extends IntentService {
 				lat[i] = (float) c.getDouble(NUM_COL_LATITUDE_LOCAL);
 				lon[i] = (float) c.getDouble(NUM_COL_LONGITUDE_LOCAL);
 				d[i] = c.getInt(NUM_COL_DUREE_LOCAL);
+				ind[i]=c.getInt(NUM_COL_IND_LOCAL);
 				idResto[i] = c.getInt(NUM_COL_IDRESTO_LOCAL);
 				i++;
 			}

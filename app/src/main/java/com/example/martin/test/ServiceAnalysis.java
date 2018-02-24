@@ -9,7 +9,23 @@ import android.database.Cursor;
 import android.location.LocationManager;
 import android.util.Log;
 
-import static com.example.martin.test.Value.*;
+import static com.example.martin.test.Value.DUREE_DEFAUT;
+import static com.example.martin.test.Value.DUREE_MIN_SAUVEGARDE_PAS;
+import static com.example.martin.test.Value.ID_RESTO_DEFAUT;
+import static com.example.martin.test.Value.IND_DEFAUT;
+import static com.example.martin.test.Value.MAX_DISTANCE_ABERANT;
+import static com.example.martin.test.Value.MAX_DISTANCE_DOUGLAS;
+import static com.example.martin.test.Value.MIN_DISTANCE_ABERANT;
+import static com.example.martin.test.Value.MIN_DISTANCE_MOYENNE;
+import static com.example.martin.test.Value.MIN_DISTANCE_MOYENNE2;
+import static com.example.martin.test.Value.MIN_DISTANCE_UPDATE_LOCATION;
+import static com.example.martin.test.Value.MIN_TIME_UPDATE_LOCATION;
+import static com.example.martin.test.Value.NUM_COL_LATITUDE_TEMP;
+import static com.example.martin.test.Value.NUM_COL_LONGITUDE_TEMP;
+import static com.example.martin.test.Value.NUM_COL_PRECISION_TEMP;
+import static com.example.martin.test.Value.NUM_COL_TIME_TEMP;
+import static com.example.martin.test.Value.RAYONTERRE;
+import static com.example.martin.test.Value.rayonPetitCercle;
 
 
 
@@ -23,12 +39,16 @@ public class ServiceAnalysis extends IntentService {
 	int[] p;
 	int[] d;
 	int[] idR;
+	int[] ind;
 	float[] x;
 	float[] y;
 	int i;
     int zone;
     int plateformeEnCours;
 	int nbPoint = 0;
+	double origineLatitude = 0;
+	double origineLongitude = 0;
+	long origineTime = 0;
 
     @SuppressLint("MissingPermission")
     @Override
@@ -72,12 +92,11 @@ public class ServiceAnalysis extends IntentService {
 
 			//intialisation variable
 
-			double origineLatitude = 0;
-			double origineLongitude = 0;
-			long origineTime = 0;
+
 			t = new long[nbPoint];
 			p = new int[nbPoint];
 			d = new int[nbPoint];
+			ind =new int[nbPoint];
 			idR =new int[nbPoint];
 			x = new float[nbPoint];
 			y = new float[nbPoint];
@@ -85,16 +104,18 @@ public class ServiceAnalysis extends IntentService {
 
 
             c.moveToFirst();
-            rayonPetitCercle = (int) (RAYONTERRE * Math.cos(Math.toRadians(c.getDouble(NUM_COL_LATITUDE_TEMP))));
+			origineLatitude = Math.toRadians(c.getDouble(NUM_COL_LATITUDE_TEMP));
+			origineLongitude = Math.toRadians(c.getDouble(NUM_COL_LONGITUDE_TEMP));
+			origineTime = c.getLong(NUM_COL_TIME_TEMP);
+
+
+
             x[0] = 0;
             y[0] = 0;
             t[0] = 0;
-            p[0] = c.getInt(NUM_COL_PRECISION_TEMP);
-
-
-            origineTime = c.getLong(NUM_COL_TIME_TEMP);
-            origineLatitude = Math.toRadians(c.getDouble(NUM_COL_LATITUDE_TEMP));
-            origineLongitude = Math.toRadians(c.getDouble(NUM_COL_LONGITUDE_TEMP));
+            p[0] = c.getInt(NUM_COL_PRECISION_TEMP)/100;
+			idR[0]=ID_RESTO_DEFAUT;
+			d[0] = DUREE_DEFAUT;
 
             i = 1;
 
@@ -104,9 +125,10 @@ public class ServiceAnalysis extends IntentService {
                 t[i] = (int) (c.getLong(NUM_COL_TIME_TEMP) - origineTime);
                 x[i] = (float) (RAYONTERRE * (Math.toRadians(c.getDouble(NUM_COL_LATITUDE_TEMP)) - origineLatitude));
                 y[i] = (float) (rayonPetitCercle * (Math.toRadians(c.getDouble(NUM_COL_LONGITUDE_TEMP)) - origineLongitude));
-                p[i] = c.getInt(NUM_COL_PRECISION_TEMP);
-                d[i] = 0;
-                idR[i]=0;
+                p[i] = c.getInt(NUM_COL_PRECISION_TEMP)/100;
+                d[i] = DUREE_DEFAUT;
+                ind[i]=IND_DEFAUT;
+                idR[i]=ID_RESTO_DEFAUT;
                 i++;
             }
             c.close();
@@ -117,7 +139,7 @@ public class ServiceAnalysis extends IntentService {
 			origineLongitude = Math.toDegrees(origineLongitude);
 
 			BDDZone bddZone = new BDDZone(this);
-			zone = bddZone.getIdZone(origineLatitude, origineLongitude);
+			zone = bddZone.getIdZone(Math.toDegrees(origineLatitude), Math.toDegrees(origineLongitude));
 
 			//plateforme
 
@@ -128,39 +150,39 @@ public class ServiceAnalysis extends IntentService {
 
             pointAberrant();
 
-            moyennePointProche(MIN_DISTANCE_MOYENNE, false);
+            moyennePointProche(MIN_DISTANCE_MOYENNE, true);
+			moyennePointProche(MIN_DISTANCE_MOYENNE, false);
+            moyennePointProche(MIN_DISTANCE_MOYENNE2, false);
 
             moyennePointProche(MIN_DISTANCE_MOYENNE2, false);
 
-            moyennePointProche(MIN_DISTANCE_MOYENNE2, true);
-
            // calculPas();
 
-            douglasPeucker(2, nbPoint - 1);
+          //  douglasPeucker(2, nbPoint - 1);
 
 
 
             //ecriture des resultats dans la bdd
 
-            float lat;
-            float longi;
+            float latDeg;
+            float longiDeg;
             long time;
 
 
             BDDLocalisation localisationBDD= new BDDLocalisation(this);
             localisationBDD.openForWrite();
             localisationBDD.removeAll();
-
+			Log.d("ServiceAnalysis", "debut ecriture");
             for (i = 0; i < nbPoint - 1; i++) {
 
 
-                if (d[i] != -1) {
+              //  if (d[i] != -1) {
                     time = (t[i] + origineTime);
-                    lat = (float) (origineLatitude + Math.toDegrees(x[i] / RAYONTERRE));
-                    longi = (float) (origineLongitude + Math.toDegrees(y[i] / rayonPetitCercle));
-                    localisationBDD.insertLocalisation(new Localisation(time, lat, longi, d[i], idR[i]));
+                    latDeg = (float) (origineLatitude + Math.toDegrees(x[i] / RAYONTERRE));
+                    longiDeg = (float) (origineLongitude + Math.toDegrees(y[i] / rayonPetitCercle));
+                    localisationBDD.insertLocalisation(new Localisation(time, latDeg, longiDeg, d[i], IND_DEFAUT,idR[i]));
 
-                }
+               // }
 
             }
             localisationBDD.close();
@@ -183,54 +205,57 @@ public class ServiceAnalysis extends IntentService {
 
     private void pointAberrant(){
 
-        for (i=3;i<nbPoint;i++){
 
-            boolean dist = distance2(i, i - 1) > MAX_DISTANCE_ABERANT * MAX_DISTANCE_ABERANT;
-            boolean dist2 = distance2(i, i - 2) < MIN_DISTANCE_ABERANT * MIN_DISTANCE_ABERANT;
-            boolean dist3 = distance2(i, i - 3) < MIN_DISTANCE_ABERANT * MIN_DISTANCE_ABERANT;
+
+        for (i=0;i<nbPoint-3;i++){
+
+            boolean dist = distance2(i, i + 1) > MAX_DISTANCE_ABERANT * MAX_DISTANCE_ABERANT;
+            boolean dist2 = distance2(i, i + 2) < MIN_DISTANCE_ABERANT * MIN_DISTANCE_ABERANT;
+            boolean dist3 = distance2(i, i + 3) < MIN_DISTANCE_ABERANT * MIN_DISTANCE_ABERANT;
 
 
 
             if (dist && dist2) {
-                x[i - 1] = x[i];
-                y[i - 1] = y[i];
+                x[i + 1] = x[i];
+                y[i + 1] = y[i];
 
             } else if (dist && dist3) {
-                x[i - 1] = x[i];
-                y[i - 1] = y[i];
-                x[i - 2] = x[i];
-                y[i - 2] = y[i];
+                x[i + 1] = x[i];
+                y[i + 1] = y[i];
+                x[i + 2] = x[i];
+                y[i + 2] = y[i];
             }
         }
     }
 
 
-	// calcule la moyenne des points entre indexDebut et indexFin (non compris),
+
+
+	// calcule la moyenne des points entre indexDebut et indexFin (non compris) pondérée par l'inverse de la précision de la mesure,
     private void moyenne (int indexDebut, int indexFin){
 
         if (indexFin>indexDebut){
 
-            float moyenneX=0;
-            float moyenneY=0;
+            double moyenneX=0;
+			double moyenneY=0;
+            double ponderation=0.0;
 
-            int nbPointMoyenne=indexFin-indexDebut;
 
             for(i=indexDebut; i<indexFin;i++){
 
-                 moyenneX = moyenneX + x[i] / nbPointMoyenne;
-                 moyenneY = moyenneY + y[i] / nbPointMoyenne;
+				ponderation=1.0/p[i]+ponderation;
+				moyenneX = moyenneX + x[i] / p[i];
+				moyenneY = moyenneY + y[i] / p[i];
+			}
+			moyenneX= moyenneX/ponderation;
+			moyenneY=moyenneY/ponderation;
 
-
-            }
-            d[indexDebut]=0;
             for(i= indexDebut; i<indexFin;i++){
-                x[i]=moyenneX;
-                y[i]=moyenneY;
-
-
+                x[i]=(float) moyenneX;
+                y[i]=(float) moyenneY;
             }
             for(i= indexDebut+1; i<indexFin;i++){
-                d[i]=-1;
+              //  d[i]=-1;
             }
         }
     }
@@ -259,40 +284,38 @@ public class ServiceAnalysis extends IntentService {
         else return  index;
     }
 
-    private boolean moyennePointProche(int distanceMax,boolean pointSuivant){
+    private boolean moyennePointProche(int distanceMax,boolean precision){
         boolean result=false;
 
         //moyenne des points proches
 
         int indexF;
-        i=0;
+        int k=0;
         boolean conditionDistance1;
-        boolean conditionDistance2;
         boolean conditionFin;
 
-        while(i<nbPoint-2) {
+        while(k<nbPoint-2) {
 
-            indexF=i+1;
+            indexF=k+1;
 
             do{
                 conditionFin=indexF<nbPoint-1;
 
-                conditionDistance1=distance2(i,indexF)<(distanceMax*distanceMax);
-                if (pointSuivant) conditionDistance2=distance2(i,nextIndex(indexF))<(distanceMax*distanceMax);
-                else conditionDistance2=false;
+                if (precision) conditionDistance1=distance2(k,indexF)<((distanceMax+p[indexF])*(distanceMax+p[indexF]));
+                else conditionDistance1=distance2(k,indexF)<(distanceMax*distanceMax);
 
                 indexF++;
 
 
-            }while((conditionDistance1||conditionDistance2)&&conditionFin);
+            }while(conditionDistance1&&conditionFin);
 
 
-            if(indexF>i&&indexF<nbPoint-1){
-                moyenne(i,indexF);
-                i=indexF;
+            if(indexF>k+2&&indexF<nbPoint-1){
+                moyenne(k,indexF);
+				k=indexF;
                 result=true;
             }
-            i++;
+			k++;
         }
         return result;
     }

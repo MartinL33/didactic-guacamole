@@ -41,17 +41,24 @@
     </string-array>
 
     <string-array name="indication">
+
         <item></item>
-        <item>Début enregistrement</item>
-        <item>Fin enregistrement</item>
-        <item>Restaurant</item>
-        <item>Client</item>
-        <item>Attente</item>
-        <item>Restaurant </item>
-        <item>Client</item>
-        <item>Attente</item>
-        <item></item>
-        <item></item>
+        <item> IND_DEFAUT=1</item>
+        <item> IND_DEPLACEMENT_INCONNU=2</item>
+        <item> IND_DEPLACEMENT_VERS_RESTO=3</item>
+        <item> IND_DEPLACEMENT_VERS_CLIENT=4</item>
+        <item> IND_RESTO=5</item>
+        <item> IND_CLIENT=6</item>
+        <item> IND_ATTENTE=7</item>
+        <item> IND_HYPO_RESTO=8</item>
+        <item> IND_HYPO_CLIENT=9</item>
+        <item> IND_RESTO_CONFIRME=10</item>
+        <item> IND_CLIENT_CONFIRME=11</item>
+        <item> IND_ATTENTE_CONFIRME=12</item>
+
+        <item> Début enregistrement</item>
+        <item> Fin enregistrement</item>
+
         <item>Changement plateforme: Deliveroo</item>
         <item>Changement plateforme: Foodora</item>
         <item>Changement plateforme: Stuart</item>

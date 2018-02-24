@@ -1,12 +1,10 @@
 package com.example.martin.test;
 
-import android.Manifest;
-import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.location.Location;
-import android.os.Build;
-import android.os.Bundle;
+import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.content.Intent;
+import android.location.Location;
+import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -21,6 +19,7 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 
 import static com.example.martin.test.Value.IND_RESTO;
+import static com.example.martin.test.Value.verifPermissionLocation;
 
 public class ActivitySelectRestaurant extends Activity {
 
@@ -33,32 +32,30 @@ int p=1;
 BDDRestaurant bddRestaurant=new BDDRestaurant(ActivitySelectRestaurant.this);
 
 
+	@SuppressLint("MissingPermission")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_select_restaurant);
 
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-			if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+		if(verifPermissionLocation(this)){
+			FusedLocationProviderClient mFusedLocationClient= LocationServices.getFusedLocationProviderClient(this);
+			mFusedLocationClient.getLastLocation()
+					.addOnSuccessListener(new OnSuccessListener<Location>() {
+						@Override
+						public void onSuccess(Location location) {
+							// Got last known location. In some rare situations this can be null.
+							if (location != null) {
+								Log.d("ActivitySelectResto","actualisation position");
 
-				FusedLocationProviderClient mFusedLocationClient= LocationServices.getFusedLocationProviderClient(this);
-				mFusedLocationClient.getLastLocation()
-						.addOnSuccessListener(new OnSuccessListener<Location>() {
-							@Override
-							public void onSuccess(Location location) {
-								// Got last known location. In some rare situations this can be null.
-								if (location != null) {
-									Log.d("ActivitySelectResto","actualisation position");
-
-									useLocation(location);
-								}
+								useLocation(location);
 							}
-						});
+						}
+					});
 
-			}
 		}
-
 	}
+
 
 	@Override
 	protected void onResume() {

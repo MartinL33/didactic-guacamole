@@ -1,5 +1,10 @@
 package com.example.martin.test;
 
+import android.Manifest;
+import android.content.Context;
+import android.content.pm.PackageManager;
+import android.os.Build;
+
 /**
  * Created by martin on 04/02/18.
  */
@@ -7,24 +12,24 @@ package com.example.martin.test;
  class Value {
 
 
+	final static int IND_DEFAUT=1;
+	final static int IND_DEPLACEMENT_INCONNU=2;
+	final static int IND_DEPLACEMENT_VERS_RESTO=3;
+	final static int IND_DEPLACEMENT_VERS_CLIENT=4;
+    final static int IND_RESTO=5;
+    final static int IND_CLIENT=6;
+    final static int IND_ATTENTE=7;
+	final static int IND_HYPO_RESTO=8;
+	final static int IND_HYPO_CLIENT=9;
+    final static int IND_RESTO_CONFIRME=10;
+    final static int IND_CLIENT_CONFIRME=11;
+    final static int IND_ATTENTE_CONFIRME=12;
 
-	final static int IND_DEPLACEMENT_INCONNU=100;
-	final static int IND_DEPLACEMENT_VERS_RESTO=100;
-	final static int IND_DEPLACEMENT_VERS_CLIENT=100;
-    final static int IND_RESTO=3;
-    final static int IND_CLIENT=4;
-    final static int IND_ATTENTE=5;
-	final static int IND_HYPO_RESTO=100;
-	final static int IND_HYPO_CLIENT=100;
-    final static int IND_RESTO_CONFIRME=6;
-    final static int IND_CLIENT_CONFIRME=7;
-    final static int IND_ATTENTE_CONFIRME=8;
 
+	final static int IND_START=13;
+	final static int IND_END=14;
 
-	final static int IND_START=1;
-	final static int IND_END=2;
-
-    final static int[] IND_PLATEFORME={11,12,13,14,15};
+    final static int[] IND_PLATEFORME={15,16,17,18,19};
 
     final static int IND_PLATEFORME_1=11;
     final static int IND_PLATEFORME_2=12;
@@ -49,8 +54,10 @@ package com.example.martin.test;
     static final int NUM_COL_LONGITUDE_LOCAL = 2;
     static final String COL_DUREE_LOCAL="DUREE";
     static final int NUM_COL_DUREE_LOCAL = 3;
+	static final String COL_IND_LOCAL="IND";
+	static final int NUM_COL_IND_LOCAL = 4;
    	static final String COL_IDRESTO_LOCAL = "IDRESTO";
-  	static final int NUM_COL_IDRESTO_LOCAL = 4;
+  	static final int NUM_COL_IDRESTO_LOCAL = 5;
 
   	//base de donnee action
 	static final String NOM_BDD_ACTION = "actions.db";
@@ -77,10 +84,10 @@ package com.example.martin.test;
 	static final String TABLE_ZONE = "table_zone";
 	static final String COL_ID_ZONE = "ID";
 	static final int NUM_COL_ID_ZONE = 0;
-	static final String COL_LATITUDE_ZONE = "LATITUDE";
-	static final int NUM_COL_LATITUDE_ZONE = 1;
-	static final String COL_LONGITUDE_ZONE = "LONGITUDE";
-	static final int NUM_COL_LONGITUDE_ZONE = 2;
+	static final String COL_LATRAD_ZONE = "LATITUDE";
+	static final int NUM_COL_LATRAD_ZONE = 1;
+	static final String COL_LONRAD_ZONE = "LONGITUDE";
+	static final int NUM_COL_LONRAD_ZONE = 2;
 	static final String COL_TEXT_ZONE = "TEXT";
 	static final int NUM_COL_TEXT_ZONE = 3;
 
@@ -90,10 +97,10 @@ package com.example.martin.test;
 	static final String TABLE_RESTO = "table_resto";
 	static final String COL_ID_RESTO = "ID";
 	static final int NUM_COL_ID_RESTO = 0;
-	static final String COL_LATITUDE_RESTO = "LATITUDE";
-	static final int NUM_COL_LATITUDE_RESTO = 1;
-	static final String COL_LONGITUDE_RESTO = "LONGITUDE";
-	static final int NUM_COL_LONGITUDE_RESTO = 2;
+	static final String COL_LATRAD_RESTO = "LATITUDE";
+	static final int NUM_COL_LATRAD_RESTO = 1;
+	static final String COL_LONRAD_RESTO = "LONGITUDE";
+	static final int NUM_COL_LONRAD_RESTO = 2;
 	static final String COL_TEXT_RESTO = "TEXT";
 	static final int NUM_COL_TEXT_RESTO = 3;
 	static final String COL_ZONE_RESTO = "ZONE";
@@ -144,20 +151,29 @@ package com.example.martin.test;
 
 	/**
 	 *
-	 * @param lat1
-	 * @param lat2
-	 * @param lon1
-	 * @param lon2
-	 * @param RayonTerre
-	 * @param rayonPetitCercle
-	 * @return la distance au carré entre la position 1 et la position 2
+	 * @param latRad1
+	 * @param latRad2
+	 * @param lonRad1
+	 * @param lonRad2
+	 * @return la distance au carré en m2 entre la position 1 et la position 2
 	 */
-	static public int distence2(double lat1,double lat2,double lon1,double lon2){
-
-		return (int) ((RAYONTERRE * (lat2 - lat1)) *(RAYONTERRE *(lat2 - lat1) ) +
-				(rayonPetitCercle *(lon2 - lon1)) *( (lon2 - lon1) * rayonPetitCercle));
+	static int distence2(double latRad1,double latRad2,double lonRad1,double lonRad2){
+		if (rayonPetitCercle==0) rayonPetitCercle = (int) (RAYONTERRE * Math.cos(latRad1));
+		return (int) ((RAYONTERRE * (latRad2 - latRad1)) *(RAYONTERRE *(latRad2 - latRad1) ) +
+				(rayonPetitCercle *(lonRad2 - lonRad1)) *( (lonRad2 - lonRad1) * rayonPetitCercle));
 	}
-
-
+	static boolean verifPermissionLocation(Context context) {
+		boolean res = false;
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+			if (context.checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
+					context.checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+				res = true;
+			}
+		} else {
+			//si la version est inférieur à 6, pas besoin de vérifier les permissions
+			res = true;
+		}
+		return res;
+	}
 
 }

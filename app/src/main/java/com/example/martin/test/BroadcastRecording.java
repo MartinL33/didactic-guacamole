@@ -26,14 +26,14 @@ public class BroadcastRecording extends BroadcastReceiver {
 
 
         if (position != null) {
-            double latitude = position.getLatitude();
-            double longitude = position.getLongitude();
+            double latDeg = position.getLatitude();
+            double lonDeg = position.getLongitude();
             long time = position.getTime();
-			int precision= (int) (100*position.getAccuracy());
+			int precision= (int) position.getAccuracy();
 
             BDDTemp tempBDD = new BDDTemp(context);
 			tempBDD.openForWrite();
-            long l = tempBDD.insertTemp(time, latitude, longitude,precision);
+            long l = tempBDD.insertTemp(time, latDeg, lonDeg,precision);
             Log.d("BroadcastRecording", "insertLocalisation = " + String.valueOf(l));
 			tempBDD.close();
         }

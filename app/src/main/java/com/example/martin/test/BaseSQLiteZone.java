@@ -6,8 +6,8 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import static com.example.martin.test.Value.COL_ID_ZONE;
-import static com.example.martin.test.Value.COL_LATITUDE_ZONE;
-import static com.example.martin.test.Value.COL_LONGITUDE_ZONE;
+import static com.example.martin.test.Value.COL_LATRAD_ZONE;
+import static com.example.martin.test.Value.COL_LONRAD_ZONE;
 import static com.example.martin.test.Value.COL_TEXT_ZONE;
 import static com.example.martin.test.Value.TABLE_ZONE;
 
@@ -18,7 +18,7 @@ import static com.example.martin.test.Value.TABLE_ZONE;
 public class BaseSQLiteZone extends SQLiteOpenHelper {
 
 	private static final String CREATE_BDD="CREATE TABLE " + TABLE_ZONE + " (" +
-			COL_ID_ZONE + "  INTEGER PRIMARY KEY AUTOINCREMENT, " + COL_LATITUDE_ZONE + " REAL, "+COL_LONGITUDE_ZONE
+			COL_ID_ZONE + "  INTEGER PRIMARY KEY AUTOINCREMENT, " + COL_LATRAD_ZONE + " REAL, "+COL_LONRAD_ZONE
 			+ " REAL, "+ COL_TEXT_ZONE + "  TEXT);";
 
 
@@ -43,14 +43,14 @@ public class BaseSQLiteZone extends SQLiteOpenHelper {
 		onCreate(db);
 
 	}
-	void insertZone(SQLiteDatabase db,double lat,double lon,String zoneName){
+	void insertZone(SQLiteDatabase db,double latDeg,double lonDeg,String zoneName){
 
-		lat=Math.toRadians(lat);
-		lon=Math.toRadians(lon);
+		double latRad=Math.toRadians(latDeg);
+		double lonRad=Math.toRadians(lonDeg);
 
 		ContentValues content = new ContentValues();
-		content.put(COL_LATITUDE_ZONE, lat);
-		content.put(COL_LONGITUDE_ZONE, lon);
+		content.put(COL_LATRAD_ZONE, latRad);
+		content.put(COL_LONRAD_ZONE, lonRad);
 		content.put(COL_TEXT_ZONE, zoneName);
 		db.insert(TABLE_ZONE, null, content);
 

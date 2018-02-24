@@ -11,16 +11,16 @@ import java.util.List;
 
 import static com.example.martin.test.Value.COL_IDBASE_RESTO;
 import static com.example.martin.test.Value.COL_ID_RESTO;
-import static com.example.martin.test.Value.COL_LATITUDE_RESTO;
-import static com.example.martin.test.Value.COL_LONGITUDE_RESTO;
+import static com.example.martin.test.Value.COL_LATRAD_RESTO;
+import static com.example.martin.test.Value.COL_LONRAD_RESTO;
 import static com.example.martin.test.Value.COL_PLATEFORME_RESTO;
 import static com.example.martin.test.Value.COL_TEXT_RESTO;
 import static com.example.martin.test.Value.COL_ZONE_RESTO;
 import static com.example.martin.test.Value.ID_RESTO_DEFAUT;
 import static com.example.martin.test.Value.NOM_BDD_RESTO;
 import static com.example.martin.test.Value.NUM_COL_ID_RESTO;
-import static com.example.martin.test.Value.NUM_COL_LATITUDE_RESTO;
-import static com.example.martin.test.Value.NUM_COL_LONGITUDE_RESTO;
+import static com.example.martin.test.Value.NUM_COL_LATRAD_RESTO;
+import static com.example.martin.test.Value.NUM_COL_LONRAD_RESTO;
 import static com.example.martin.test.Value.NUM_COL_TEXT_RESTO;
 import static com.example.martin.test.Value.RAYONTERRE;
 import static com.example.martin.test.Value.SEUILRESTO;
@@ -71,8 +71,8 @@ import static com.example.martin.test.Value.rayonPetitCercle;
 
 		ContentValues content = new ContentValues();
 
-		content.put(COL_LATITUDE_RESTO, latDegres);
-		content.put(COL_LONGITUDE_RESTO, lonDegres);
+		content.put(COL_LATRAD_RESTO, latDegres);
+		content.put(COL_LONRAD_RESTO, lonDegres);
 		content.put(COL_TEXT_RESTO, restoName);
 		 content.put(COL_ZONE_RESTO, zone);
 		 content.put(COL_PLATEFORME_RESTO, plateforme);
@@ -96,23 +96,23 @@ import static com.example.martin.test.Value.rayonPetitCercle;
 		return res;
 	}
 
-	int getIdResto(double lat1,double lon1,int zone,int plateforme){
+	int getIdResto(double latRad1,double lonRad1,int zone,int plateforme){
 
 		openForRead();
-		rayonPetitCercle = (int) (RAYONTERRE*Math.cos(lat1));
+		rayonPetitCercle = (int) (RAYONTERRE*Math.cos(latRad1));
 		int res=-1;
 		Cursor c=bdd.rawQuery("SELECT * FROM "+TABLE_RESTO+" WHERE "+COL_ZONE_RESTO + " = " + zone + " AND "+COL_PLATEFORME_RESTO + " = " + plateforme,null);
 
 		if (c.getCount()>0){
-			double lat2;
-			double lon2;
+			double latRad2;
+			double lonRad2;
 			int index=0;
 			int minDistence2=2147483646;  //valeur max int soit plusieurs fois le rayon de la terre
 			int d2=0;
 			for (c.moveToFirst(); !c.isAfterLast(); c.moveToNext()) {
-				lat2=c.getDouble(NUM_COL_LATITUDE_RESTO);
-				lon2=c.getDouble(NUM_COL_LONGITUDE_RESTO);
-				d2=distence2(lat1,lat2,lon1,lon2);
+				latRad2=c.getDouble(NUM_COL_LATRAD_RESTO);
+				lonRad2=c.getDouble(NUM_COL_LONRAD_RESTO);
+				d2=distence2(latRad1,latRad2,lonRad1,lonRad2);
 				if (d2<minDistence2) {
 					index=c.getPosition();
 					minDistence2=d2;
@@ -141,27 +141,27 @@ import static com.example.martin.test.Value.rayonPetitCercle;
 		else return true;
 	}
 
-	void selectResto(double lat1,double lon1,int zone,int plateforme){
-		lat1=Math.toRadians(lat1);
-		lon1=Math.toRadians(lon1);
+	void selectResto(double latDeg1,double lonDeg1,int zone,int plateforme){
+		double latRad1=Math.toRadians(latDeg1);
+		double lonRad1=Math.toRadians(lonDeg1);
 
 		List<Integer> idResto=new ArrayList<Integer>();
 		List<String> nameResto=new ArrayList<String>();
 
 
-		rayonPetitCercle = (int) (RAYONTERRE*Math.cos(lat1));
+		rayonPetitCercle = (int) (RAYONTERRE*Math.cos(latRad1));
 
 		Cursor c=bdd.rawQuery("SELECT * FROM "+TABLE_RESTO+" WHERE "+COL_ZONE_RESTO + " = " + zone + " AND "+COL_PLATEFORME_RESTO + " = " + plateforme,null);
 
 		if (c.getCount()>0){
-			double lat2;
-			double lon2;
+			double latRad2;
+			double lonRad2;
 
 			for (c.moveToFirst(); !c.isAfterLast(); c.moveToNext()) {
-				lat2=c.getDouble(NUM_COL_LATITUDE_RESTO);
-				lon2=c.getDouble(NUM_COL_LONGITUDE_RESTO);
+				latRad2=c.getDouble(NUM_COL_LATRAD_RESTO);
+				lonRad2=c.getDouble(NUM_COL_LONRAD_RESTO);
 
-				if (distence2(lat1,lat2,lon1,lon2)<SEUILSELECTRESTO*SEUILSELECTRESTO) {
+				if (distence2(latRad1,latRad2,lonRad1,lonRad2)<SEUILSELECTRESTO*SEUILSELECTRESTO) {
 
 					idResto.add(c.getInt(NUM_COL_ID_RESTO));
 					nameResto.add(c.getString(NUM_COL_TEXT_RESTO));

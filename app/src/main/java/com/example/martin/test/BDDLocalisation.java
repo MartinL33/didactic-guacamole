@@ -4,14 +4,29 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+
 import java.util.ArrayList;
-import static com.example.martin.test.Value.*;
+
+import static com.example.martin.test.Value.COL_DUREE_LOCAL;
+import static com.example.martin.test.Value.COL_IDRESTO_LOCAL;
+import static com.example.martin.test.Value.COL_IND_LOCAL;
+import static com.example.martin.test.Value.COL_LATITUDE_LOCAL;
+import static com.example.martin.test.Value.COL_LONGITUDE_LOCAL;
+import static com.example.martin.test.Value.COL_TIME_LOCAL;
+import static com.example.martin.test.Value.NOM_BDD_LOCAL;
+import static com.example.martin.test.Value.NUM_COL_DUREE_LOCAL;
+import static com.example.martin.test.Value.NUM_COL_IDRESTO_LOCAL;
+import static com.example.martin.test.Value.NUM_COL_IND_LOCAL;
+import static com.example.martin.test.Value.NUM_COL_LATITUDE_LOCAL;
+import static com.example.martin.test.Value.NUM_COL_LONGITUDE_LOCAL;
+import static com.example.martin.test.Value.NUM_COL_TIME_LOCAL;
+import static com.example.martin.test.Value.TABLE_LOCALISATIONS;
 /**
  * Created by martin on 02/02/18.
  */
 
  class BDDLocalisation {
-    private static final int VERSION = 1;
+    private static final int VERSION = 2;
     private SQLiteDatabase bdd;
     private BaseSQLiteLocalisation localisations;
 
@@ -42,6 +57,7 @@ import static com.example.martin.test.Value.*;
         content.put(COL_LATITUDE_LOCAL, localisation.getLatitude());
         content.put(COL_LONGITUDE_LOCAL, localisation.getLongitude());
 		content.put(COL_DUREE_LOCAL, localisation.getDuree());
+		content.put(COL_IND_LOCAL,localisation.getIndication());
         content.put(COL_IDRESTO_LOCAL, localisation.getIdResto());
         return bdd.insert(TABLE_LOCALISATIONS, null, content);
     }
@@ -52,6 +68,7 @@ import static com.example.martin.test.Value.*;
         content.put(COL_LATITUDE_LOCAL, localisation.getLatitude());
         content.put(COL_LONGITUDE_LOCAL, localisation.getLongitude());
 		content.put(COL_DUREE_LOCAL, localisation.getDuree());
+		content.put(COL_IND_LOCAL,localisation.getIndication());
         content.put(COL_IDRESTO_LOCAL, localisation.getIdResto());
         return bdd.update(TABLE_LOCALISATIONS, content, COL_TIME_LOCAL + " = " + id, null);
     }
@@ -91,6 +108,7 @@ import static com.example.martin.test.Value.*;
             l.setLatitude(c.getDouble(NUM_COL_LATITUDE_LOCAL));
             l.setLongitude(c.getDouble(NUM_COL_LONGITUDE_LOCAL));
             l.setDuree(c.getInt(NUM_COL_DUREE_LOCAL));
+            l.setIndication(c.getInt(NUM_COL_IND_LOCAL));
             l.setIdResto(c.getInt(NUM_COL_IDRESTO_LOCAL));
             res.add(l);
         }

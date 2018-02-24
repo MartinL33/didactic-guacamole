@@ -7,8 +7,8 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 import static com.example.martin.test.Value.COL_IDBASE_RESTO;
 import static com.example.martin.test.Value.COL_ID_RESTO;
-import static com.example.martin.test.Value.COL_LATITUDE_RESTO;
-import static com.example.martin.test.Value.COL_LONGITUDE_RESTO;
+import static com.example.martin.test.Value.COL_LATRAD_RESTO;
+import static com.example.martin.test.Value.COL_LONRAD_RESTO;
 import static com.example.martin.test.Value.COL_PLATEFORME_RESTO;
 import static com.example.martin.test.Value.COL_TEXT_RESTO;
 import static com.example.martin.test.Value.COL_ZONE_RESTO;
@@ -23,8 +23,8 @@ import static com.example.martin.test.Value.TABLE_RESTO;
 public class BaseSQLiteRestaurant extends SQLiteOpenHelper {
 
 	private static final String CREATE_BDD="CREATE TABLE " + TABLE_RESTO + " (" +
-			COL_ID_RESTO + "  INTEGER PRIMARY KEY AUTOINCREMENT, " + COL_LATITUDE_RESTO + " REAL, "+
-			COL_LONGITUDE_RESTO + " REAL, "+ COL_TEXT_RESTO + "  TEXT, "+COL_ZONE_RESTO+ " INTEGER, "+
+			COL_ID_RESTO + "  INTEGER PRIMARY KEY AUTOINCREMENT, " + COL_LATRAD_RESTO + " REAL, "+
+			COL_LONRAD_RESTO + " REAL, "+ COL_TEXT_RESTO + "  TEXT, "+COL_ZONE_RESTO+ " INTEGER, "+
 			COL_PLATEFORME_RESTO+ " INTEGER, "+COL_IDBASE_RESTO+ " INTEGER);";
 
 
@@ -56,12 +56,12 @@ public class BaseSQLiteRestaurant extends SQLiteOpenHelper {
 		onCreate(db);
 	}
 
-	void insertResto(SQLiteDatabase db,double lat,double lon,String restoName,int zone,int plateforme) {
-		lat=Math.toRadians(lat);
-		lon=Math.toRadians(lon);
+	void insertResto(SQLiteDatabase db,double latDeg,double lonDeg,String restoName,int zone,int plateforme) {
+		double latRad=Math.toRadians(latDeg);
+		double lonRad=Math.toRadians(lonDeg);
 		ContentValues content = new ContentValues();
-		content.put(COL_LATITUDE_RESTO, lat);
-		content.put(COL_LONGITUDE_RESTO, lon);
+		content.put(COL_LATRAD_RESTO, latRad);
+		content.put(COL_LONRAD_RESTO, lonRad);
 		content.put(COL_TEXT_RESTO, restoName);
 		content.put(COL_ZONE_RESTO, zone);
 		content.put(COL_PLATEFORME_RESTO, plateforme);

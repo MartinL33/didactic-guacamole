@@ -1,8 +1,6 @@
 package com.example.martin.test;
 
 import android.Manifest;
-
-
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlarmManager;
@@ -11,18 +9,13 @@ import android.app.FragmentTransaction;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
-
-
-import android.support.annotation.MainThread;
 import android.support.constraint.ConstraintLayout;
 import android.util.Log;
 import android.view.View;
@@ -32,12 +25,20 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
-
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 
-import static com.example.martin.test.Value.*;
+import static com.example.martin.test.Value.IND_ATTENTE;
+import static com.example.martin.test.Value.IND_CLIENT;
+import static com.example.martin.test.Value.IND_END;
+import static com.example.martin.test.Value.IND_PLATEFORME_1;
+import static com.example.martin.test.Value.IND_PLATEFORME_2;
+import static com.example.martin.test.Value.IND_PLATEFORME_4;
+import static com.example.martin.test.Value.IND_START;
+import static com.example.martin.test.Value.MIN_DISTANCE_UPDATE_LOCATION;
+import static com.example.martin.test.Value.MIN_TIME_UPDATE_LOCATION;
+import static com.example.martin.test.Value.verifPermissionLocation;
 
 public class ActivityMain extends Activity implements FragmentSelectPlateforme.OnPlateformeSelectedListener {
 
@@ -71,7 +72,8 @@ public class ActivityMain extends Activity implements FragmentSelectPlateforme.O
     public Notification myNotication;
 	DialogFragment selectPlateformeFragment;
 
-    @Override
+    @SuppressLint("MissingPermission")
+	@Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.d("ActivityMain", "onCreate");
         super.onCreate(savedInstanceState);
@@ -101,50 +103,16 @@ public class ActivityMain extends Activity implements FragmentSelectPlateforme.O
 		//derniere plateforme utilisée
         BDDAction bddAction = new BDDAction(this);
         plateformeEnCours = bddAction.getLastPlateforme();
-
-
-
-
         if (plateformeEnCours >= IND_PLATEFORME_1) {
 			setUIPlateforme(plateformeEnCours);
         }
+		//permission de localisation et ecriture carte SD
 
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-			if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-
-				FusedLocationProviderClient mFusedLocationClient= LocationServices.getFusedLocationProviderClient(this);
-				mFusedLocationClient.getLastLocation()
-						.addOnSuccessListener(this, new OnSuccessListener<Location>() {
-							@Override
-							public void onSuccess(Location location) {
-								// Got last known location. In some rare situations this can be null.
-								if (location != null) {
-									updateZone(location);
-								}
-							}
-						});
-
-			}
-		}
-
-
-
-
-    }
-
-    @Override
-    protected void onResume() {
-        Log.d("ActivityMain", "onResume()");
-        super.onResume();
-
-
-        //permission de localisation et ecriture carte SD
-
-        final int MY_PERMISSIONS_REQUEST_LOCATION = 1;
-        final int MY_PERMISSIONS_REQUEST_EXTERNAL_STORAGE = 2;
+		final int MY_PERMISSIONS_REQUEST_LOCATION = 1;
+		final int MY_PERMISSIONS_REQUEST_EXTERNAL_STORAGE = 2;
 		final int MY_PERMISSIONS_REQUEST= 3;
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 			Boolean boolLocation=checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED;
 			Boolean boolExternalStorage=checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED;
 
@@ -154,18 +122,42 @@ public class ActivityMain extends Activity implements FragmentSelectPlateforme.O
 				return;
 			}
 			else if (boolLocation) {
-                requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                        MY_PERMISSIONS_REQUEST_LOCATION);
-                return;
-            }
+				requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+						MY_PERMISSIONS_REQUEST_LOCATION);
+				return;
+			}
 			else if (boolExternalStorage) {
 
-                requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                        MY_PERMISSIONS_REQUEST_EXTERNAL_STORAGE);
-                return;
-            }
+				requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+						MY_PERMISSIONS_REQUEST_EXTERNAL_STORAGE);
+				return;
+			}
 
-        }
+		}
+
+        //zone
+		if (verifPermissionLocation(this)){
+
+			FusedLocationProviderClient mFusedLocationClient= LocationServices.getFusedLocationProviderClient(this);
+			mFusedLocationClient.getLastLocation()
+					.addOnSuccessListener(this, new OnSuccessListener<Location>() {
+						@Override
+						public void onSuccess(Location location) {
+							// Got last known location. In some rare situations this can be null.
+							if (location != null) {
+								updateZone(location);
+							}
+						}
+					});
+
+		}
+
+    }
+
+    @Override
+    protected void onResume() {
+        Log.d("ActivityMain", "onResume()");
+        super.onResume();
 
 
         //masquage de layoutPlateforme
@@ -185,13 +177,6 @@ public class ActivityMain extends Activity implements FragmentSelectPlateforme.O
             btnStartAndGo.setText(R.string.textStart);
             layoutAction.setVisibility(View.INVISIBLE);
         }
-
-
-
-
-
-
-
 
 	//setOnClickListener des boutons
 
@@ -262,7 +247,9 @@ public class ActivityMain extends Activity implements FragmentSelectPlateforme.O
 
 
                     //controle permission et GPS activé
+					if(verifPermissionLocation(ActivityMain.this)){
 
+					}
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                         if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED || checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                             LocationManager myLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
