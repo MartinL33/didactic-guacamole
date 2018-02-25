@@ -114,9 +114,8 @@ class BDDZone {
 		return res;
 	}
 
-	int getIdZone(double latDeg,double lonDeg){
-		double latRad1=Math.toRadians(latDeg);
-		double lonRad1=Math.toRadians(lonDeg);
+	int getIdZone(double latRad,double lonRad){
+
 
 		openForRead();
 
@@ -132,7 +131,7 @@ class BDDZone {
 			for (c.moveToFirst(); !c.isAfterLast(); c.moveToNext()) {
 				latRad2=c.getDouble(NUM_COL_LATRAD_ZONE);
 				lonRad2=c.getDouble(NUM_COL_LONRAD_ZONE);
-				d2=distence2(latRad1,latRad2,lonRad1,lonRad2);
+				d2=distence2(latRad,latRad2,lonRad,lonRad2);
 				if (d2<minDistence2) {
 					idMinDistence=c.getInt(NUM_COL_ID_ZONE);
 					minDistence2=d2;

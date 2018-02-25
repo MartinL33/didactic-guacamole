@@ -7,8 +7,8 @@ import android.database.sqlite.SQLiteOpenHelper;
 import static com.example.martin.test.Value.COL_DUREE_LOCAL;
 import static com.example.martin.test.Value.COL_IDRESTO_LOCAL;
 import static com.example.martin.test.Value.COL_IND_LOCAL;
-import static com.example.martin.test.Value.COL_LATITUDE_LOCAL;
-import static com.example.martin.test.Value.COL_LONGITUDE_LOCAL;
+import static com.example.martin.test.Value.COL_LATRAD_LOCAL;
+import static com.example.martin.test.Value.COL_LONRAD_LOCAL;
 import static com.example.martin.test.Value.COL_TIME_LOCAL;
 import static com.example.martin.test.Value.TABLE_LOCALISATIONS;
 
@@ -20,7 +20,7 @@ public class BaseSQLiteLocalisation extends SQLiteOpenHelper {
 
    	private static final String CREATE_BDD="CREATE TABLE " + TABLE_LOCALISATIONS + " (" +
             COL_TIME_LOCAL + "  INTEGER PRIMARY KEY, " +
-            COL_LATITUDE_LOCAL + " REAL, "+COL_LONGITUDE_LOCAL + " REAL, "+ COL_DUREE_LOCAL +
+            COL_LATRAD_LOCAL + " REAL, "+COL_LONRAD_LOCAL + " REAL, "+ COL_DUREE_LOCAL +
             "  INTEGER,"+ COL_IND_LOCAL+ " INTEGER, "+ COL_IDRESTO_LOCAL + "  INTEGER);";
 
     public BaseSQLiteLocalisation(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {

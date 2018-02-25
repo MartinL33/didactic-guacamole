@@ -21,7 +21,7 @@
     <string name="ok">Ok</string>
     <string name="cancel">Annuler</string>
     <string name="nameNewRestaurant">nom du restaurant</string>
-    <string name="retourSelectionDate">Selection Date</string>
+    <string name="retourSelectionDate">Retour</string>
     <string name="textPasDeMouvement">"Il n'y a pas de mouvement enregistré pour cette date"</string>
     <string name="textSelectionPlateforme">"Plateforme :"</string>
     <string name="title_activity_new_restaurant">Nouveau Restaurant!</string>
