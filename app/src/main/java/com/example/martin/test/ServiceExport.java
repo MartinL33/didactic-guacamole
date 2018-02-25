@@ -17,14 +17,16 @@ import static com.example.martin.test.Value.NUM_COL_DUREE_LOCAL;
 import static com.example.martin.test.Value.NUM_COL_IDRESTO_LOCAL;
 import static com.example.martin.test.Value.NUM_COL_IND_ACTION;
 import static com.example.martin.test.Value.NUM_COL_IND_LOCAL;
-import static com.example.martin.test.Value.NUM_COL_LATITUDE_LOCAL;
-import static com.example.martin.test.Value.NUM_COL_LATITUDE_TEMP;
-import static com.example.martin.test.Value.NUM_COL_LONGITUDE_LOCAL;
-import static com.example.martin.test.Value.NUM_COL_LONGITUDE_TEMP;
+import static com.example.martin.test.Value.NUM_COL_LATDEG_TEMP;
+import static com.example.martin.test.Value.NUM_COL_LATRAD_LOCAL;
+import static com.example.martin.test.Value.NUM_COL_LONDEG_TEMP;
+import static com.example.martin.test.Value.NUM_COL_LONRAD_LOCAL;
 import static com.example.martin.test.Value.NUM_COL_PRECISION_TEMP;
 import static com.example.martin.test.Value.NUM_COL_TIME_ACTION;
 import static com.example.martin.test.Value.NUM_COL_TIME_LOCAL;
 import static com.example.martin.test.Value.NUM_COL_TIME_TEMP;
+import static com.example.martin.test.Value.RAYONTERRE;
+import static com.example.martin.test.Value.rayonPetitCercle;
 
 
 public class ServiceExport extends IntentService {
@@ -55,8 +57,8 @@ public class ServiceExport extends IntentService {
 
 		double origineLatitude;
 		double origineLongitude;
-		final int rayonTerre = 6378137;
-		int rayonPetitCercle;
+
+
 
 		//base localisation
 		BDDLocalisation localisationBDD = new BDDLocalisation(ServiceExport.this);
@@ -86,8 +88,8 @@ public class ServiceExport extends IntentService {
 			for (c.moveToFirst(); !c.isAfterLast(); c.moveToNext()) {
 
 				t[i] = c.getLong(NUM_COL_TIME_LOCAL);
-				lat[i] = (float) c.getDouble(NUM_COL_LATITUDE_LOCAL);
-				lon[i] = (float) c.getDouble(NUM_COL_LONGITUDE_LOCAL);
+				lat[i] = (float) c.getDouble(NUM_COL_LATRAD_LOCAL);
+				lon[i] = (float) c.getDouble(NUM_COL_LONRAD_LOCAL);
 				d[i] = c.getInt(NUM_COL_DUREE_LOCAL);
 				ind[i]=c.getInt(NUM_COL_IND_LOCAL);
 				idResto[i] = c.getInt(NUM_COL_IDRESTO_LOCAL);
@@ -102,18 +104,16 @@ public class ServiceExport extends IntentService {
 			x = new float[nbPoint];
 			y = new float[nbPoint];
 
-			origineLatitude = Math.toRadians(lat[0]);
-			origineLongitude = Math.toRadians(lon[0]);
+			origineLatitude = lat[0];
+			origineLongitude =lon[0];
 
-
-			rayonPetitCercle = (int) (rayonTerre * Math.cos(origineLatitude));
 
 			x[0] = 0;
 			y[0] = 0;
 
 			for (i = 1; i < nbPoint; i++) {
-				x[i] = (float) (rayonTerre * (Math.toRadians(lat[i]) - origineLatitude));
-				y[i] = (float) (rayonPetitCercle * (Math.toRadians(lon[i]) - origineLongitude));
+				x[i] = (float) (RAYONTERRE * (lat[i]) - origineLatitude);
+				y[i] = (float) (rayonPetitCercle * (lon[i]) - origineLongitude);
 			}
 
 
@@ -136,7 +136,7 @@ public class ServiceExport extends IntentService {
 
 				for (i = 0; i < nbPoint; i++) {
 
-					mess = String.valueOf(t[i]) + ";" + String.valueOf(lat[i]) + ";" + String.valueOf(lon[i]) + ";" + String.valueOf(d[i]) + ";" + String.valueOf(idResto[i]) + ";" + String.valueOf(x[i]) + ";" + String.valueOf(y[i]) + "\n";
+					mess = String.valueOf(t[i]) + ";" + String.valueOf(Math.toDegrees(lat[i])) + ";" + String.valueOf(Math.toDegrees(lon[i])) + ";" + String.valueOf(d[i]) + ";" + String.valueOf(idResto[i]) + ";" + String.valueOf(x[i]) + ";" + String.valueOf(y[i]) + "\n";
 					output.write(mess.getBytes());
 
 				}
@@ -220,8 +220,8 @@ public class ServiceExport extends IntentService {
 			for (c.moveToFirst(); !c.isAfterLast(); c.moveToNext()) {
 
 				t[i] = c.getLong(NUM_COL_TIME_TEMP);
-				lat[i] = (float) c.getDouble(NUM_COL_LATITUDE_TEMP);
-				lon[i] = (float) c.getDouble(NUM_COL_LONGITUDE_TEMP);
+				lat[i] = (float) c.getDouble(NUM_COL_LATDEG_TEMP);
+				lon[i] = (float) c.getDouble(NUM_COL_LONDEG_TEMP);
 				p[i] = c.getInt(NUM_COL_PRECISION_TEMP);
 
 				i++;
@@ -236,13 +236,13 @@ public class ServiceExport extends IntentService {
 			origineLatitude = Math.toRadians(lat[0]);
 			origineLongitude = Math.toRadians(lon[0]);
 
-			rayonPetitCercle = (int) (rayonTerre * Math.cos(origineLatitude));
+
 
 			x[0] = 0;
 			y[0] = 0;
 
 			for (i = 1; i < nbPoint; i++) {
-				x[i] = (float) (rayonTerre * (Math.toRadians(lat[i]) - origineLatitude));
+				x[i] = (float) (RAYONTERRE * (Math.toRadians(lat[i]) - origineLatitude));
 				y[i] = (float) (rayonPetitCercle * (Math.toRadians(lon[i]) - origineLongitude));
 			}
 

@@ -20,8 +20,8 @@ import static com.example.martin.test.Value.MIN_DISTANCE_MOYENNE;
 import static com.example.martin.test.Value.MIN_DISTANCE_MOYENNE2;
 import static com.example.martin.test.Value.MIN_DISTANCE_UPDATE_LOCATION;
 import static com.example.martin.test.Value.MIN_TIME_UPDATE_LOCATION;
-import static com.example.martin.test.Value.NUM_COL_LATITUDE_TEMP;
-import static com.example.martin.test.Value.NUM_COL_LONGITUDE_TEMP;
+import static com.example.martin.test.Value.NUM_COL_LATDEG_TEMP;
+import static com.example.martin.test.Value.NUM_COL_LONDEG_TEMP;
 import static com.example.martin.test.Value.NUM_COL_PRECISION_TEMP;
 import static com.example.martin.test.Value.NUM_COL_TIME_TEMP;
 import static com.example.martin.test.Value.RAYONTERRE;
@@ -104,8 +104,8 @@ public class ServiceAnalysis extends IntentService {
 
 
             c.moveToFirst();
-			origineLatitude = Math.toRadians(c.getDouble(NUM_COL_LATITUDE_TEMP));
-			origineLongitude = Math.toRadians(c.getDouble(NUM_COL_LONGITUDE_TEMP));
+			origineLatitude = Math.toRadians(c.getDouble(NUM_COL_LATDEG_TEMP));
+			origineLongitude = Math.toRadians(c.getDouble(NUM_COL_LONDEG_TEMP));
 			origineTime = c.getLong(NUM_COL_TIME_TEMP);
 
 
@@ -123,8 +123,8 @@ public class ServiceAnalysis extends IntentService {
 
 
                 t[i] = (int) (c.getLong(NUM_COL_TIME_TEMP) - origineTime);
-                x[i] = (float) (RAYONTERRE * (Math.toRadians(c.getDouble(NUM_COL_LATITUDE_TEMP)) - origineLatitude));
-                y[i] = (float) (rayonPetitCercle * (Math.toRadians(c.getDouble(NUM_COL_LONGITUDE_TEMP)) - origineLongitude));
+                x[i] = (float) (RAYONTERRE * (Math.toRadians(c.getDouble(NUM_COL_LATDEG_TEMP)) - origineLatitude));
+                y[i] = (float) (rayonPetitCercle * (Math.toRadians(c.getDouble(NUM_COL_LONDEG_TEMP)) - origineLongitude));
                 p[i] = c.getInt(NUM_COL_PRECISION_TEMP)/100;
                 d[i] = DUREE_DEFAUT;
                 ind[i]=IND_DEFAUT;
@@ -135,11 +135,11 @@ public class ServiceAnalysis extends IntentService {
             tempBDD.close();
 
 			//zone
-			origineLatitude = Math.toDegrees(origineLatitude);
-			origineLongitude = Math.toDegrees(origineLongitude);
+
 
 			BDDZone bddZone = new BDDZone(this);
-			zone = bddZone.getIdZone(Math.toDegrees(origineLatitude), Math.toDegrees(origineLongitude));
+			zone = bddZone.getIdZone(origineLatitude, origineLongitude);
+
 
 			//plateforme
 
@@ -156,7 +156,7 @@ public class ServiceAnalysis extends IntentService {
 
             moyennePointProche(MIN_DISTANCE_MOYENNE2, false);
 
-           // calculPas();
+            calculPas();
 
           //  douglasPeucker(2, nbPoint - 1);
 
@@ -164,8 +164,8 @@ public class ServiceAnalysis extends IntentService {
 
             //ecriture des resultats dans la bdd
 
-            float latDeg;
-            float longiDeg;
+            float latRad;
+            float longiRad;
             long time;
 
 
@@ -173,14 +173,14 @@ public class ServiceAnalysis extends IntentService {
             localisationBDD.openForWrite();
             localisationBDD.removeAll();
 			Log.d("ServiceAnalysis", "debut ecriture");
-            for (i = 0; i < nbPoint - 1; i++) {
+            for (i = 0; i < nbPoint; i++) {
 
 
               //  if (d[i] != -1) {
                     time = (t[i] + origineTime);
-                    latDeg = (float) (origineLatitude + Math.toDegrees(x[i] / RAYONTERRE));
-                    longiDeg = (float) (origineLongitude + Math.toDegrees(y[i] / rayonPetitCercle));
-                    localisationBDD.insertLocalisation(new Localisation(time, latDeg, longiDeg, d[i], IND_DEFAUT,idR[i]));
+                    latRad = (float) (origineLatitude +(x[i] / RAYONTERRE));
+                    longiRad = (float) (origineLongitude + (y[i] / rayonPetitCercle));
+                    localisationBDD.insertLocalisation(new Localisation(time, latRad, longiRad, d[i], IND_DEFAUT,idR[i]));
 
                // }
 
@@ -255,7 +255,7 @@ public class ServiceAnalysis extends IntentService {
                 y[i]=(float) moyenneY;
             }
             for(i= indexDebut+1; i<indexFin;i++){
-              //  d[i]=-1;
+                d[i]=-1;
             }
         }
     }
@@ -276,10 +276,12 @@ public class ServiceAnalysis extends IntentService {
     }
 
     private int nextIndex(int index){
-        index++;
-        while( index<nbPoint&&d[index]==-1){
-            index++;
-        }
+    	if (index <nbPoint-1) {
+			index++;
+			while (index < nbPoint && d[index] == -1) {
+				index++;
+			}
+		}
         if ( index>=nbPoint)   return  nbPoint-1;
         else return  index;
     }
@@ -291,29 +293,30 @@ public class ServiceAnalysis extends IntentService {
 
         int indexF;
         int k=0;
-        boolean conditionDistance1;
-        boolean conditionFin;
+
+
 
         while(k<nbPoint-2) {
 
             indexF=k+1;
+			boolean conditionFin=indexF<nbPoint-1;
+			boolean conditionDistance1;
 
-            do{
-                conditionFin=indexF<nbPoint-1;
+			if (precision) 	conditionDistance1=distance2(k,indexF)<((distanceMax+p[indexF])*(distanceMax+p[indexF]));
+			else 			conditionDistance1=distance2(k,indexF)<(distanceMax*distanceMax);
 
-                if (precision) conditionDistance1=distance2(k,indexF)<((distanceMax+p[indexF])*(distanceMax+p[indexF]));
-                else conditionDistance1=distance2(k,indexF)<(distanceMax*distanceMax);
+			while(conditionFin&&conditionDistance1){
+				indexF++;
+				conditionFin=indexF<nbPoint-1;
+				if (precision) 	conditionDistance1=distance2(k,indexF)<((distanceMax+p[indexF])*(distanceMax+p[indexF]));
+				else 			conditionDistance1=distance2(k,indexF)<(distanceMax*distanceMax);
+				result=true;
+			}
 
-                indexF++;
 
-
-            }while(conditionDistance1&&conditionFin);
-
-
-            if(indexF>k+2&&indexF<nbPoint-1){
+            if(result){
                 moyenne(k,indexF);
-				k=indexF;
-                result=true;
+				k=indexF-1;
             }
 			k++;
         }
@@ -322,10 +325,10 @@ public class ServiceAnalysis extends IntentService {
 
     private void calculPas(){
 
-        for(int k=0;k<nbPoint-2;k++){
+        for(int k=0;k<nbPoint-1;k++){
             if (d[k]!=-1&&x[k+1]==x[k]) {
                 d[k]=(int) (t[nextIndex(k)-1]-t[k]);
-                t[k]=(t[nextIndex(k)-1]-t[k])/2;
+               // t[k]=(t[nextIndex(k)-1]-t[k])/2;
             }
         }
     }

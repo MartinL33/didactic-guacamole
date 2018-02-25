@@ -5,8 +5,8 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
-import static com.example.martin.test.Value.COL_LATITUDE_TEMP;
-import static com.example.martin.test.Value.COL_LONGITUDE_TEMP;
+import static com.example.martin.test.Value.COL_LATDEG_TEMP;
+import static com.example.martin.test.Value.COL_LONDEG_TEMP;
 import static com.example.martin.test.Value.COL_PRECISION_TEMP;
 import static com.example.martin.test.Value.COL_TIME_TEMP;
 import static com.example.martin.test.Value.NOM_BDD_TEMP;
@@ -43,8 +43,8 @@ class BDDTemp {
 
 		ContentValues content = new ContentValues();
 		content.put(COL_TIME_TEMP, time);
-		content.put(COL_LATITUDE_TEMP, latDeg);
-		content.put(COL_LONGITUDE_TEMP, lonDeg);
+		content.put(COL_LATDEG_TEMP, latDeg);
+		content.put(COL_LONDEG_TEMP, lonDeg);
 		content.put(COL_PRECISION_TEMP, precision);
 		return bdd.insert(TABLE_TEMP, null, content);
 	}
