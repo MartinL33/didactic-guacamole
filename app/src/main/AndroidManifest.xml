@@ -24,11 +24,11 @@
 
         <service
             android:name=".ServiceAnalysis"
-            android:exported="true" />
+            android:exported="false" />
 
         <receiver
             android:name=".BroadcastRecording"
-            android:exported="true" />
+            android:exported="false" />
 
         <activity
             android:name=".ActivityHistory"
@@ -41,11 +41,12 @@
         <receiver
             android:name=".BroadcastAction"
             android:enabled="true"
-            android:exported="true" />
+            android:exported="false" />
 
         <activity
             android:name=".ActivitySelectRestaurant"
-            android:label="@string/title_activity_select_restaurant"></activity>
+            android:label="@string/title_activity_select_restaurant" />
+
     </application>
 
 </manifest>

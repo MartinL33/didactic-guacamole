@@ -74,21 +74,21 @@ class Localisation {
 
     @Override
     public String toString() {
-        StringBuilder res=new StringBuilder();
-        res.append("id: ");
-        res.append(id);
-        res.append("time : ");
-        res.append(time);
-        res.append(" lat : ");
-        res.append(latitude);
-        res.append(" long : ");
-        res.append(longitude);
-        res.append(" duree : ");
-        res.append(duree);
-        res.append(" indication: ");
-        res.append(indication);
-        res.append(" idResto: ");
-        res.append(idResto);
-        return res.toString();
+
+        String res="id: ";
+        res += String.valueOf(id);
+		res +="time : ";
+		res += String.valueOf(time);
+		res +=" lat : ";
+		res += String.valueOf(latitude);
+		res +=" long : ";
+		res += String.valueOf(longitude);
+		res +=" duree : ";
+		res += String.valueOf(duree);
+		res +=" indication: ";
+		res += String.valueOf(indication);
+		res +=" idResto: ";
+		res += String.valueOf(idResto);
+        return res;
     }
 }

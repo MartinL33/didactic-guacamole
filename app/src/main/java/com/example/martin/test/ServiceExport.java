@@ -17,14 +17,10 @@ import static com.example.martin.test.Value.NUM_COL_DUREE_LOCAL;
 import static com.example.martin.test.Value.NUM_COL_IDRESTO_LOCAL;
 import static com.example.martin.test.Value.NUM_COL_IND_ACTION;
 import static com.example.martin.test.Value.NUM_COL_IND_LOCAL;
-import static com.example.martin.test.Value.NUM_COL_LATDEG_TEMP;
 import static com.example.martin.test.Value.NUM_COL_LATRAD_LOCAL;
-import static com.example.martin.test.Value.NUM_COL_LONDEG_TEMP;
 import static com.example.martin.test.Value.NUM_COL_LONRAD_LOCAL;
-import static com.example.martin.test.Value.NUM_COL_PRECISION_TEMP;
 import static com.example.martin.test.Value.NUM_COL_TIME_ACTION;
 import static com.example.martin.test.Value.NUM_COL_TIME_LOCAL;
-import static com.example.martin.test.Value.NUM_COL_TIME_TEMP;
 import static com.example.martin.test.Value.RAYONTERRE;
 import static com.example.martin.test.Value.rayonPetitCercle;
 
@@ -49,14 +45,8 @@ public class ServiceExport extends IntentService {
 		long[] t;
 		float[] lat;
 		float[] lon;
-		int i=0;
+		int i;
 
-		float[] x;
-		float[] y;
-
-
-		double origineLatitude;
-		double origineLongitude;
 
 
 
@@ -77,12 +67,6 @@ public class ServiceExport extends IntentService {
 			int[] ind = new int[nbPoint];
 			int[] d = new int[nbPoint];
 			int[] idResto = new int[nbPoint];
-
-
-
-
-
-
 			i = 0;
 
 			for (c.moveToFirst(); !c.isAfterLast(); c.moveToNext()) {
@@ -99,44 +83,29 @@ public class ServiceExport extends IntentService {
 			localisationBDD.close();
 
 
-			//changement coordonnées
-
-			x = new float[nbPoint];
-			y = new float[nbPoint];
-
-			origineLatitude = lat[0];
-			origineLongitude =lon[0];
-
-
-			x[0] = 0;
-			y[0] = 0;
-
-			for (i = 1; i < nbPoint; i++) {
-				x[i] = (float) (RAYONTERRE * (lat[i]) - origineLatitude);
-				y[i] = (float) (rayonPetitCercle * (lon[i]) - origineLongitude);
-			}
-
-
 //si le dossier test n'existe pas, on le crée
 			File fileD = new File(Environment.getExternalStorageDirectory().getPath() + "/" + getResources().getString(R.string.app_name));
 			if (!fileD.exists()) {
-				fileD.mkdirs();
+				if (!fileD.mkdirs()) throw new AssertionError();
 			}
 
 			//ecriture fichier résultat
 
-
-
 			fileResult = new File(Environment.getExternalStorageDirectory().getPath() + "/" + getResources().getString(R.string.app_name) + "/tableLocalisation-" + currentDate + ".csv");
-
 			try {
+				if(!fileResult.exists()) {
+
+					if (!fileResult.createNewFile()) throw new AssertionError();
+				}
+
 				FileOutputStream output = new FileOutputStream(fileResult, false);
-				mess = "time;latitude;longitude;durée attente;idResto;x; y\n";
+				mess = "time;latitude;longitude;durée attente;indication;idResto;x; y\n";
 				output.write(mess.getBytes());
 
 				for (i = 0; i < nbPoint; i++) {
-
-					mess = String.valueOf(t[i]) + ";" + String.valueOf(Math.toDegrees(lat[i])) + ";" + String.valueOf(Math.toDegrees(lon[i])) + ";" + String.valueOf(d[i]) + ";" + String.valueOf(idResto[i]) + ";" + String.valueOf(x[i]) + ";" + String.valueOf(y[i]) + "\n";
+					float x =  (RAYONTERRE * (lat[i] - lat[0]));
+					float y =  (rayonPetitCercle * (lon[i] - lon[0]));
+					mess = String.valueOf(t[i]) + ";" + String.valueOf(Math.toDegrees(lat[i])) + ";" + String.valueOf(Math.toDegrees(lon[i])) + ";" + String.valueOf(d[i]) + ";" + String.valueOf(ind[i])+ ";" + String.valueOf(idResto[i]) + ";" + String.valueOf(x) + ";" + String.valueOf(y) + "\n";
 					output.write(mess.getBytes());
 
 				}
@@ -178,6 +147,9 @@ public class ServiceExport extends IntentService {
 			fileResult = new File(Environment.getExternalStorageDirectory().getPath() + "/" + getResources().getString(R.string.app_name) + "/tableActions-" + currentDate + ".csv");
 
 			try {
+				if(!fileResult.exists()) {
+					if (!fileResult.createNewFile()) throw new AssertionError();
+				}
 				FileOutputStream output = new FileOutputStream(fileResult, false);
 				mess = "time;indication \n";
 				output.write(mess.getBytes());
@@ -199,7 +171,7 @@ public class ServiceExport extends IntentService {
 
 
 		}
-
+/*
 
 //base temp
 
@@ -254,6 +226,9 @@ public class ServiceExport extends IntentService {
 			fileResult = new File(Environment.getExternalStorageDirectory().getPath() + "/" + getResources().getString(R.string.app_name) + "/tableTemp-" + currentDate + ".csv");
 
 			try {
+				if(!fileResult.exists()) {
+					if (!fileResult.createNewFile()) throw new AssertionError();
+				}
 				FileOutputStream output = new FileOutputStream(fileResult, false);
 				mess = "time;latitude;longitude;precision;x;y \n";
 				output.write(mess.getBytes());
@@ -276,7 +251,7 @@ public class ServiceExport extends IntentService {
 
 		}
 
-
+*/
 
 		stopSelf();
 	}

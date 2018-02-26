@@ -84,7 +84,7 @@ class BDDZone {
 			double lonRad2;
 			int index=0;
 			int minDistence2=2147483646;  //valeur max int soit 21 fois le seuil de 10km
-			int d2=0;
+			int d2;
 			for (c.moveToFirst(); !c.isAfterLast(); c.moveToNext()) {
 
 				latRad2=c.getDouble(NUM_COL_LATRAD_ZONE);
@@ -117,7 +117,7 @@ class BDDZone {
 	int getIdZone(double latRad,double lonRad){
 
 
-		openForRead();
+
 
 		int res=1;
 		Cursor c=bdd.rawQuery("SELECT * FROM "+TABLE_ZONE,null);
@@ -149,7 +149,7 @@ class BDDZone {
 
 		}
 		c.close();
-		close();
+
 		Log.d("zone","res : "+res);
 		return res;
 	}
