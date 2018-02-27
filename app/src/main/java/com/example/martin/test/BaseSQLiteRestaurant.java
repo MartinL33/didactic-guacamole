@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
 
 import static com.example.martin.test.Value.COL_IDBASE_RESTO;
 import static com.example.martin.test.Value.COL_ID_RESTO;
@@ -47,6 +48,7 @@ public class BaseSQLiteRestaurant extends SQLiteOpenHelper {
 				insertResto(db,tabLat[i],tabLon[i],tabNom[i],3,IND_PLATEFORME[1]);
 			}
 		}
+		else Log.d("BDD REsto","erreur taille table différente");
 
 	}
 

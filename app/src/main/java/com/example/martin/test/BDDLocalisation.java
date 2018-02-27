@@ -100,7 +100,7 @@ import static com.example.martin.test.Value.TABLE_LOCALISATIONS;
             c.close();
             return null;
         }
-        ArrayList<Localisation> res= new ArrayList<Localisation> ();
+        ArrayList<Localisation> res= new ArrayList<>();
 
         while(c.moveToNext()){
             Localisation l=new Localisation();

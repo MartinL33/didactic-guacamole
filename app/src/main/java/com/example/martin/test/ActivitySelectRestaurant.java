@@ -11,7 +11,6 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -71,15 +70,18 @@ BDDRestaurant bddRestaurant=new BDDRestaurant(ActivitySelectRestaurant.this);
 
 
 		BDDZone bddZone = new BDDZone(ActivitySelectRestaurant.this);
+		bddZone.openForRead();
 		z= bddZone.getIdZone(location.getLatitude(), location.getLongitude());
+        bddZone.close();
 
 		BDDAction bddAction = new BDDAction(ActivitySelectRestaurant.this);
+        bddAction.openForRead();
 		p = bddAction.getLastPlateforme();
+        bddAction.close();
 
-
-
+        bddRestaurant.openForRead();
 		restoConnu =bddRestaurant.bddHasResto(lat, lon,z,p);
-
+        bddRestaurant.close();
 		Log.d("ActivitySelectResto","restaurant connu? : "+String.valueOf(restoConnu));
 
 		setUI(restoConnu);
@@ -92,8 +94,8 @@ BDDRestaurant bddRestaurant=new BDDRestaurant(ActivitySelectRestaurant.this);
 
 
 			Log.d("ActivitySelectResto","selectresto");
-			((LinearLayout) findViewById(R.id.idNewResto)).setVisibility(View.INVISIBLE);
-			((LinearLayout) findViewById(R.id.idSelectResto)).setVisibility(View.VISIBLE);
+			findViewById(R.id.idNewResto).setVisibility(View.INVISIBLE);
+			findViewById(R.id.idSelectResto).setVisibility(View.VISIBLE);
 
 			bddRestaurant.openForRead();
 			bddRestaurant.selectResto(lat, lon, z, p);
@@ -104,7 +106,7 @@ BDDRestaurant bddRestaurant=new BDDRestaurant(ActivitySelectRestaurant.this);
 			if(BuildConfig.DEBUG&&!(bddRestaurant.idRestoSelect.length==bddRestaurant.nameRestoSelect.length)) throw new AssertionError();
 
 
-			ArrayAdapter adapter= new ArrayAdapter(this,android.R.layout.simple_list_item_1,bddRestaurant.nameRestoSelect);
+			ArrayAdapter<String> adapter= new android.widget.ArrayAdapter<>(this,android.R.layout.simple_list_item_1,bddRestaurant.nameRestoSelect);
 
 			ListView mylistView=findViewById(R.id.idListViewSelectResto);
 			mylistView.setAdapter(adapter);
@@ -117,7 +119,9 @@ BDDRestaurant bddRestaurant=new BDDRestaurant(ActivitySelectRestaurant.this);
 					Intent intentAction=new Intent(ActivitySelectRestaurant.this, BroadcastAction.class);
 					intentAction.removeExtra("action");
 					intentAction.putExtra("action", IND_RESTO);
+					bddRestaurant.openForRead();
 					int idResto=bddRestaurant.idRestoSelect[positionClic];
+					bddRestaurant.close();
 					if (idResto>0) intentAction.putExtra("idResto", idResto);
 					sendBroadcast(intentAction);
 
@@ -154,8 +158,8 @@ BDDRestaurant bddRestaurant=new BDDRestaurant(ActivitySelectRestaurant.this);
 		else{
 
 			Log.d("ActivitySelectResto","new restaurant");
-			((LinearLayout) findViewById(R.id.idNewResto)).setVisibility(View.VISIBLE);
-			((LinearLayout) findViewById(R.id.idSelectResto)).setVisibility(View.INVISIBLE);
+			findViewById(R.id.idNewResto).setVisibility(View.VISIBLE);
+			findViewById(R.id.idSelectResto).setVisibility(View.INVISIBLE);
 
 			Button cancel=findViewById(R.id.CancelNewRestaurant);
 			Button ok = findViewById(R.id.OkNewRestaurant);

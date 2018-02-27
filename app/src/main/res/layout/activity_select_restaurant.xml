@@ -31,8 +31,7 @@
             android:id="@+id/idListViewSelectResto"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            tools:layout_editor_absoluteX="8dp"
-            tools:layout_editor_absoluteY="8dp">
+            >
 
         </ListView>
 
@@ -54,7 +53,7 @@
     </LinearLayout>
     <LinearLayout
         android:id="@+id/idNewResto"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginEnd="16dp"
         android:layout_marginStart="16dp"
@@ -74,13 +73,10 @@
             android:id="@+id/editTextNewRestaurant"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:ems="10"
             android:hint="@string/nameNewRestaurant"
-            android:inputType="textShortMessage"
             android:singleLine="true"
-            tools:layout_editor_absoluteX="0dp"
-            tools:layout_editor_absoluteY="58dp"
-            tools:text="@string/nameNewRestaurant" />
+            android:inputType="textNoSuggestions"
+           />
 
         <LinearLayout
 
@@ -88,14 +84,12 @@
             android:layout_height="wrap_content"
             android:gravity="center_vertical|center_horizontal"
             android:orientation="horizontal"
-            tools:layout_editor_absoluteX="76dp"
-            tools:layout_editor_absoluteY="162dp">
-
+            >
 
             <Button
                 android:id="@+id/CancelNewRestaurant"
                 style="@android:style/Widget.Button"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/cancel" />
@@ -103,7 +97,7 @@
             <Button
                 android:id="@+id/OkNewRestaurant"
                 style="@android:style/Widget.Button"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/ok" />

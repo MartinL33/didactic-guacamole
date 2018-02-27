@@ -37,7 +37,7 @@ import static com.example.martin.test.Value.rayonPetitCercle;
  class BDDRestaurant {
 
 
-	private static final int VERSION = 4;
+	private static final int VERSION = 5;
 	private SQLiteDatabase bdd;
 	private BaseSQLiteRestaurant restos;
 	Integer[] idRestoSelect;
@@ -89,16 +89,16 @@ import static com.example.martin.test.Value.rayonPetitCercle;
 		String res="";
 		Cursor c=bdd.rawQuery("SELECT * FROM "+TABLE_RESTO+" WHERE "+COL_ID_RESTO + " = " + id,null);
 		if (c.getCount()==1){
+			c.moveToFirst();
 			res=c.getString(NUM_COL_TEXT_RESTO);
 		}
 		c.close();
-		close();
 		return res;
 	}
 
 	int getIdResto(double latRad1,double lonRad1,int zone,int plateforme){
 
-		openForRead();
+
 		rayonPetitCercle = (int) (RAYONTERRE*Math.cos(latRad1));
 		int res=-1;
 		Cursor c=bdd.rawQuery("SELECT * FROM "+TABLE_RESTO+" WHERE "+COL_ZONE_RESTO + " = " + zone + " AND "+COL_PLATEFORME_RESTO + " = " + plateforme,null);
@@ -108,7 +108,7 @@ import static com.example.martin.test.Value.rayonPetitCercle;
 			double lonRad2;
 			int index=0;
 			int minDistence2=2147483646;  //valeur max int soit plusieurs fois le rayon de la terre
-			int d2=0;
+			int d2;
 			for (c.moveToFirst(); !c.isAfterLast(); c.moveToNext()) {
 				latRad2=c.getDouble(NUM_COL_LATRAD_RESTO);
 				lonRad2=c.getDouble(NUM_COL_LONRAD_RESTO);
@@ -121,6 +121,7 @@ import static com.example.martin.test.Value.rayonPetitCercle;
 			if(minDistence2<SEUILRESTO*SEUILRESTO){
 				c.moveToPosition(index);
 				res=c.getInt(NUM_COL_ID_RESTO);
+				Log.d("resto","idResto : "+res);
 			}
 			else{
 				Log.d("resto","pas de resto connu");
@@ -131,22 +132,21 @@ import static com.example.martin.test.Value.rayonPetitCercle;
 
 		}
 		c.close();
-		close();
-		Log.d("resto","res : "+res);
+
+
 		return res;
 	}
 
 	boolean bddHasResto(double latDegres,double lonDegres,int zone,int plateforme){
-		if (getIdResto(Math.toRadians(latDegres),Math.toRadians(lonDegres),zone,plateforme)==-1) return false;
-		else return true;
+		return getIdResto(Math.toRadians(latDegres), Math.toRadians(lonDegres), zone, plateforme) != -1;
 	}
 
 	void selectResto(double latDeg1,double lonDeg1,int zone,int plateforme){
 		double latRad1=Math.toRadians(latDeg1);
 		double lonRad1=Math.toRadians(lonDeg1);
 
-		List<Integer> idResto=new ArrayList<Integer>();
-		List<String> nameResto=new ArrayList<String>();
+		List<Integer> idResto= new ArrayList<>();
+		List<String> nameResto= new ArrayList<>();
 
 
 		rayonPetitCercle = (int) (RAYONTERRE*Math.cos(latRad1));
