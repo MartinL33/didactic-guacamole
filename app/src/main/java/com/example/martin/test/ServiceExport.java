@@ -15,11 +15,9 @@ import java.util.Date;
 
 import static com.example.martin.test.Value.NUM_COL_DUREE_LOCAL;
 import static com.example.martin.test.Value.NUM_COL_IDRESTO_LOCAL;
-import static com.example.martin.test.Value.NUM_COL_IND_ACTION;
 import static com.example.martin.test.Value.NUM_COL_IND_LOCAL;
 import static com.example.martin.test.Value.NUM_COL_LATRAD_LOCAL;
 import static com.example.martin.test.Value.NUM_COL_LONRAD_LOCAL;
-import static com.example.martin.test.Value.NUM_COL_TIME_ACTION;
 import static com.example.martin.test.Value.NUM_COL_TIME_LOCAL;
 import static com.example.martin.test.Value.RAYONTERRE;
 import static com.example.martin.test.Value.rayonPetitCercle;
@@ -38,7 +36,7 @@ public class ServiceExport extends IntentService {
 
 
 		//variable
-		SimpleDateFormat sdf1 = new SimpleDateFormat("dd-MM-yyyy-hh-mm");
+		SimpleDateFormat sdf1 = new SimpleDateFormat("hh-mm-dd-MM-yyyy");
 		String currentDate = sdf1.format(new Date());
 		File fileResult;
 		String mess;
@@ -117,10 +115,10 @@ public class ServiceExport extends IntentService {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-
-			//base action
-
 		}
+
+		//base action
+		/*
 		BDDAction bddAction = new BDDAction(ServiceExport.this);
 		bddAction.openForRead();
 		c = bddAction.getCursorFrom(1);

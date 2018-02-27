@@ -43,22 +43,22 @@
     <string-array name="indication">
 
         <item>""</item>
-        <item> indication par défaut </item>
-        <item> trajet inconnu </item>
-        <item> trajet resto </item>
-        <item> trajet client </item>
-        <item> arrêt inconnu </item>
+        <item>indication par défaut</item>
+        <item>trajet inconnu</item>
+        <item>trajet resto</item>
+        <item>trajet client</item>
+        <item>arrêt inconnu</item>
         <item>""</item>
-        <item>client </item>
-        <item>IND_ATTENTE=7 </item>
+        <item>client</item>
+        <item>IND_ATTENTE=7</item>
         <item>""</item>
-        <item> client </item>
+        <item>client</item>
         <item>""</item>
-        <item> client </item>
-        <item> IND_ATTENTE_CONFIRME </item>
+        <item>client</item>
+        <item>IND_ATTENTE_CONFIRME</item>
 
-        <item> Début </item>
-        <item> Fin </item>
+        <item>Début Shift</item>
+        <item>Fin Shift</item>
 
         <item>Changement plateforme: Deliveroo</item>
         <item>Changement plateforme: Foodora</item>

@@ -16,10 +16,13 @@ import android.widget.DatePicker;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import static com.example.martin.test.Value.ID_RESTO_DEFAUT;
 import static com.example.martin.test.Value.IND_ARRET_INCONNU;
@@ -27,6 +30,7 @@ import static com.example.martin.test.Value.IND_ATTENTE_CONFIRME;
 import static com.example.martin.test.Value.IND_DEPLACEMENT_INCONNU;
 import static com.example.martin.test.Value.IND_DEPLACEMENT_VERS_CLIENT;
 import static com.example.martin.test.Value.IND_DEPLACEMENT_VERS_RESTO;
+import static com.example.martin.test.Value.IND_END;
 import static com.example.martin.test.Value.IND_HYPO_RESTO;
 import static com.example.martin.test.Value.IND_RESTO;
 import static com.example.martin.test.Value.IND_RESTO_CONFIRME;
@@ -38,7 +42,8 @@ import static com.example.martin.test.Value.NUM_COL_LONRAD_LOCAL;
 import static com.example.martin.test.Value.NUM_COL_TIME_LOCAL;
 import static com.example.martin.test.Value.distence2;
 import static com.example.martin.test.Value.intToString;
-
+import static java.text.DateFormat.getDateInstance;
+import static java.text.DateFormat.getTimeInstance;
 
 
 public class ActivityHistory extends Activity {
@@ -145,6 +150,7 @@ public class ActivityHistory extends Activity {
 					if(c.isFirst()){
 						latRadPrecedante = c.getFloat(NUM_COL_LATRAD_LOCAL);
 						lonRadPrecedante= c.getFloat(NUM_COL_LONRAD_LOCAL);
+						heurePrecedante=(int) ((c.getLong(NUM_COL_TIME_LOCAL)-dateCalendar)/1000);
 					}
 
 					indicationPrecedante=indication;
@@ -198,6 +204,15 @@ public class ActivityHistory extends Activity {
 					heurePrecedante=heure;
 					indicationPrecedante=indication;
 				}
+				else if(indication==IND_END){
+					date=c.getLong(NUM_COL_TIME_LOCAL);
+					heure=(int) ((date-dateCalendar)/1000);
+					int idResto=(c.getInt(NUM_COL_IDRESTO_LOCAL));
+					int duree=c.getInt(NUM_COL_DUREE_LOCAL)/1000;
+					data.add(new UneLigne(indication,heure,0,duree,idResto));
+					heurePrecedante=0;
+					indicationPrecedante=indication;
+				}
 
 			}
 			c.close();
@@ -223,9 +238,11 @@ public class ActivityHistory extends Activity {
 			myAdapter adapter =new myAdapter(ActivityHistory.this);
 			myListView.setAdapter(adapter);
 
+
+			DateFormat df=getDateInstance(DateFormat.MEDIUM, Locale.getDefault());
 			SimpleDateFormat sdf1 = new SimpleDateFormat("dd/MM/yy");
-			String historyDate = sdf1.format(dateCalendar);
-			((TextView) findViewById(R.id.dateHistory)).setText(historyDate);
+
+			((TextView) findViewById(R.id.dateHistory)).setText(df.format(dateCalendar));
 
 			int d=  data.get(0).getDuree()+(data.get(data.size()-1).getHeure()-data.get(0).getHeure());
 			int h=  d/3600;
@@ -292,8 +309,6 @@ public class ActivityHistory extends Activity {
 
 		@Override
 		public String toString() {
-
-
 			String res="heure : ";
 			res += String.valueOf(heure);
 			res +=" indi: ";
@@ -342,10 +357,15 @@ public class ActivityHistory extends Activity {
 				}
 				final TextView textHeure = convertView.findViewById(R.id.itemHistoryHeure);
 				if (ligne.getHeure()>0&&ligne.getHeure()<86400){
+
+					DateFormat df=getTimeInstance(DateFormat.MEDIUM, Locale.getDefault());
+
+
 					final int h=  ligne.getHeure()/3600;
 					final int m= (ligne.getHeure()%3600)/60;
 					final int s=  (ligne.getHeure()%60);
-					textHeure.setText(intToString(h)+"h "+intToString(m)+"m "+intToString(s)+"   ");
+					//textHeure.setText("  "+intToString(h)+"h "+intToString(m)+"m "+intToString(s)+"   ");
+					textHeure.setText(df.format(new Date(1000*ligne.getHeure())));
 				}
 				final TextView textDistance = convertView.findViewById(R.id.itemHistoryDistance);
 
@@ -353,14 +373,15 @@ public class ActivityHistory extends Activity {
 					final int di = ligne.getDistance() / 1000;
 					final int di2 = ((ligne.getDistance() % 1000) / 10);
 
-					textDistance.setText(String.valueOf(di)+"."+intToString(di2) + "km    ");
+					textDistance.setText(String.valueOf(di)+"."+intToString(di2) + "km");
 					textDistance.setVisibility(View.VISIBLE);
 				}
 				else textDistance.setText("");
 
 				final TextView textDuree = convertView.findViewById(R.id.itemHistoryDuree);
 				int du=ligne.getDuree()/60;
-				textDuree.setText(String.valueOf(du)+"min ");
+				if(du<10) textDuree.setText("  "+String.valueOf(du)+" min");
+				else textDuree.setText(String.valueOf(du)+" min");
 
 			}
 			return convertView;

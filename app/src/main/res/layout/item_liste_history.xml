@@ -11,13 +11,15 @@
         android:layout_height="match_parent"
         android:layout_weight="1"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginLeft="10dp"/>
 
     <TextView
         android:id="@+id/itemHistoryIndication"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_weight="1"
+        android:layout_marginLeft="10dp"
         app:layout_constraintStart_toEndOf="@+id/itemHistoryHeure"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -27,6 +29,7 @@
         android:layout_height="match_parent"
         android:layout_weight="1"
         android:text=""
+        android:layout_marginRight="10dp"
         android:visibility="invisible"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/itemHistoryDuree"  />
@@ -40,8 +43,8 @@
         android:layout_height="match_parent"
         android:layout_weight="1"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
-
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginRight="10dp"/>
 
 
 

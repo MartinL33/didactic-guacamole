@@ -10,6 +10,7 @@ import android.location.LocationManager;
 import android.util.Log;
 
 import static com.example.martin.test.Value.DUREE_DEFAUT;
+import static com.example.martin.test.Value.DUREE_MIN_FIN;
 import static com.example.martin.test.Value.DUREE_MIN_SAUVEGARDE_PAS;
 import static com.example.martin.test.Value.ID_RESTO_DEFAUT;
 import static com.example.martin.test.Value.IND_ARRET_INCONNU;
@@ -18,10 +19,12 @@ import static com.example.martin.test.Value.IND_CLIENT_CONFIRME;
 import static com.example.martin.test.Value.IND_DEPLACEMENT_INCONNU;
 import static com.example.martin.test.Value.IND_DEPLACEMENT_VERS_CLIENT;
 import static com.example.martin.test.Value.IND_DEPLACEMENT_VERS_RESTO;
+import static com.example.martin.test.Value.IND_END;
 import static com.example.martin.test.Value.IND_HYPO_CLIENT;
 import static com.example.martin.test.Value.IND_HYPO_RESTO;
 import static com.example.martin.test.Value.IND_RESTO;
 import static com.example.martin.test.Value.IND_RESTO_CONFIRME;
+import static com.example.martin.test.Value.IND_START;
 import static com.example.martin.test.Value.MAX_DISTANCE_ABERANT;
 import static com.example.martin.test.Value.MAX_DISTANCE_DOUGLAS;
 import static com.example.martin.test.Value.MIN_DISTANCE_ABERANT;
@@ -186,9 +189,10 @@ public class ServiceAnalysis extends IntentService {
             localisationBDD.removeAll();
 			Log.d("ServiceAnalysis", "debut ecriture");
             for (int k = 0; k < nbPoint2; k++) {
-
-				localisationBDD.insertLocalisation(	new Localisation
-						(tim[k], latRad[k], lonRad[k], dur[k], ind[k],idR[k]));
+				if(tim[k]>0) {
+					localisationBDD.insertLocalisation(new Localisation
+							(tim[k], latRad[k], lonRad[k], dur[k], ind[k], idR[k]));
+				}
 
             }
             localisationBDD.close();
@@ -396,6 +400,7 @@ public class ServiceAnalysis extends IntentService {
     	nbPoint2=0;
 		for(int i=0;i<nbPoint-1;i++){
 			if (d[i]!=-1) nbPoint2++;
+			if(t[i+1]-t[i]>DUREE_MIN_FIN) nbPoint2++;
 		}
 		Log.d("analyse","nbPoint2 : "+String.valueOf(nbPoint2));
 		latRad=new float[nbPoint2];
@@ -413,14 +418,37 @@ public class ServiceAnalysis extends IntentService {
 				lonRad[k] = (float) (origineLongitude + (y[i] / rayonPetitCercle));
 				dur[k]=d[i];
 
-				if(d[i]>DUREE_MIN_SAUVEGARDE_PAS) ind[k]=IND_ARRET_INCONNU;
-				else ind[k]=IND_DEPLACEMENT_INCONNU;
+				if(d[i]<DUREE_MIN_SAUVEGARDE_PAS) ind[k]=IND_DEPLACEMENT_INCONNU;
+				else ind[k]=IND_ARRET_INCONNU;
+
 
 				idR[k]=ID_RESTO_DEFAUT;
 				k++;
 			}
 
+//si le pas est supérieur a DUREE_MIN_FIN, on considere que le shift 'est arreté puis redemarré
+			if(k>0&&k<nbPoint2&&t[i+1]-t[i]>DUREE_MIN_FIN&&ind[k-1] != IND_END) {
+
+				ind[k] = IND_END;
+				dur[k] = 5000; //5s
+				tim[k]=tim[k-1] + 5000;
+				latRad[k] = (float) (origineLatitude + (x[i] / RAYONTERRE));
+				lonRad[k] = (float) (origineLongitude + (y[i] / rayonPetitCercle));
+				idR[k]=ID_RESTO_DEFAUT;
+
+				if(k>0&&i>0){
+					dur[k-1]=(int) (t[i]-t[i-1]);
+				}
+
+				k++;
+			}
 		}
+		for(k=0;k<nbPoint2;k++){
+			if (ind[k]==IND_END&&k<nbPoint2-1) {
+				ind[k+1]=IND_START;
+			}
+		}
+
 	}
 
     private void action(){
@@ -450,6 +478,7 @@ public class ServiceAnalysis extends IntentService {
 		bddAction.close();
 
 
+
 		//recherche idResto sur tout les points à l'arrêt inconnu ou resto
 
 		BDDRestaurant bddRestaurant=new BDDRestaurant(this);
@@ -473,7 +502,7 @@ public class ServiceAnalysis extends IntentService {
 		int mode=0;  //1>
 		int maxDuree=0;
 		int indexClient=-1;
-		for(int k=0;k<nbPoint2;k++) {
+		for(int k=nbPoint2-1;k>=0;k--) {
 			if(ind[k]==IND_ARRET_INCONNU||ind[k]==IND_CLIENT||ind[k]==IND_CLIENT_CONFIRME){
 				if(maxDuree<dur[k]) {
 					maxDuree=dur[k];
@@ -486,7 +515,7 @@ public class ServiceAnalysis extends IntentService {
 				maxDuree=0;
 			}
 		}
-		ind[indexClient]=IND_HYPO_CLIENT;
+
 
 		//clean petit arret
 		for(int k=0;k<nbPoint2;k++) {
