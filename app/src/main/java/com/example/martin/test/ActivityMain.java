@@ -183,7 +183,8 @@ public class ActivityMain extends Activity implements FragmentSelectPlateforme.O
         btnStartAndGo.setOnClickListener(new View.OnClickListener() {
 
 
-            public void onClick(View view) {
+            @SuppressLint("MissingPermission")
+			public void onClick(View view) {
 
                 //si l'enregistrement de la position était lancé: arrêt
                 if (isWorking) {
@@ -249,95 +250,95 @@ public class ActivityMain extends Activity implements FragmentSelectPlateforme.O
                     //controle permission et GPS activé
 					if(verifPermissionLocation(ActivityMain.this)){
 
+						LocationManager myLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+						if (myLocationManager != null) {
+
+							isWorking = true;
+
+							//lancement Action
+
+							intentAction.removeExtra("action");
+							intentAction.putExtra("action", IND_START);
+							sendBroadcast(intentAction);
+							intentAction.removeExtra("action");
+
+							//enregistrement position
+
+							pendingRecording = PendingIntent.getBroadcast(ActivityMain.this, 2989, intentRecording, PendingIntent.FLAG_UPDATE_CURRENT);
+							myLocationManager.requestLocationUpdates(LocationManager.PASSIVE_PROVIDER, MIN_TIME_UPDATE_LOCATION, MIN_DISTANCE_UPDATE_LOCATION, pendingRecording);
+
+							//lancement planification anlyse
+
+							Intent analysisIntent = new Intent(ActivityMain.this, ServiceAnalysis.class);
+							analysisIntent.putExtra("isWorkingName", true);
+							PendingIntent analysisPending = PendingIntent.getService(ActivityMain.this, 5, analysisIntent,0);
+							AlarmManager AlarmeManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+							if (AlarmeManager != null) {
+								//  AlarmeManager.setInexactRepeating(ELAPSED_REALTIME_WAKEUP, elapsedRealtime() + 2000, INTERVAL_FIFTEEN_MINUTES, analysisPending);
+							}
+
+
+							//mise a jour interface
+							textStatut.setText(R.string.StatutStart);
+							layoutAction.setVisibility(View.VISIBLE);
+							btnStartAndGo.setText(R.string.textStop);
+
+							// création notification
+
+							Intent notificationIntent = new Intent(ActivityMain.this, ActivityMain.class);
+							PendingIntent notificationPending = PendingIntent.getActivity(ActivityMain.this, 0, notificationIntent, 0);
+							NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+							Notification.Builder builder = new Notification.Builder(ActivityMain.this);
+
+							builder.setAutoCancel(false);
+							//  builder.setTicker("this is ticker text");
+							builder.setContentTitle(getResources().getString(R.string.TitleNotification));
+							builder.setContentText(getResources().getString(R.string.ContentTextNotification));
+							builder.setSmallIcon(R.drawable.ic_notification_recording);
+							builder.setContentIntent(notificationPending);
+							builder.setOngoing(true);
+
+							builder.setPriority(Notification.PRIORITY_HIGH);
+
+							Intent intentResto= new Intent(ActivityMain.this, ActivitySelectRestaurant.class);
+							// intentResto.putExtra("action", IND_RESTO);
+							PendingIntent pendingResto= PendingIntent.getActivity(ActivityMain.this, 1, intentResto, PendingIntent.FLAG_UPDATE_CURRENT);
+
+
+							Intent intentClient= new Intent(ActivityMain.this, BroadcastAction.class);
+							intentClient.putExtra("action", IND_CLIENT);
+							PendingIntent pendingClient= PendingIntent.getBroadcast(ActivityMain.this, 2, intentClient, PendingIntent.FLAG_UPDATE_CURRENT);
+
+
+							if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
+								builder.addAction(new Notification.Action(R.drawable.ic_restaurant,"restaurant",pendingResto));
+								builder.addAction(new Notification.Action(R.drawable.ic_client,getResources().getString(R.string.textCustomer),pendingClient));
+								if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+									builder.setVisibility(Notification.VISIBILITY_SECRET);
+								}
+							}
+
+
+							builder.build();
+
+							myNotication = builder.getNotification();
+							if (notificationManager != null) notificationManager.notify(ID_NOTIFICATION, myNotication);
+
+
+
+						}
+						else{
+							Toast.makeText(ActivityMain.this, R.string.taostGPSInactive, Toast.LENGTH_LONG).show();
+						}
 					}
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED || checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                            LocationManager myLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-                            if (myLocationManager != null) {
-
-                                isWorking = true;
-
-                                //lancement Action
-
-                                intentAction.removeExtra("action");
-                                intentAction.putExtra("action", IND_START);
-                                sendBroadcast(intentAction);
-                                intentAction.removeExtra("action");
-
-                                //enregistrement position
-
-                               pendingRecording = PendingIntent.getBroadcast(ActivityMain.this, 2989, intentRecording, PendingIntent.FLAG_UPDATE_CURRENT);
-                                myLocationManager.requestLocationUpdates(LocationManager.PASSIVE_PROVIDER, MIN_TIME_UPDATE_LOCATION, MIN_DISTANCE_UPDATE_LOCATION, pendingRecording);
-
-                                //lancement planification anlyse
-
-                                Intent analysisIntent = new Intent(ActivityMain.this, ServiceAnalysis.class);
-                                analysisIntent.putExtra("isWorkingName", true);
-                                PendingIntent analysisPending = PendingIntent.getService(ActivityMain.this, 5, analysisIntent,0);
-                                AlarmManager AlarmeManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-                                if (AlarmeManager != null) {
-                                  //  AlarmeManager.setInexactRepeating(ELAPSED_REALTIME_WAKEUP, elapsedRealtime() + 2000, INTERVAL_FIFTEEN_MINUTES, analysisPending);
-                                }
-
-
-                                //mise a jour interface
-                                textStatut.setText(R.string.StatutStart);
-                                layoutAction.setVisibility(View.VISIBLE);
-                                btnStartAndGo.setText(R.string.textStop);
-
-                                // création notification
-
-                                Intent notificationIntent = new Intent(ActivityMain.this, ActivityMain.class);
-                                PendingIntent notificationPending = PendingIntent.getActivity(ActivityMain.this, 0, notificationIntent, 0);
-                                NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-
-                                Notification.Builder builder = new Notification.Builder(ActivityMain.this);
-
-                                builder.setAutoCancel(false);
-                                //  builder.setTicker("this is ticker text");
-                                builder.setContentTitle(getResources().getString(R.string.TitleNotification));
-                                builder.setContentText(getResources().getString(R.string.ContentTextNotification));
-                                builder.setSmallIcon(R.drawable.ic_notification_recording);
-                                builder.setContentIntent(notificationPending);
-                                builder.setOngoing(true);
-                                builder.setVisibility(Notification.VISIBILITY_SECRET);
-                                builder.setPriority(Notification.PRIORITY_HIGH);
-
-                                Intent intentResto= new Intent(ActivityMain.this, ActivitySelectRestaurant.class);
-                               // intentResto.putExtra("action", IND_RESTO);
-                                PendingIntent pendingResto= PendingIntent.getActivity(ActivityMain.this, 1, intentResto, PendingIntent.FLAG_UPDATE_CURRENT);
-
-
-                                Intent intentClient= new Intent(ActivityMain.this, BroadcastAction.class);
-                                intentClient.putExtra("action", IND_CLIENT);
-                                PendingIntent pendingClient= PendingIntent.getBroadcast(ActivityMain.this, 2, intentClient, PendingIntent.FLAG_UPDATE_CURRENT);
-
-
-                                builder.addAction(new Notification.Action(R.drawable.ic_restaurant,"restaurant",pendingResto));
-
-                                builder.addAction(new Notification.Action(R.drawable.ic_client,getResources().getString(R.string.textCustomer),pendingClient));
+					else{
+						Toast.makeText(ActivityMain.this, R.string.taostPermissionRefusee, Toast.LENGTH_LONG).show();
+					}
+				}
 
 
 
-                                builder.build();
-
-                                myNotication = builder.getNotification();
-                                if (notificationManager != null) notificationManager.notify(ID_NOTIFICATION, myNotication);
-
-
-
-                            }
-                            else{
-                                Toast.makeText(ActivityMain.this, R.string.taostGPSInactive, Toast.LENGTH_LONG).show();
-                            }
-                        }
-                        else{
-                            Toast.makeText(ActivityMain.this, R.string.taostPermissionRefusee, Toast.LENGTH_LONG).show();
-                        }
-                    }
-
-
-                }
 
             }
         });

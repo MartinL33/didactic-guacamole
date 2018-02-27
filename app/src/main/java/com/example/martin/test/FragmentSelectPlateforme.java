@@ -2,10 +2,7 @@ package com.example.martin.test;
 
 import android.app.Activity;
 import android.app.DialogFragment;
-import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,8 +25,7 @@ public class FragmentSelectPlateforme extends DialogFragment {
 
 
 	public static FragmentSelectPlateforme newInstance() {
-		FragmentSelectPlateforme fragment = new FragmentSelectPlateforme();
-		return fragment;
+		return new FragmentSelectPlateforme();
 	}
 
 	@Override
@@ -97,7 +93,7 @@ public class FragmentSelectPlateforme extends DialogFragment {
 	}
 	// Container Activity must implement this interface
 	public interface OnPlateformeSelectedListener {
-		public void onPlateformeSelected(int plateforme);
+		void onPlateformeSelected(int plateforme);
 	}
 
 

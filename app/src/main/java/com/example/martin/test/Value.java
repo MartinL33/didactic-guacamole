@@ -13,29 +13,33 @@ import android.os.Build;
 
 
 	final static int IND_DEFAUT=1;
+	//deplacement
 	final static int IND_DEPLACEMENT_INCONNU=2;
 	final static int IND_DEPLACEMENT_VERS_RESTO=3;
 	final static int IND_DEPLACEMENT_VERS_CLIENT=4;
-    final static int IND_RESTO=5;
-    final static int IND_CLIENT=6;
-    final static int IND_ATTENTE=7;
-	final static int IND_HYPO_RESTO=8;
-	final static int IND_HYPO_CLIENT=9;
-    final static int IND_RESTO_CONFIRME=10;
-    final static int IND_CLIENT_CONFIRME=11;
-    final static int IND_ATTENTE_CONFIRME=12;
+	//arrêt
+	final static int IND_ARRET_INCONNU=5;
+	final static int IND_RESTO=6;
+    final static int IND_CLIENT=7;
+    final static int IND_ATTENTE=8;
+	final static int IND_HYPO_RESTO=9;
+	final static int IND_HYPO_CLIENT=10;
+    final static int IND_RESTO_CONFIRME=11;
+    final static int IND_CLIENT_CONFIRME=12;
+    final static int IND_ATTENTE_CONFIRME=13;
+	//autre
+	final static int IND_START=14;
+	final static int IND_END=15;
 
+	//plateforme
 
-	final static int IND_START=13;
-	final static int IND_END=14;
+    final static int[] IND_PLATEFORME={16,17,18,19,20};
 
-    final static int[] IND_PLATEFORME={15,16,17,18,19};
-
-    final static int IND_PLATEFORME_1=11;
-    final static int IND_PLATEFORME_2=12;
-    final static int IND_PLATEFORME_3=13;
-    final static int IND_PLATEFORME_4=14;
-	final static int IND_PLATEFORME_5=15;
+    final static int IND_PLATEFORME_1=16;
+    final static int IND_PLATEFORME_2=17;
+    final static int IND_PLATEFORME_3=18;
+    final static int IND_PLATEFORME_4=19;
+	final static int IND_PLATEFORME_5=20;
 
 
 
@@ -122,6 +126,7 @@ import android.os.Build;
 
    static final int MIN_DISTANCE_MOYENNE = 5;     //en m
     static final int MIN_DISTANCE_MOYENNE2 = 10;     //en m
+	static final int MIN_DISTANCE_MOYENNE3 = 100;     //en m
 
     static final int MAX_DISTANCE_DOUGLAS = 30;   //en m
 
@@ -151,10 +156,10 @@ import android.os.Build;
 
 	/**
 	 *
-	 * @param latRad1
-	 * @param latRad2
-	 * @param lonRad1
-	 * @param lonRad2
+	 * @param latRad1 latitude position1 en radian
+	 * @param latRad2 latitude position2 en radian
+	 * @param lonRad1 longitude position1 en radian
+	 * @param lonRad2 longitude position2 en radian
 	 * @return la distance au carré en m2 entre la position 1 et la position 2
 	 */
 	static int distence2(double latRad1,double latRad2,double lonRad1,double lonRad2){
@@ -175,6 +180,11 @@ import android.os.Build;
 		}
 		return res;
 	}
-	// test git
+	static String intToString(int i){
+		if (i < 10) return "0" + String.valueOf(i);
+		return String.valueOf(i);
+	}
+
+
 
 }

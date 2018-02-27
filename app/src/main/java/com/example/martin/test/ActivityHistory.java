@@ -16,11 +16,21 @@ import android.widget.DatePicker;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
+import static com.example.martin.test.Value.ID_RESTO_DEFAUT;
+import static com.example.martin.test.Value.IND_ARRET_INCONNU;
+import static com.example.martin.test.Value.IND_ATTENTE_CONFIRME;
+import static com.example.martin.test.Value.IND_DEPLACEMENT_INCONNU;
+import static com.example.martin.test.Value.IND_DEPLACEMENT_VERS_CLIENT;
+import static com.example.martin.test.Value.IND_DEPLACEMENT_VERS_RESTO;
+import static com.example.martin.test.Value.IND_END;
 import static com.example.martin.test.Value.IND_HYPO_RESTO;
 import static com.example.martin.test.Value.IND_RESTO;
 import static com.example.martin.test.Value.IND_RESTO_CONFIRME;
@@ -31,6 +41,9 @@ import static com.example.martin.test.Value.NUM_COL_LATRAD_LOCAL;
 import static com.example.martin.test.Value.NUM_COL_LONRAD_LOCAL;
 import static com.example.martin.test.Value.NUM_COL_TIME_LOCAL;
 import static com.example.martin.test.Value.distence2;
+import static com.example.martin.test.Value.intToString;
+import static java.text.DateFormat.getDateInstance;
+import static java.text.DateFormat.getTimeInstance;
 
 
 public class ActivityHistory extends Activity {
@@ -42,7 +55,7 @@ public class ActivityHistory extends Activity {
     private ConstraintLayout layoutHistory;
     private TextView textViewSelectDate;
 	private long dateCalendar;
-	List<UneLigne> data=new ArrayList<>();
+	private List<UneLigne> data=new ArrayList<>();
 
 
     @Override
@@ -63,7 +76,7 @@ public class ActivityHistory extends Activity {
             @Override
             public void onClick(View view) {
 
-
+				data.clear();
                 int day=myDatePicker.getDayOfMonth();
                 int month=myDatePicker.getMonth();
                 int year=myDatePicker.getYear();
@@ -101,7 +114,8 @@ public class ActivityHistory extends Activity {
     private void setList(){
 		BDDLocalisation localisationBDD = new BDDLocalisation(ActivityHistory.this);
 		localisationBDD.openForRead();
-		Cursor c= localisationBDD.getCursorBetween(dateCalendar,dateCalendar+86400000);
+		//Cursor c= localisationBDD.getCursorBetween(dateCalendar,dateCalendar+86400000);
+		Cursor c= localisationBDD.getCursorBetween(dateCalendar,dateCalendar+76400000);
 		int nbPoint = c.getCount();
 
 		if (nbPoint==0){
@@ -110,6 +124,7 @@ public class ActivityHistory extends Activity {
 			localisationBDD.close();
 		}
 		else {
+			data.clear();
 			layoutSelectDate.setVisibility(View.INVISIBLE);
 			layoutHistory.setVisibility(View.VISIBLE);
 			Log.d("history",String.valueOf(nbPoint)+ " points");
@@ -118,91 +133,128 @@ public class ActivityHistory extends Activity {
 
 			int indicationPrecedante=-1;
 
-			int distancePrecedante=-1;
+			int distance=0;
 			float latRadPrecedante=0;
 			float lonRadPrecedante=0;
-			long dateFin=0;
-			long dateDebut=0;
-			int dureeFin=0;
-			int dureeDebut=0;
+			long date=0;
+			int heure=0;
+			int heurePrecedante=0;
+
 
 			for (c.moveToFirst(); !c.isAfterLast(); c.moveToNext()) {
 
-				if (indicationPrecedante==c.getInt(NUM_COL_IND_LOCAL)){
-					float latRad= c.getFloat(NUM_COL_LATRAD_LOCAL);
-					float lonRad= c.getFloat(NUM_COL_LONRAD_LOCAL);
-					distancePrecedante= distancePrecedante+(int)(Math.sqrt(distence2(latRadPrecedante,latRad,lonRadPrecedante,lonRad)));
-					dateFin=c.getLong(NUM_COL_TIME_LOCAL);
-					dureeFin=c.getInt(NUM_COL_DUREE_LOCAL);
-					latRadPrecedante=latRad;
-					lonRadPrecedante=lonRad;
-				}
-				else{ //nouvelle ligne
+				int indication=c.getInt(NUM_COL_IND_LOCAL);
 
-					if(!data.isEmpty()) {
-						//ajout ligne précédante
-						data.get(data.size()-1).setDistance(distancePrecedante);
-						data.get(data.size()-1).setDuree((int) ((dateFin-dateDebut+dureeFin+dureeDebut)/1000));
+				//deplacement
+				if(indication==IND_DEPLACEMENT_INCONNU||indication==IND_DEPLACEMENT_VERS_CLIENT||indication==IND_DEPLACEMENT_VERS_RESTO){
+					if(c.isFirst()){
+						latRadPrecedante = c.getFloat(NUM_COL_LATRAD_LOCAL);
+						lonRadPrecedante= c.getFloat(NUM_COL_LONRAD_LOCAL);
+						heurePrecedante=(int) ((c.getLong(NUM_COL_TIME_LOCAL)-dateCalendar)/1000);
 					}
 
+					indicationPrecedante=indication;
+					float latRad= c.getFloat(NUM_COL_LATRAD_LOCAL);
+					float lonRad= c.getFloat(NUM_COL_LONRAD_LOCAL);
 
-					indicationPrecedante=c.getInt(NUM_COL_IND_LOCAL);
-					distancePrecedante=0;
-					latRadPrecedante= c.getFloat(NUM_COL_LATRAD_LOCAL);
-					lonRadPrecedante=c.getFloat(NUM_COL_LONRAD_LOCAL);
-					dateDebut=c.getLong(NUM_COL_TIME_LOCAL);
-					dateFin=c.getLong(NUM_COL_TIME_LOCAL);
-					dureeFin=0;
-					dureeDebut=c.getInt(NUM_COL_DUREE_LOCAL);
-					int heure=(int) ((dateDebut-dateCalendar)/1000);
+					distance+= (int)(Math.sqrt(distence2(latRadPrecedante,latRad,lonRadPrecedante,lonRad)));
+
+					latRadPrecedante=latRad;
+					lonRadPrecedante=lonRad;
+
+					if(c.isLast()) {
+						date=c.getLong(NUM_COL_TIME_LOCAL);
+						heure=(int) ((date-dateCalendar)/1000);
+
+						data.add(
+								new UneLigne(indicationPrecedante, heurePrecedante,distance,heure-heurePrecedante)
+						);
+
+
+					}
+
+				}
+				//arrêt
+				else if(indication>=IND_ARRET_INCONNU&&indication<=IND_ATTENTE_CONFIRME){
+					date=c.getLong(NUM_COL_TIME_LOCAL);
+					heure=(int) ((date-dateCalendar)/1000);
+
+
+					//ajout déplacement
+					if(!c.isFirst()&&distance!=0) {
+						if(indicationPrecedante>=IND_ARRET_INCONNU) indicationPrecedante=IND_DEPLACEMENT_INCONNU;
+						data.add(
+								new UneLigne(indicationPrecedante, heurePrecedante, distance, heure - heurePrecedante)
+						);
+					}
+					//ajout arret
+
 					int idResto=(c.getInt(NUM_COL_IDRESTO_LOCAL));
+					int duree=c.getInt(NUM_COL_DUREE_LOCAL)/1000;
+					data.add(new UneLigne(indication,heure,0,duree,idResto));
+					//mise a jour variable
 
-					data.add(new UneLigne(indicationPrecedante,heure,idResto));
+					float latRad= c.getFloat(NUM_COL_LATRAD_LOCAL);
+					float lonRad= c.getFloat(NUM_COL_LONRAD_LOCAL);
+					if(!c.isFirst()) distance = (int) (Math.sqrt(distence2(latRadPrecedante, latRad, lonRadPrecedante, lonRad)));
+
+					latRadPrecedante= latRad;
+					lonRadPrecedante=lonRad;
+
+					heurePrecedante=heure;
+					indicationPrecedante=indication;
+				}
+				else if(indication==IND_END){
+					date=c.getLong(NUM_COL_TIME_LOCAL);
+					heure=(int) ((date-dateCalendar)/1000);
+					int idResto=(c.getInt(NUM_COL_IDRESTO_LOCAL));
+					int duree=c.getInt(NUM_COL_DUREE_LOCAL)/1000;
+					data.add(new UneLigne(indication,heure,0,duree,idResto));
+					heurePrecedante=0;
+					indicationPrecedante=indication;
 				}
 
 			}
 			c.close();
 			localisationBDD.close();
 
-			if(!data.isEmpty()) {
-				//ajout ligne précédante
-				data.get(data.size()-1).setDistance(distancePrecedante);
-				data.get(data.size()-1).setDuree((int) ((dateFin-dateDebut+dureeFin+dureeDebut)/1000));
+			int distanceTotale=0;
+			int count=0;
+			BDDRestaurant bddRestaurant=new BDDRestaurant(this);
+			bddRestaurant.openForRead();
 
+			for (UneLigne l:data) {
+				count++;
+				distanceTotale=distanceTotale+l.getDistance();
+				if(l.getIdResto()!=-1){
+					l.setNomResto(bddRestaurant.getTextRestaurant(l.getIdResto()));
+				}
+				Log.d("history","ligne "+ intToString(count)+" : "+l.toString());
 			}
+			bddRestaurant.close();
 
 
-			Log.d("history","Nb liste : "+String.valueOf(data.size()));
-			Log.d("history","Derniere Distance : "+String.valueOf(data.get(data.size()-1).getDistance()));
-			Log.d("history","Derniere Duree : "+String.valueOf(data.get(data.size()-1).getDuree()));
-			ListView myListView=(ListView) findViewById(R.id.listHistory);
-			myAdapter adapter =new myAdapter(ActivityHistory.this,R.layout.item_liste_history);
+			ListView myListView= findViewById(R.id.listHistory);
+			myAdapter adapter =new myAdapter(ActivityHistory.this);
 			myListView.setAdapter(adapter);
 
+
+			DateFormat df=getDateInstance(DateFormat.MEDIUM, Locale.getDefault());
 			SimpleDateFormat sdf1 = new SimpleDateFormat("dd/MM/yy");
-			String historyDate = sdf1.format(dateCalendar);
-			((TextView) findViewById(R.id.dateHistory)).setText(historyDate);
+
+			((TextView) findViewById(R.id.dateHistory)).setText(df.format(dateCalendar));
 
 			int d=  data.get(0).getDuree()+(data.get(data.size()-1).getHeure()-data.get(0).getHeure());
 			int h=  d/3600;
 			int m= (d%3600)/60;
 
-			((TextView) findViewById(R.id.dureeHistory)).setText(String.valueOf(h)+"h "+String.valueOf(m)+"m ");
-			int distanceTotale=0;
-			for (UneLigne l:data) {
-				distanceTotale=distanceTotale+l.getDistance();
-			}
+			((TextView) findViewById(R.id.dureeHistory)).setText(intToString(h)+"h "+intToString(m)+"m ");
+
 			if(distanceTotale>0) {
 				int di = distanceTotale / 1000;
 				int di2 = (distanceTotale % 1000) / 10;
-				String valueDistance;
-				if (di2 < 10) valueDistance = String.valueOf(di) + ".0" + String.valueOf(di2);
-				else valueDistance = String.valueOf(di) + "." + String.valueOf(di2);
-				((TextView) findViewById(R.id.distanceHistory)).setText(valueDistance + "km ");
+				((TextView) findViewById(R.id.distanceHistory)).setText(String.valueOf(di)+"."+intToString(di2) + "km ");
 			}
-
-
-
 
 		}
 	}
@@ -214,91 +266,122 @@ public class ActivityHistory extends Activity {
 		int idResto;
 		int duree; //en seconde
 		int distance;  //en m
+		String nomResto;
 
-		UneLigne(int indi,int heure,int idResto){
+		//constructeur pour arret
+		UneLigne(int indi,int heure,int distance,int duree,int idResto){
 			this.indi=indi;
 			this.heure=heure;
 			this.idResto=idResto;
-			this.distance=0;
-			this.duree=0;
+			this.distance=distance;
+			this.duree=duree;
+			this.nomResto="";
+		}
+		//constructeur pour deplacement
+		UneLigne(int indi,int heure,int distance,int duree){
+			this(indi,heure,distance,duree,ID_RESTO_DEFAUT);
 		}
 
-		void setDuree(int duree) {
-			this.duree = duree;
+		void setNomResto(String nomResto) {
+			this.nomResto = nomResto;
 		}
 
-		void setDistance(int distance) {
-			this.distance = distance;
-		}
 		int getIndi(){
 			return indi;
 		}
-		int getHeure(){
-			return heure;
 
-		}
+		int getHeure(){ return heure;}
+
+		String getNomResto(){ return nomResto;}
+
 		int getIdResto(){
 			return idResto;
 		}
+
 		int getDuree(){
 			return duree;
 		}
+
 		int getDistance(){
 			return distance;
 		}
 
-	}
+
+		@Override
+		public String toString() {
+			String res="heure : ";
+			res += String.valueOf(heure);
+			res +=" indi: ";
+			res += String.valueOf(indi);
+			res +=" duree : ";
+			res += String.valueOf(duree);
+			res +=" distance: ";
+			res += String.valueOf(distance);
+			res +=" idResto: ";
+			res += String.valueOf(idResto);
+			return res;
+		}
+
+
+    }
 
 	class myAdapter extends ArrayAdapter<UneLigne>{
     	private Context context;
 		String[] stringIndication;
 		int resource;
 
- 		public myAdapter(@NonNull Context context, int resource) {
+		public myAdapter(@NonNull Context context) {
+			this(context,R.layout.item_liste_history);
+		}
+
+		public myAdapter(@NonNull Context context, int resource) {
 			super(context, resource);
-			this.context=context;
 			this.resource=resource;
+			this.context=context;
 			this.stringIndication=context.getResources().getStringArray(R.array.indication);
 		}
+		@NonNull
 		@Override
-		public View getView(int position, View convertView, ViewGroup parent){
-			if(convertView==null){
-				LayoutInflater layoutInflater=(LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		public View getView(int position, View convertView, @NonNull ViewGroup parent){
+			if(convertView==null) {
+				LayoutInflater layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 				assert layoutInflater != null;
-				convertView=layoutInflater.inflate(resource,parent,false);
-				final UneLigne ligne=data.get(position);
-				final TextView textIndication = (TextView) convertView.findViewById(R.id.itemHistoryIndication);
-				if (ligne.getIndi()>0&&ligne.getIndi()<stringIndication.length){
-					textIndication.setText(stringIndication[ligne.getIndi()]);
+				convertView = layoutInflater.inflate(resource, parent, false);
+				final UneLigne ligne = data.get(position);
+				final TextView textIndication = convertView.findViewById(R.id.itemHistoryIndication);
+				if (ligne.getIndi() > 0 && ligne.getIndi() < stringIndication.length) {
+					if (ligne.getIndi() == IND_HYPO_RESTO || ligne.getIndi() == IND_RESTO || ligne.getIndi() == IND_RESTO_CONFIRME) {
+						textIndication.setText(String.valueOf(ligne.getNomResto()));
+					} else textIndication.setText(stringIndication[ligne.getIndi()]);
+
 				}
-				final TextView textHeure = (TextView) convertView.findViewById(R.id.itemHistoryHeure);
+				final TextView textHeure = convertView.findViewById(R.id.itemHistoryHeure);
 				if (ligne.getHeure()>0&&ligne.getHeure()<86400){
-					int h=  ligne.getHeure()/3600;
-					int m= (ligne.getHeure()%3600)/60;
-					int s=  (ligne.getHeure()%60);
-					textHeure.setText(String.valueOf(h)+"h "+String.valueOf(m)+"m "+String.valueOf(s)+"s");
+
+					DateFormat df=getTimeInstance(DateFormat.MEDIUM, Locale.getDefault());
+
+
+					final int h=  ligne.getHeure()/3600;
+					final int m= (ligne.getHeure()%3600)/60;
+					final int s=  (ligne.getHeure()%60);
+					//textHeure.setText("  "+intToString(h)+"h "+intToString(m)+"m "+intToString(s)+"   ");
+					textHeure.setText(df.format(new Date(1000*ligne.getHeure())));
 				}
-				final TextView textDistance = (TextView) convertView.findViewById(R.id.itemHistoryDistance);
+				final TextView textDistance = convertView.findViewById(R.id.itemHistoryDistance);
 
 				if(ligne.getDistance()>0) {
-					int di = ligne.getDistance() / 1000;
-					int di2 = ((ligne.getDistance() % 1000) / 10);
-					String valueDistance;
-					if (di2 < 10) valueDistance = String.valueOf(di) + ".0" + String.valueOf(di2);
-					else valueDistance = String.valueOf(di) + "." + String.valueOf(di2);
-					textDistance.setText(valueDistance + "km ");
+					final int di = ligne.getDistance() / 1000;
+					final int di2 = ((ligne.getDistance() % 1000) / 10);
+
+					textDistance.setText(String.valueOf(di)+"."+intToString(di2) + "km");
+					textDistance.setVisibility(View.VISIBLE);
 				}
 				else textDistance.setText("");
 
-				final TextView textDuree = (TextView) convertView.findViewById(R.id.itemHistoryDuree);
+				final TextView textDuree = convertView.findViewById(R.id.itemHistoryDuree);
 				int du=ligne.getDuree()/60;
-				textDuree.setText(String.valueOf(du)+"min ");
-
-				final TextView textResto=convertView.findViewById(R.id.itemHistoryResto);
-				if(ligne.getIndi()==IND_HYPO_RESTO||ligne.getIndi()==IND_RESTO||ligne.getIndi()==IND_RESTO_CONFIRME){
-					textResto.setText("resto connu");
-				}
-				else textResto.setText("");
+				if(du<10) textDuree.setText("  "+String.valueOf(du)+" min");
+				else textDuree.setText(String.valueOf(du)+" min");
 
 			}
 			return convertView;

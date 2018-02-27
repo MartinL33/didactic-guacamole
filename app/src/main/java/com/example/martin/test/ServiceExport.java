@@ -15,14 +15,12 @@ import java.util.Date;
 
 import static com.example.martin.test.Value.NUM_COL_DUREE_LOCAL;
 import static com.example.martin.test.Value.NUM_COL_IDRESTO_LOCAL;
-import static com.example.martin.test.Value.NUM_COL_IND_ACTION;
 import static com.example.martin.test.Value.NUM_COL_IND_LOCAL;
 import static com.example.martin.test.Value.NUM_COL_LATDEG_TEMP;
 import static com.example.martin.test.Value.NUM_COL_LATRAD_LOCAL;
 import static com.example.martin.test.Value.NUM_COL_LONDEG_TEMP;
 import static com.example.martin.test.Value.NUM_COL_LONRAD_LOCAL;
 import static com.example.martin.test.Value.NUM_COL_PRECISION_TEMP;
-import static com.example.martin.test.Value.NUM_COL_TIME_ACTION;
 import static com.example.martin.test.Value.NUM_COL_TIME_LOCAL;
 import static com.example.martin.test.Value.NUM_COL_TIME_TEMP;
 import static com.example.martin.test.Value.RAYONTERRE;
@@ -41,22 +39,26 @@ public class ServiceExport extends IntentService {
 	protected void onHandleIntent(Intent intent) {
 
 
+		//si le dossier test n'existe pas, on le crée
+		File fileD = new File(Environment.getExternalStorageDirectory().getPath() + "/" + getResources().getString(R.string.app_name));
+		if (!fileD.exists()) {
+			Log.d("export","creation fichier");
+			if (!fileD.mkdirs()) throw new AssertionError();
+		}
+		Log.d("export","Path Dossier : "+ fileD.getPath());
+
+
+
 		//variable
-		SimpleDateFormat sdf1 = new SimpleDateFormat("dd-MM-yyyy-hh-mm");
+		SimpleDateFormat sdf1 = new SimpleDateFormat("hh-mm-dd-MM-yyyy");
 		String currentDate = sdf1.format(new Date());
 		File fileResult;
 		String mess;
 		long[] t;
 		float[] lat;
 		float[] lon;
-		int i=0;
+		int i;
 
-		float[] x;
-		float[] y;
-
-
-		double origineLatitude;
-		double origineLongitude;
 
 
 
@@ -77,12 +79,6 @@ public class ServiceExport extends IntentService {
 			int[] ind = new int[nbPoint];
 			int[] d = new int[nbPoint];
 			int[] idResto = new int[nbPoint];
-
-
-
-
-
-
 			i = 0;
 
 			for (c.moveToFirst(); !c.isAfterLast(); c.moveToNext()) {
@@ -99,44 +95,24 @@ public class ServiceExport extends IntentService {
 			localisationBDD.close();
 
 
-			//changement coordonnées
-
-			x = new float[nbPoint];
-			y = new float[nbPoint];
-
-			origineLatitude = lat[0];
-			origineLongitude =lon[0];
-
-
-			x[0] = 0;
-			y[0] = 0;
-
-			for (i = 1; i < nbPoint; i++) {
-				x[i] = (float) (RAYONTERRE * (lat[i]) - origineLatitude);
-				y[i] = (float) (rayonPetitCercle * (lon[i]) - origineLongitude);
-			}
-
-
-//si le dossier test n'existe pas, on le crée
-			File fileD = new File(Environment.getExternalStorageDirectory().getPath() + "/" + getResources().getString(R.string.app_name));
-			if (!fileD.exists()) {
-				fileD.mkdirs();
-			}
 
 			//ecriture fichier résultat
 
-
-
 			fileResult = new File(Environment.getExternalStorageDirectory().getPath() + "/" + getResources().getString(R.string.app_name) + "/tableLocalisation-" + currentDate + ".csv");
-
 			try {
+				if(!fileResult.exists()) {
+
+					if (!fileResult.createNewFile()) throw new AssertionError();
+				}
+
 				FileOutputStream output = new FileOutputStream(fileResult, false);
-				mess = "time;latitude;longitude;durée attente;idResto;x; y\n";
+				mess = "time;latitude;longitude;durée attente;indication;idResto;x; y\n";
 				output.write(mess.getBytes());
 
 				for (i = 0; i < nbPoint; i++) {
-
-					mess = String.valueOf(t[i]) + ";" + String.valueOf(Math.toDegrees(lat[i])) + ";" + String.valueOf(Math.toDegrees(lon[i])) + ";" + String.valueOf(d[i]) + ";" + String.valueOf(idResto[i]) + ";" + String.valueOf(x[i]) + ";" + String.valueOf(y[i]) + "\n";
+					float x =  (RAYONTERRE * (lat[i] - lat[0]));
+					float y =  (rayonPetitCercle * (lon[i] - lon[0]));
+					mess = String.valueOf(t[i]) + ";" + String.valueOf(Math.toDegrees(lat[i])) + ";" + String.valueOf(Math.toDegrees(lon[i])) + ";" + String.valueOf(d[i]) + ";" + String.valueOf(ind[i])+ ";" + String.valueOf(idResto[i]) + ";" + String.valueOf(x) + ";" + String.valueOf(y) + "\n";
 					output.write(mess.getBytes());
 
 				}
@@ -148,10 +124,10 @@ public class ServiceExport extends IntentService {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-
-			//base action
-
 		}
+
+		//base action
+		/*
 		BDDAction bddAction = new BDDAction(ServiceExport.this);
 		bddAction.openForRead();
 		c = bddAction.getCursorFrom(1);
@@ -178,6 +154,9 @@ public class ServiceExport extends IntentService {
 			fileResult = new File(Environment.getExternalStorageDirectory().getPath() + "/" + getResources().getString(R.string.app_name) + "/tableActions-" + currentDate + ".csv");
 
 			try {
+				if(!fileResult.exists()) {
+					if (!fileResult.createNewFile()) throw new AssertionError();
+				}
 				FileOutputStream output = new FileOutputStream(fileResult, false);
 				mess = "time;indication \n";
 				output.write(mess.getBytes());
@@ -199,8 +178,8 @@ public class ServiceExport extends IntentService {
 
 
 		}
-
-
+/*
+*/
 //base temp
 
 		BDDTemp tempBDD = new BDDTemp(ServiceExport.this);
@@ -227,40 +206,25 @@ public class ServiceExport extends IntentService {
 				i++;
 			}
 			c.close();
-			bddAction.close();
+			tempBDD.close();
 
 				//changement coordonnées
-
-			x = new float[nbPoint];
-			y = new float[nbPoint];
-			origineLatitude = Math.toRadians(lat[0]);
-			origineLongitude = Math.toRadians(lon[0]);
-
-
-
-			x[0] = 0;
-			y[0] = 0;
-
-			for (i = 1; i < nbPoint; i++) {
-				x[i] = (float) (RAYONTERRE * (Math.toRadians(lat[i]) - origineLatitude));
-				y[i] = (float) (rayonPetitCercle * (Math.toRadians(lon[i]) - origineLongitude));
-			}
-
-
-
-
 
 
 			fileResult = new File(Environment.getExternalStorageDirectory().getPath() + "/" + getResources().getString(R.string.app_name) + "/tableTemp-" + currentDate + ".csv");
 
 			try {
+				if(!fileResult.exists()) {
+					Log.d("export","creation fichier result");
+					if (!fileResult.createNewFile()) throw new AssertionError();
+				}
 				FileOutputStream output = new FileOutputStream(fileResult, false);
 				mess = "time;latitude;longitude;precision;x;y \n";
 				output.write(mess.getBytes());
 
 				for (i = 0; i < nbPoint; i++) {
 
-					mess = String.valueOf(t[i]) + ";" + String.valueOf(lat[i]) + ";" + String.valueOf(lon[i]) + ";" + String.valueOf(p[i]) + ";" + String.valueOf(x[i]) + ";" + String.valueOf(y[i]) + "\n";
+					mess = String.valueOf(t[i]) + ";" + String.valueOf(lat[i]) + ";" + String.valueOf(lon[i]) + ";" + String.valueOf(p[i]) + "\n";
 					output.write(mess.getBytes());
 
 				}
