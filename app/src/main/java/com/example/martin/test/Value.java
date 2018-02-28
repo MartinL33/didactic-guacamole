@@ -35,11 +35,7 @@ import android.os.Build;
 
     final static int[] IND_PLATEFORME={16,17,18,19,20};
 
-    final static int IND_PLATEFORME_1=16;
-    final static int IND_PLATEFORME_2=17;
-    final static int IND_PLATEFORME_3=18;
-    final static int IND_PLATEFORME_4=19;
-	final static int IND_PLATEFORME_5=20;
+    
 
 
 

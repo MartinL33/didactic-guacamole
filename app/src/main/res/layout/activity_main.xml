@@ -15,7 +15,8 @@
         android:text="@string/textStart"
         android:visibility="visible"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginRight="8dp" />
 
 
     <TextView
@@ -28,7 +29,8 @@
         android:text="@string/StatutStop"
         app:layout_constraintBottom_toBottomOf="@+id/idStartAndStop"
         app:layout_constraintEnd_toStartOf="@+id/idStartAndStop"
-        app:layout_constraintTop_toTopOf="@+id/idStartAndStop" />
+        app:layout_constraintTop_toTopOf="@+id/idStartAndStop"
+        android:layout_marginRight="8dp" />
 
     <Button
         android:id="@+id/idPlateforme"
@@ -38,7 +40,8 @@
         android:layout_marginTop="8dp"
         android:text="@string/textPlateforme"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginLeft="8dp" />
 
     <LinearLayout
         android:id="@+id/idChangementPlateforme"
@@ -63,10 +66,22 @@
             android:text="@string/plateforme2" />
 
         <Button
+            android:id="@+id/idPlateforme3"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/plateforme3" />
+
+        <Button
             android:id="@+id/idPlateforme4"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/plateforme4" />
+
+        <Button
+            android:id="@+id/idPlateforme5"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/plateforme5" />
     </LinearLayout>
 
     <android.support.constraint.ConstraintLayout
@@ -88,7 +103,8 @@
             android:layout_marginTop="8dp"
             android:text="@string/textRestaurant"
             app:layout_constraintEnd_toEndOf="@+id/idLayoutAction"
-            app:layout_constraintTop_toTopOf="@+id/idLayoutAction" />
+            app:layout_constraintTop_toTopOf="@+id/idLayoutAction"
+            android:layout_marginRight="8dp" />
 
         <Button
             android:id="@+id/idWaiting"
@@ -98,7 +114,8 @@
             android:layout_marginTop="8dp"
             android:text="@string/textWaiting"
             app:layout_constraintStart_toEndOf="@+id/idCustomer"
-            app:layout_constraintTop_toTopOf="@+id/idLayoutAction" />
+            app:layout_constraintTop_toTopOf="@+id/idLayoutAction"
+            android:layout_marginLeft="8dp" />
 
         <Button
             android:id="@+id/idCustomer"
@@ -108,7 +125,8 @@
             android:layout_marginTop="8dp"
             android:text="@string/textCustomer"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/idLayoutAction" />
+            app:layout_constraintTop_toTopOf="@+id/idLayoutAction"
+            android:layout_marginLeft="8dp" />
 
 
     </android.support.constraint.ConstraintLayout>
@@ -136,6 +154,17 @@
         android:layout_marginEnd="8dp"
         android:layout_marginTop="8dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/idStartAndStop" />
+        app:layout_constraintTop_toBottomOf="@+id/idStartAndStop"
+        android:layout_marginRight="8dp" />
+
+    <Button
+        android:id="@+id/button2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginStart="7dp"
+        android:text="Parametres"
+        app:layout_constraintBottom_toTopOf="@+id/idExport"
+        app:layout_constraintStart_toStartOf="parent" />
 
 </android.support.constraint.ConstraintLayout>

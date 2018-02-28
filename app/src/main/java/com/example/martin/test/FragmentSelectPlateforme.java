@@ -9,10 +9,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.RadioGroup;
 
-import static com.example.martin.test.Value.IND_PLATEFORME_1;
-import static com.example.martin.test.Value.IND_PLATEFORME_2;
-import static com.example.martin.test.Value.IND_PLATEFORME_3;
-import static com.example.martin.test.Value.IND_PLATEFORME_4;
 
 
 public class FragmentSelectPlateforme extends DialogFragment {
@@ -37,7 +33,7 @@ public class FragmentSelectPlateforme extends DialogFragment {
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 							 Bundle savedInstanceState) {
-		// Inflate the layout for this fragment
+		// Inflate the pref for this fragment
 		View view= inflater.inflate(R.layout.fragment_select_plateforme, container, false);
 		Button btn = view.findViewById(R.id.ButtonSelectPlateforme);
 		final RadioGroup radioGroup = view.findViewById(R.id.radioGroup);
@@ -47,27 +43,23 @@ public class FragmentSelectPlateforme extends DialogFragment {
 
 				int i = radioGroup.getCheckedRadioButtonId();
 				if (i!=-1) {
-					switch (i) {
-						case R.id.radio1:
-							i = IND_PLATEFORME_1;
-							break;
-						case R.id.radio2:
-							i = IND_PLATEFORME_2;
-							break;
-						case R.id.radio3:
-							i = IND_PLATEFORME_3;
-							break;
-						case R.id.radio4:
-							i = IND_PLATEFORME_4;
-							break;
+					if(i==R.id.radio1){
+						i=0;
 					}
-
-
+					if(i==R.id.radio2){
+						i=1;
+					}
+					if(i==R.id.radio3){
+						i=2;
+					}
+					if(i==R.id.radio4){
+						i=3;
+					}
+					if(i==R.id.radio5){
+						i=4;
+					}
 					mCallback.onPlateformeSelected(i);
-
 				}
-
-
 
 			}
 		});
@@ -91,6 +83,7 @@ public class FragmentSelectPlateforme extends DialogFragment {
 	public void onDetach() {
 		super.onDetach();
 	}
+
 	// Container Activity must implement this interface
 	public interface OnPlateformeSelectedListener {
 		void onPlateformeSelected(int plateforme);

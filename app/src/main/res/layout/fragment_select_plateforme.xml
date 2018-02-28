@@ -6,7 +6,7 @@
     android:layout_height="match_parent"
     tools:context="com.example.martin.test.FragmentSelectPlateforme">
 
-    <!-- TODO: Update blank fragment layout -->
+    <!-- TODO: Update blank fragmprefyout -->
 
     <android.support.constraint.ConstraintLayout
         android:layout_width="wrap_content"
@@ -39,14 +39,20 @@
                 android:id="@+id/radio3"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="RadioButton"
-                android:visibility="invisible" />
+                android:text="@string/plateforme3"
+                 />
 
             <RadioButton
                 android:id="@+id/radio4"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="@string/plateforme4" />
+            <RadioButton
+                android:id="@+id/radio5"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/plateforme5" />
+
         </RadioGroup>
 
         <TextView

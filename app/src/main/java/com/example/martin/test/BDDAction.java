@@ -7,7 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 
 import static com.example.martin.test.Value.COL_IND_ACTION;
 import static com.example.martin.test.Value.COL_TIME_ACTION;
-import static com.example.martin.test.Value.IND_PLATEFORME_1;
+import static com.example.martin.test.Value.IND_PLATEFORME;
 import static com.example.martin.test.Value.NOM_BDD_ACTION;
 import static com.example.martin.test.Value.NUM_COL_IND_ACTION;
 import static com.example.martin.test.Value.TABLE_ACTIONS;
@@ -61,20 +61,16 @@ class BDDAction {
 
 	int getLastPlateforme(){
 
-		int result;
+		int result=-1;
 		bdd = actions.getReadableDatabase();
-		Cursor c = bdd.rawQuery("SELECT * FROM "+ TABLE_ACTIONS +" WHERE "+ COL_IND_ACTION+ " >= "+IND_PLATEFORME_1+" ORDER BY "+ COL_TIME_ACTION +" DESC LIMIT 1",null);
+		Cursor c = bdd.rawQuery("SELECT * FROM "+ TABLE_ACTIONS +" WHERE "+ COL_IND_ACTION+ " >= "+IND_PLATEFORME[0]+" ORDER BY "+ COL_TIME_ACTION +" DESC LIMIT 1",null);
 
-		if (c.getCount()==0) {
-			result= -1;
-		}
-
-		else {
+		if (c.getCount()==1) {
 			c.moveToFirst();
-			result= c.getInt(NUM_COL_IND_ACTION);
+			result= c.getInt(NUM_COL_IND_ACTION)-IND_PLATEFORME[0];
 		}
+
 		c.close();
-		bdd.close();
 		return result;
 	}
 

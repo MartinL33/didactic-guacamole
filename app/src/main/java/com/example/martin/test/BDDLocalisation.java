@@ -26,7 +26,7 @@ import static com.example.martin.test.Value.TABLE_LOCALISATIONS;
  */
 
  class BDDLocalisation {
-    private static final int VERSION = 2;
+    private static final int VERSION = 1;
     private SQLiteDatabase bdd;
     private BaseSQLiteLocalisation localisations;
 

@@ -11,11 +11,13 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.constraint.ConstraintLayout;
 import android.util.Log;
 import android.view.View;
@@ -26,18 +28,15 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 
 import static com.example.martin.test.Value.IND_ATTENTE;
 import static com.example.martin.test.Value.IND_CLIENT;
 import static com.example.martin.test.Value.IND_END;
-import static com.example.martin.test.Value.IND_PLATEFORME_1;
-import static com.example.martin.test.Value.IND_PLATEFORME_2;
-import static com.example.martin.test.Value.IND_PLATEFORME_4;
+import static com.example.martin.test.Value.IND_PLATEFORME;
 import static com.example.martin.test.Value.IND_START;
-import static com.example.martin.test.Value.MIN_DISTANCE_UPDATE_LOCATION;
-import static com.example.martin.test.Value.MIN_TIME_UPDATE_LOCATION;
 import static com.example.martin.test.Value.verifPermissionLocation;
 
 public class ActivityMain extends Activity implements FragmentSelectPlateforme.OnPlateformeSelectedListener {
@@ -56,15 +55,17 @@ public class ActivityMain extends Activity implements FragmentSelectPlateforme.O
 	String zone="";
     private Button btnHistorique;
     private Button btnExport;
-
+	private Button setting;
     private ConstraintLayout layoutAction;
 
     private Button btnPlateforme;
+    private Button btnPlateforme0;
     private Button btnPlateforme1;
-    private Button btnPlateforme2;
-    private Button btnPlateforme4;
+	private Button btnPlateforme2;
+    private Button btnPlateforme3;
+	private Button btnPlateforme4;
     private int plateformeEnCours=-1;
-
+	SharedPreferences preferences;
 
     private LinearLayout layoutCgtPlateforme;
 
@@ -79,7 +80,7 @@ public class ActivityMain extends Activity implements FragmentSelectPlateforme.O
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
+		preferences = PreferenceManager.getDefaultSharedPreferences(this);
         intentRecording = new Intent(ActivityMain.this, BroadcastRecording.class);
         intentAction=new Intent(ActivityMain.this, BroadcastAction.class);
         textStatut = findViewById(R.id.idStatut);
@@ -88,22 +89,23 @@ public class ActivityMain extends Activity implements FragmentSelectPlateforme.O
         btnWaiting = findViewById(R.id.idWaiting);
         btnRestaurant = findViewById(R.id.idRestaurant);
         btnPlateforme = findViewById(R.id.idPlateforme);
-
-
         layoutAction = findViewById((R.id.idLayoutAction));
         layoutCgtPlateforme = findViewById((R.id.idChangementPlateforme));
-        btnPlateforme1 = findViewById(R.id.idPlateforme1);
-        btnPlateforme2 = findViewById(R.id.idPlateforme2);
-        btnPlateforme4 = findViewById(R.id.idPlateforme4);
-
+        btnPlateforme0 = findViewById(R.id.idPlateforme1);
+        btnPlateforme1 = findViewById(R.id.idPlateforme2);
+        btnPlateforme2 = findViewById(R.id.idPlateforme3);
+		btnPlateforme3 = findViewById(R.id.idPlateforme4);
+		btnPlateforme4 = findViewById(R.id.idPlateforme5);
         btnHistorique=findViewById(R.id.idHistorique);
         btnExport=findViewById((R.id.idExport));
-
+		setting=findViewById((R.id.button2));
 
 		//derniere plateforme utilisée
         BDDAction bddAction = new BDDAction(this);
+		bddAction.openForRead();
         plateformeEnCours = bddAction.getLastPlateforme();
-        if (plateformeEnCours >= IND_PLATEFORME_1) {
+        bddAction.close();
+        if (plateformeEnCours >= 0&&plateformeEnCours<IND_PLATEFORME.length) {
 			setUIPlateforme(plateformeEnCours);
         }
 		//permission de localisation et ecriture carte SD
@@ -203,9 +205,12 @@ public class ActivityMain extends Activity implements FragmentSelectPlateforme.O
                     pendingRecording = PendingIntent.getBroadcast(ActivityMain.this, 2989, intentRecording, PendingIntent.FLAG_UPDATE_CURRENT);
                     LocationManager myLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
                     if (myLocationManager != null) {
-                        myLocationManager.removeUpdates(pendingRecording);
-                        Log.d("mainActivite","arret recording" );
+                       // myLocationManager.removeUpdates(pendingRecording);
                     }
+					FusedLocationProviderClient mFusedLocationClient= LocationServices.getFusedLocationProviderClient(ActivityMain.this);
+					mFusedLocationClient.removeLocationUpdates(pendingRecording);
+					Log.d("mainActivite","arret recording" );
+
                     pendingRecording.cancel();
 
                     //arret analyse
@@ -241,106 +246,131 @@ public class ActivityMain extends Activity implements FragmentSelectPlateforme.O
                         FragmentTransaction ft = getFragmentManager().beginTransaction();
                         ft.addToBackStack(null);
                         selectPlateformeFragment = FragmentSelectPlateforme.newInstance();
-                        selectPlateformeFragment.show(ft, "selectDate");
+                        selectPlateformeFragment.show(ft, "selectPlateforme");
                     }
 
 
 
-
-                    //controle permission et GPS activé
+					boolean gpsModeActif=preferences.getBoolean("GPSModeActif",false);
+					Log.d("MainActivity","gpsModeActif : "+String.valueOf(gpsModeActif));
+					//controle permission et GPS activé
 					if(verifPermissionLocation(ActivityMain.this)){
 
+
+
+						isWorking = true;
+
+						//lancement Action
+
+						intentAction.removeExtra("action");
+						intentAction.putExtra("action", IND_START);
+						sendBroadcast(intentAction);
+						intentAction.removeExtra("action");
+
+						//enregistrement position
+
+
+						pendingRecording = PendingIntent.getBroadcast(ActivityMain.this, 2989, intentRecording, PendingIntent.FLAG_UPDATE_CURRENT);
+
+
 						LocationManager myLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+
 						if (myLocationManager != null) {
-
-							isWorking = true;
-
-							//lancement Action
-
-							intentAction.removeExtra("action");
-							intentAction.putExtra("action", IND_START);
-							sendBroadcast(intentAction);
-							intentAction.removeExtra("action");
-
-							//enregistrement position
-
-							pendingRecording = PendingIntent.getBroadcast(ActivityMain.this, 2989, intentRecording, PendingIntent.FLAG_UPDATE_CURRENT);
-							myLocationManager.requestLocationUpdates(LocationManager.PASSIVE_PROVIDER, MIN_TIME_UPDATE_LOCATION, MIN_DISTANCE_UPDATE_LOCATION, pendingRecording);
-
-							//lancement planification anlyse
-
-							Intent analysisIntent = new Intent(ActivityMain.this, ServiceAnalysis.class);
-							analysisIntent.putExtra("isWorkingName", true);
-							PendingIntent analysisPending = PendingIntent.getService(ActivityMain.this, 5, analysisIntent,0);
-							AlarmManager AlarmeManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-							if (AlarmeManager != null) {
-								//  AlarmeManager.setInexactRepeating(ELAPSED_REALTIME_WAKEUP, elapsedRealtime() + 2000, INTERVAL_FIFTEEN_MINUTES, analysisPending);
-							}
-
-
-							//mise a jour interface
-							textStatut.setText(R.string.StatutStart);
-							layoutAction.setVisibility(View.VISIBLE);
-							btnStartAndGo.setText(R.string.textStop);
-
-							// création notification
-
-							Intent notificationIntent = new Intent(ActivityMain.this, ActivityMain.class);
-							PendingIntent notificationPending = PendingIntent.getActivity(ActivityMain.this, 0, notificationIntent, 0);
-							NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-
-							Notification.Builder builder = new Notification.Builder(ActivityMain.this);
-
-							builder.setAutoCancel(false);
-							//  builder.setTicker("this is ticker text");
-							builder.setContentTitle(getResources().getString(R.string.TitleNotification));
-							builder.setContentText(getResources().getString(R.string.ContentTextNotification));
-							builder.setSmallIcon(R.drawable.ic_notification_recording);
-							builder.setContentIntent(notificationPending);
-							builder.setOngoing(true);
-
-							builder.setPriority(Notification.PRIORITY_HIGH);
-
-							Intent intentResto= new Intent(ActivityMain.this, ActivitySelectRestaurant.class);
-							// intentResto.putExtra("action", IND_RESTO);
-							PendingIntent pendingResto= PendingIntent.getActivity(ActivityMain.this, 1, intentResto, PendingIntent.FLAG_UPDATE_CURRENT);
-
-
-							Intent intentClient= new Intent(ActivityMain.this, BroadcastAction.class);
-							intentClient.putExtra("action", IND_CLIENT);
-							PendingIntent pendingClient= PendingIntent.getBroadcast(ActivityMain.this, 2, intentClient, PendingIntent.FLAG_UPDATE_CURRENT);
-
-
-							if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
-								builder.addAction(new Notification.Action(R.drawable.ic_restaurant,"restaurant",pendingResto));
-								builder.addAction(new Notification.Action(R.drawable.ic_client,getResources().getString(R.string.textCustomer),pendingClient));
-								if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-									builder.setVisibility(Notification.VISIBILITY_SECRET);
-								}
-							}
-
-
-							builder.build();
-
-							myNotication = builder.getNotification();
-							if (notificationManager != null) notificationManager.notify(ID_NOTIFICATION, myNotication);
-
-
-
+							//myLocationManager.requestLocationUpdates(LocationManager.PASSIVE_PROVIDER, MIN_TIME_UPDATE_LOCATION, MIN_DISTANCE_UPDATE_LOCATION, pendingRecording);
 						}
-						else{
-							Toast.makeText(ActivityMain.this, R.string.taostGPSInactive, Toast.LENGTH_LONG).show();
+
+
+
+
+						LocationRequest mLocationRequest = new LocationRequest();
+						if(gpsModeActif) {
+							mLocationRequest.setFastestInterval(50);
+							mLocationRequest.setInterval(1000);
+							mLocationRequest.setMaxWaitTime(10000);
+							mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 						}
+						else {
+							mLocationRequest.setFastestInterval(50);
+							mLocationRequest.setInterval(50);
+							mLocationRequest.setMaxWaitTime(10000);
+							mLocationRequest.setPriority(LocationRequest.PRIORITY_NO_POWER);
+						}
+
+						FusedLocationProviderClient mFusedLocationClient= LocationServices.getFusedLocationProviderClient(ActivityMain.this);
+						mFusedLocationClient.requestLocationUpdates(mLocationRequest,pendingRecording);
+
+						//lancement planification anlyse
+
+						Intent analysisIntent = new Intent(ActivityMain.this, ServiceAnalysis.class);
+						analysisIntent.putExtra("isWorkingName", true);
+						PendingIntent analysisPending = PendingIntent.getService(ActivityMain.this, 5, analysisIntent,0);
+						AlarmManager AlarmeManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+						if (AlarmeManager != null) {
+							//  AlarmeManager.setInexactRepeating(ELAPSED_REALTIME_WAKEUP, elapsedRealtime() + 2000, INTERVAL_FIFTEEN_MINUTES, analysisPending);
+						}
+
+
+						//mise a jour interface
+						textStatut.setText(R.string.StatutStart);
+						layoutAction.setVisibility(View.VISIBLE);
+						btnStartAndGo.setText(R.string.textStop);
+
+						// création notification
+
+						Intent notificationIntent = new Intent(ActivityMain.this, ActivityMain.class);
+						PendingIntent notificationPending = PendingIntent.getActivity(ActivityMain.this, 0, notificationIntent, 0);
+						NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+						Notification.Builder builder = new Notification.Builder(ActivityMain.this);
+
+						builder.setAutoCancel(false);
+						//  builder.setTicker("this is ticker text");
+						builder.setContentTitle(getResources().getString(R.string.TitleNotification));
+						builder.setContentText(getResources().getString(R.string.ContentTextNotification));
+						builder.setSmallIcon(R.drawable.ic_notification_recording);
+						builder.setContentIntent(notificationPending);
+						builder.setOngoing(true);
+
+						builder.setPriority(Notification.PRIORITY_HIGH);
+
+						Intent intentResto= new Intent(ActivityMain.this, ActivitySelectRestaurant.class);
+						// intentResto.putExtra("action", IND_RESTO);
+						PendingIntent pendingResto= PendingIntent.getActivity(ActivityMain.this, 1, intentResto, PendingIntent.FLAG_UPDATE_CURRENT);
+
+
+						Intent intentClient= new Intent(ActivityMain.this, BroadcastAction.class);
+						intentClient.putExtra("action", IND_CLIENT);
+						PendingIntent pendingClient= PendingIntent.getBroadcast(ActivityMain.this, 2, intentClient, PendingIntent.FLAG_UPDATE_CURRENT);
+
+
+						if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
+							builder.addAction(new Notification.Action(R.drawable.ic_restaurant,"restaurant",pendingResto));
+							builder.addAction(new Notification.Action(R.drawable.ic_client,getResources().getString(R.string.textCustomer),pendingClient));
+							if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+								builder.setVisibility(Notification.VISIBILITY_SECRET);
+							}
+						}
+
+
+						builder.build();
+
+						myNotication = builder.getNotification();
+						if (notificationManager != null) notificationManager.notify(ID_NOTIFICATION, myNotication);
+
+
+
 					}
+
+
 					else{
-						Toast.makeText(ActivityMain.this, R.string.taostPermissionRefusee, Toast.LENGTH_LONG).show();
-					}
+					Toast.makeText(ActivityMain.this, R.string.taostPermissionRefusee, Toast.LENGTH_LONG).show();
 				}
+			}
 
 
 
 
-            }
+		}
         });
         btnCustomer.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -401,12 +431,27 @@ public class ActivityMain extends Activity implements FragmentSelectPlateforme.O
             @Override
 
             public void onClick(View view) {
-                Log.d("myActivity","clicExport");
-                Intent i = new Intent(ActivityMain.this, ServiceExport.class);
+				Log.d("myActivity","clicExport");
+				Intent i = new Intent(ActivityMain.this, ServiceExport.class);
 
-                startService(i);
+				startService(i);
+
+
+
             }
         });
+
+        setting.setOnClickListener(new View.OnClickListener() {
+			@Override
+
+			public void onClick(View view) {
+				Log.d("myActivity","clicSetting");
+				Intent i = new Intent(ActivityMain.this, ActivitySettings.class);
+				startActivity(i);
+
+
+			}
+		});
 
 
 //plateforme
@@ -417,43 +462,65 @@ public class ActivityMain extends Activity implements FragmentSelectPlateforme.O
                 btnPlateforme.setVisibility(View.INVISIBLE);
             }
         });
+        btnPlateforme0.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                if (plateformeEnCours!=0) {
+					onPlateformeChange(0);
+                }
+                layoutCgtPlateforme.setVisibility(View.INVISIBLE);
+                btnPlateforme.setVisibility(View.VISIBLE);
+
+            }
+        });
+
         btnPlateforme1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
-                if (plateformeEnCours!=IND_PLATEFORME_1) {
-
-					onPlateformeChange(IND_PLATEFORME_1);
+                if (plateformeEnCours!=1) {
+					onPlateformeChange(1);
                 }
                 layoutCgtPlateforme.setVisibility(View.INVISIBLE);
                 btnPlateforme.setVisibility(View.VISIBLE);
 
             }
         });
+		btnPlateforme2.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
 
-        btnPlateforme2.setOnClickListener(new View.OnClickListener() {
+				if (plateformeEnCours!=2) {
+					onPlateformeChange(2);
+				}
+				layoutCgtPlateforme.setVisibility(View.INVISIBLE);
+				btnPlateforme.setVisibility(View.VISIBLE);
+
+			}
+		});
+        btnPlateforme3.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
-                if (plateformeEnCours!=IND_PLATEFORME_2) {
-					onPlateformeChange(IND_PLATEFORME_2);
-                }
-                layoutCgtPlateforme.setVisibility(View.INVISIBLE);
-                btnPlateforme.setVisibility(View.VISIBLE);
-
-            }
-        });
-        btnPlateforme4.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                if (plateformeEnCours!=IND_PLATEFORME_4) {
-					onPlateformeChange(IND_PLATEFORME_4);
+                if (plateformeEnCours!=3) {
+					onPlateformeChange(3);
                 }
                 layoutCgtPlateforme.setVisibility(View.INVISIBLE);
                 btnPlateforme.setVisibility(View.VISIBLE);
             }
         });
+		btnPlateforme4.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+
+				if (plateformeEnCours!=4) {
+					onPlateformeChange(4);
+				}
+				layoutCgtPlateforme.setVisibility(View.INVISIBLE);
+				btnPlateforme.setVisibility(View.VISIBLE);
+			}
+		});
     }
 
 
@@ -475,7 +542,6 @@ public class ActivityMain extends Activity implements FragmentSelectPlateforme.O
         Log.d("myActivity","onStop()");
     }
 
-
 	@Override
 	public void onPlateformeSelected(int plateforme) {
 		Log.d("myActivity","btn "+String.valueOf(plateforme));
@@ -485,35 +551,36 @@ public class ActivityMain extends Activity implements FragmentSelectPlateforme.O
 
 //si la plateforme a deja ete selectionné: il faut seulement afficher la plateforme dans le bouton
 	private void setUIPlateforme(int plateforme){
-		switch (plateforme) {
-			case IND_PLATEFORME_1:
-				btnPlateforme.setText(R.string.plateforme1);
-				break;
+		String[] nomPlateforme=getResources().getStringArray(R.array.plateforme);
+		if(IND_PLATEFORME.length!=nomPlateforme.length)
+			throw new AssertionError("taille nomPlateforme et IND_PLATEFORME differente");
 
-			case IND_PLATEFORME_2:
-				btnPlateforme.setText(R.string.plateforme2);
-				break;
+    	if(plateforme>=0&&plateforme<nomPlateforme.length){
 
-			case IND_PLATEFORME_4:
-				btnPlateforme.setText(R.string.plateforme4);
-				break;
-		}
+			btnPlateforme.setText(nomPlateforme[plateforme]);
+    	}
+    	else throw new AssertionError("plateforme invalide");
 	}
+
 	private void onPlateformeChange(int plateforme){
-		plateformeEnCours=plateforme;
+		if(plateforme>=0&&plateforme<IND_PLATEFORME.length) {
+			plateformeEnCours = plateforme;
 
-		intentAction.removeExtra("action");
-		intentAction.putExtra("action", plateforme);
-		sendBroadcast(intentAction);
-		intentAction.removeExtra("action");
-		setUIPlateforme(plateformeEnCours);
-
+			intentAction.removeExtra("action");
+			intentAction.putExtra("action", IND_PLATEFORME[plateforme]);
+			sendBroadcast(intentAction);
+			intentAction.removeExtra("action");
+			setUIPlateforme(plateformeEnCours);
+		}
+		else throw new AssertionError("plateforme invalide");
 	}
 
 	private void updateZone(Location loc){
 		Log.d("activite","actualisation zone");
 		BDDZone bddZone = new BDDZone(this);
-		zone = bddZone.getTextZone(loc.getLatitude(), loc.getLongitude());
+		bddZone.openForRead();
+		zone = bddZone.getTextZone(Math.toRadians(loc.getLatitude()), Math.toRadians(loc.getLongitude()));
+		bddZone.close();
 		((TextView) findViewById(R.id.idZone)).setText(zone);
 	}
 

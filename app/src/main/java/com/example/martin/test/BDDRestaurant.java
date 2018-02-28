@@ -37,7 +37,7 @@ import static com.example.martin.test.Value.rayonPetitCercle;
  class BDDRestaurant {
 
 
-	private static final int VERSION = 5;
+	private static final int VERSION = 1;
 	private SQLiteDatabase bdd;
 	private BaseSQLiteRestaurant restos;
 	Integer[] idRestoSelect;
@@ -65,14 +65,12 @@ import static com.example.martin.test.Value.rayonPetitCercle;
 		bdd.execSQL("DELETE FROM "+TABLE_RESTO);
 	}
 
-	long insertResto(double latDegres,double lonDegres,String restoName,int zone,int plateforme) {
-		latDegres=Math.toRadians(latDegres);
-		lonDegres=Math.toRadians(lonDegres);
+	long insertResto(double latRad,double lonRad,String restoName,int zone,int plateforme) {
 
 		ContentValues content = new ContentValues();
 
-		content.put(COL_LATRAD_RESTO, latDegres);
-		content.put(COL_LONRAD_RESTO, lonDegres);
+		content.put(COL_LATRAD_RESTO, latRad);
+		content.put(COL_LONRAD_RESTO, lonRad);
 		content.put(COL_TEXT_RESTO, restoName);
 		 content.put(COL_ZONE_RESTO, zone);
 		 content.put(COL_PLATEFORME_RESTO, plateforme);
@@ -137,13 +135,11 @@ import static com.example.martin.test.Value.rayonPetitCercle;
 		return res;
 	}
 
-	boolean bddHasResto(double latDegres,double lonDegres,int zone,int plateforme){
-		return getIdResto(Math.toRadians(latDegres), Math.toRadians(lonDegres), zone, plateforme) != -1;
+	boolean bddHasResto(double latRad,double lonRad,int zone,int plateforme){
+		return getIdResto(latRad, lonRad, zone, plateforme) != -1;
 	}
 
-	void selectResto(double latDeg1,double lonDeg1,int zone,int plateforme){
-		double latRad1=Math.toRadians(latDeg1);
-		double lonRad1=Math.toRadians(lonDeg1);
+	void selectResto(double latRad1,double lonRad1,int zone,int plateforme){
 
 		List<Integer> idResto= new ArrayList<>();
 		List<String> nameResto= new ArrayList<>();

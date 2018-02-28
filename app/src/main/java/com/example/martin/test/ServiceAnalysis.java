@@ -2,11 +2,8 @@ package com.example.martin.test;
 
 import android.annotation.SuppressLint;
 import android.app.IntentService;
-import android.app.PendingIntent;
-import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
-import android.location.LocationManager;
 import android.util.Log;
 
 import static com.example.martin.test.Value.DUREE_DEFAUT;
@@ -31,8 +28,6 @@ import static com.example.martin.test.Value.MIN_DISTANCE_ABERANT;
 import static com.example.martin.test.Value.MIN_DISTANCE_MOYENNE;
 import static com.example.martin.test.Value.MIN_DISTANCE_MOYENNE2;
 import static com.example.martin.test.Value.MIN_DISTANCE_MOYENNE3;
-import static com.example.martin.test.Value.MIN_DISTANCE_UPDATE_LOCATION;
-import static com.example.martin.test.Value.MIN_TIME_UPDATE_LOCATION;
 import static com.example.martin.test.Value.NUM_COL_LATDEG_TEMP;
 import static com.example.martin.test.Value.NUM_COL_LONDEG_TEMP;
 import static com.example.martin.test.Value.NUM_COL_PRECISION_TEMP;
@@ -77,7 +72,7 @@ public class ServiceAnalysis extends IntentService {
         Log.d("ServiceAnalysis", "debut analyse");
 
 
-
+/*
         //si l'enregistrment etait en cours, on l'arrete et on le redemarre a la fin de l'analyse
         Boolean isWorking = intent.getBooleanExtra("isWorkingName", false);
         if (isWorking) {
@@ -86,7 +81,7 @@ public class ServiceAnalysis extends IntentService {
             PendingIntent pendingRecording = PendingIntent.getBroadcast(ServiceAnalysis.this, 1989, intentRecording, PendingIntent.FLAG_UPDATE_CURRENT);
             if (myLocationManager != null) myLocationManager.removeUpdates(pendingRecording);
 
-        }
+        }*/
 
 
 //lecture BDD
@@ -94,13 +89,13 @@ public class ServiceAnalysis extends IntentService {
 
 
 		//temp
-
+		Log.d("ServiceAnalysis", "debut lecture tempBDD");
         BDDTemp tempBDD = new BDDTemp(this);
 		tempBDD.openForRead();
         Cursor c = tempBDD.getCursor();
 
         nbPoint = c.getCount();
-        Log.d("ServiceAnalysis", "nbPoint =" + String.valueOf(nbPoint));
+
 
 
         if (nbPoint < 15) {
@@ -109,7 +104,6 @@ public class ServiceAnalysis extends IntentService {
             stopSelf();
 
         } else {
-
 
 			//intialisation variable
 
@@ -121,41 +115,28 @@ public class ServiceAnalysis extends IntentService {
 			x = new float[nbPoint];
 			y = new float[nbPoint];
 
-
-
-
-
-
             c.moveToFirst();
 			origineLatitude = Math.toRadians(c.getDouble(NUM_COL_LATDEG_TEMP));
 			origineLongitude = Math.toRadians(c.getDouble(NUM_COL_LONDEG_TEMP));
 			origineTime = c.getLong(NUM_COL_TIME_TEMP);
 
-
-
             x[0] = 0;
             y[0] = 0;
             t[0] = 0;
-            p[0] = c.getInt(NUM_COL_PRECISION_TEMP)/100;
-
+            p[0] = c.getInt(NUM_COL_PRECISION_TEMP);
 			d[0] = DUREE_DEFAUT;
-
-            int i = 1;
-
+			int i = 1;
             for (c.moveToPosition(1); !c.isAfterLast(); c.moveToNext()) {
-
-
                 t[i] = (int) (c.getLong(NUM_COL_TIME_TEMP) - origineTime);
                 x[i] = (float) (RAYONTERRE * (Math.toRadians(c.getDouble(NUM_COL_LATDEG_TEMP)) - origineLatitude));
                 y[i] = (float) (rayonPetitCercle * (Math.toRadians(c.getDouble(NUM_COL_LONDEG_TEMP)) - origineLongitude));
-                p[i] = c.getInt(NUM_COL_PRECISION_TEMP)/100;
+                p[i] = c.getInt(NUM_COL_PRECISION_TEMP);
                 d[i] = DUREE_DEFAUT;
-
                 i++;
             }
             c.close();
             tempBDD.close();
-
+			Log.d("ServiceAnalysis", "fin lecture tempBDD");
 
             //début des calculs algo
 
@@ -202,15 +183,7 @@ public class ServiceAnalysis extends IntentService {
 
 
         }
-//on redemarre le service s'il est actif avant le traitement
-        if (isWorking) {
-            Intent intentRecording = new Intent(ServiceAnalysis.this, BroadcastRecording.class);
-            LocationManager myLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-            PendingIntent pendingRecording = PendingIntent.getBroadcast(ServiceAnalysis.this, 1989, intentRecording, PendingIntent.FLAG_UPDATE_CURRENT);
-			assert myLocationManager != null;
-			myLocationManager.requestLocationUpdates(LocationManager.PASSIVE_PROVIDER, MIN_TIME_UPDATE_LOCATION, MIN_DISTANCE_UPDATE_LOCATION, pendingRecording);
 
-        }
         stopSelf();
     }
 
@@ -448,6 +421,12 @@ public class ServiceAnalysis extends IntentService {
 				ind[k+1]=IND_START;
 			}
 		}
+		//liberation des tableaux initiaux
+		t = null;
+		p = null;
+		d = null;
+		x = null;
+		y = null;
 
 	}
 

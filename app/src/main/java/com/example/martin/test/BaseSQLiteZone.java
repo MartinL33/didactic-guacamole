@@ -31,10 +31,9 @@ public class BaseSQLiteZone extends SQLiteOpenHelper {
 	@Override
 	public void onCreate(SQLiteDatabase db) {
 		db.execSQL(CREATE_BDD);
-		insertZone(db,0,0,""); //zone inconnue
+		insertZone(db,0,0,"Ville inconnue"); //zone inconnue
 		insertZone(db,48.866667,2.333333,"Paris");
 		insertZone(db,44.8333,-0.5667,"Bordeaux");
-
 	}
 
 	@Override

@@ -45,10 +45,10 @@ public class BaseSQLiteRestaurant extends SQLiteOpenHelper {
 		
 		if(tabLat.length==tabLon.length&&tabLat.length==tabNom.length){
 			for(int i=0;i<tabLat.length;i++){
-				insertResto(db,tabLat[i],tabLon[i],tabNom[i],3,IND_PLATEFORME[1]);
+				insertResto(db,tabLat[i],tabLon[i],tabNom[i],3,IND_PLATEFORME[0]);
 			}
 		}
-		else Log.d("BDD REsto","erreur taille table différente");
+		else Log.d("BDD Resto","erreur taille table différente");
 
 	}
 

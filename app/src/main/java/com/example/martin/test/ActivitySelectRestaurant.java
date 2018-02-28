@@ -24,8 +24,8 @@ public class ActivitySelectRestaurant extends Activity {
 
 boolean restoConnu=true;
 
-double lat=0;
-double lon=0;
+double latRad=0;
+double lonRad=0;
 int z=1;
 int p=1;
 BDDRestaurant bddRestaurant=new BDDRestaurant(ActivitySelectRestaurant.this);
@@ -64,14 +64,11 @@ BDDRestaurant bddRestaurant=new BDDRestaurant(ActivitySelectRestaurant.this);
 
 
 	void useLocation (Location location){
-		lat=location.getLatitude();
-		lon=location.getLongitude();
-
-
-
+		latRad=Math.toRadians(location.getLatitude());
+		lonRad=Math.toRadians(location.getLongitude());
 		BDDZone bddZone = new BDDZone(ActivitySelectRestaurant.this);
 		bddZone.openForRead();
-		z= bddZone.getIdZone(location.getLatitude(), location.getLongitude());
+		z= bddZone.getIdZone(latRad, lonRad);
         bddZone.close();
 
 		BDDAction bddAction = new BDDAction(ActivitySelectRestaurant.this);
@@ -80,7 +77,7 @@ BDDRestaurant bddRestaurant=new BDDRestaurant(ActivitySelectRestaurant.this);
         bddAction.close();
 
         bddRestaurant.openForRead();
-		restoConnu =bddRestaurant.bddHasResto(lat, lon,z,p);
+		restoConnu =bddRestaurant.bddHasResto(latRad, lonRad,z,p);
         bddRestaurant.close();
 		Log.d("ActivitySelectResto","restaurant connu? : "+String.valueOf(restoConnu));
 
@@ -98,10 +95,11 @@ BDDRestaurant bddRestaurant=new BDDRestaurant(ActivitySelectRestaurant.this);
 			findViewById(R.id.idSelectResto).setVisibility(View.VISIBLE);
 
 			bddRestaurant.openForRead();
-			bddRestaurant.selectResto(lat, lon, z, p);
+			bddRestaurant.selectResto(latRad, lonRad, z, p);
 			bddRestaurant.close();
 
-			//assertion
+			//assertion  les tableaux nameRestoSelect et idRestoSelect doivent être non vide
+			// car il existe un restaurant à proximité connu et de même taille
 			if(BuildConfig.DEBUG&&!(bddRestaurant.nameRestoSelect.length>0)) throw new AssertionError();
 			if(BuildConfig.DEBUG&&!(bddRestaurant.idRestoSelect.length==bddRestaurant.nameRestoSelect.length)) throw new AssertionError();
 
@@ -186,7 +184,7 @@ BDDRestaurant bddRestaurant=new BDDRestaurant(ActivitySelectRestaurant.this);
 					EditText editText=findViewById(R.id.editTextNewRestaurant);
 					String NomResto=editText.getText().toString();
 					bddRestaurant.openForWrite();
-					long idResto=bddRestaurant.insertResto(lat,lon,NomResto,z,p);
+					long idResto=bddRestaurant.insertResto(latRad,lonRad,NomResto,z,p);
 					bddRestaurant.close();
 
 					Intent intentAction=new Intent(ActivitySelectRestaurant.this, BroadcastAction.class);

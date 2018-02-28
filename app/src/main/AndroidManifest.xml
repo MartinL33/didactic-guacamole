@@ -46,7 +46,9 @@
         <activity
             android:name=".ActivitySelectRestaurant"
             android:label="@string/title_activity_select_restaurant" />
-
+        <activity
+            android:name=".ActivitySettings"
+            android:label="@string/title_activity_settings" />
     </application>
 
 </manifest>

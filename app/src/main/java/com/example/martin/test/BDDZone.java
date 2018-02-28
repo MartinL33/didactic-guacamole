@@ -26,7 +26,7 @@ import static com.example.martin.test.Value.distence2;
 class BDDZone {
 
 
-	private static final int VERSION = 2;
+	private static final int VERSION = 1;
 	private SQLiteDatabase bdd;
 	private BaseSQLiteZone zone;
 
@@ -65,18 +65,14 @@ class BDDZone {
 
 	/**
 	 *
-	 * @param latDeg  latitude en degres
-	 * @param lonDeg  longitude en degres
+	 * @param latRad1  latitude en radian
+	 * @param lonRad1  longitude en radian
 	 * @return une chaine de caractère correspondant à la zone indiquée par les paramétres
 	 */
-	String getTextZone(double latDeg,double lonDeg){
-		double latRad1=Math.toRadians(latDeg);
-		double lonRad1=Math.toRadians(lonDeg);
+	String getTextZone(double latRad1,double lonRad1){
+
 
 		String res="";
-
-
-		openForRead();
 		Cursor c=bdd.rawQuery("SELECT * FROM "+TABLE_ZONE,null);
 
 		if (c.getCount()>0){
@@ -108,16 +104,13 @@ class BDDZone {
 
 		}
 		c.close();
-		close();
+
 		Log.d("zone","res : "+res);
 
 		return res;
 	}
 
 	int getIdZone(double latRad,double lonRad){
-
-
-
 
 		int res=1;
 		Cursor c=bdd.rawQuery("SELECT * FROM "+TABLE_ZONE,null);

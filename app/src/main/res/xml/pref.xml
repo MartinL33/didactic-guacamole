@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <PreferenceCategory android:title="Actualisation GPS">
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="GPSModeActif"
+            android:switchTextOff="Passif"
+            android:switchTextOn="Actif"
+            android:summaryOn="Le mode actif permet d'être plus précis mais consomme de la batterie"
+            android:summaryOff="Le mode passif permet d'économiser de la batterie en récupérant la position fournie par les autres applications"
+            android:title="mode d'utilisation GPS "
+/>
+
+    </PreferenceCategory>
+
+</PreferenceScreen>
+
