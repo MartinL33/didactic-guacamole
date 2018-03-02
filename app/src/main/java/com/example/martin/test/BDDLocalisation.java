@@ -48,8 +48,6 @@ import static com.example.martin.test.Value.TABLE_LOCALISATIONS;
         bdd.close();
     }
 
-
-
      long insertLocalisation(Localisation localisation) {
 
         ContentValues content = new ContentValues();
@@ -73,8 +71,26 @@ import static com.example.martin.test.Value.TABLE_LOCALISATIONS;
         return bdd.update(TABLE_LOCALISATIONS, content, COL_TIME_LOCAL + " = " + id, null);
     }
 
+    boolean isEmpty(){
+		Boolean result=true;
+		Cursor c=bdd.rawQuery("SELECT * FROM "+ TABLE_LOCALISATIONS ,null);
+		if(c.getCount()>0) result=false;
+        c.close();
+		return result;
+    }
+	Localisation getLastLocation(){
 
-
+		Cursor c=bdd.rawQuery("SELECT * FROM "+ TABLE_LOCALISATIONS+" ORDER BY "+ COL_TIME_LOCAL +" DESC LIMIT 1" ,null);
+		c.moveToFirst();
+		Localisation l=new Localisation();
+		l.setTime(c.getLong(NUM_COL_TIME_LOCAL));
+		l.setLatitude(c.getDouble(NUM_COL_LATRAD_LOCAL));
+		l.setLongitude(c.getDouble(NUM_COL_LONRAD_LOCAL));
+		l.setDuree(c.getInt(NUM_COL_DUREE_LOCAL));
+		l.setIndication(c.getInt(NUM_COL_IND_LOCAL));
+		l.setIdResto(c.getInt(NUM_COL_IDRESTO_LOCAL));
+		return l;
+	}
 
     Cursor getCursorFrom(int start){
         return bdd.rawQuery("SELECT * FROM " + TABLE_LOCALISATIONS + " WHERE " + COL_TIME_LOCAL + " >= "+String.valueOf(start) ,null);

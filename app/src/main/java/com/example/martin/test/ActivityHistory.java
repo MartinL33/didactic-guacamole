@@ -33,6 +33,7 @@ import static com.example.martin.test.Value.IND_END;
 import static com.example.martin.test.Value.IND_HYPO_RESTO;
 import static com.example.martin.test.Value.IND_RESTO;
 import static com.example.martin.test.Value.IND_RESTO_CONFIRME;
+import static com.example.martin.test.Value.IND_START;
 import static com.example.martin.test.Value.NUM_COL_DUREE_LOCAL;
 import static com.example.martin.test.Value.NUM_COL_IDRESTO_LOCAL;
 import static com.example.martin.test.Value.NUM_COL_IND_LOCAL;
@@ -145,7 +146,7 @@ public class ActivityHistory extends Activity {
 
 				//deplacement
 				if(indication==IND_DEPLACEMENT_INCONNU||indication==IND_DEPLACEMENT_VERS_CLIENT||indication==IND_DEPLACEMENT_VERS_RESTO){
-					if(c.isFirst()){
+					if(c.isFirst()||indicationPrecedante==IND_START){
 						latRadPrecedante = c.getFloat(NUM_COL_LATRAD_LOCAL);
 						lonRadPrecedante= c.getFloat(NUM_COL_LONRAD_LOCAL);
 						datePrecedante= c.getLong(NUM_COL_TIME_LOCAL);
@@ -200,7 +201,7 @@ public class ActivityHistory extends Activity {
 					indicationPrecedante=indication;
 				}
 				//fin shift
-				else if(indication==IND_END){
+				else if(indication==IND_END||indication==IND_START){
 					date=c.getLong(NUM_COL_TIME_LOCAL);
 					int idResto=(c.getInt(NUM_COL_IDRESTO_LOCAL));
 					int duree=c.getInt(NUM_COL_DUREE_LOCAL);
@@ -208,6 +209,7 @@ public class ActivityHistory extends Activity {
 					datePrecedante=0;
 					indicationPrecedante=indication;
 				}
+
 
 			}
 			c.close();

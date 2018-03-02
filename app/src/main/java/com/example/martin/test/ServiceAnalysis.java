@@ -33,6 +33,7 @@ import static com.example.martin.test.Value.NUM_COL_LONDEG_TEMP;
 import static com.example.martin.test.Value.NUM_COL_PRECISION_TEMP;
 import static com.example.martin.test.Value.NUM_COL_TIME_TEMP;
 import static com.example.martin.test.Value.RAYONTERRE;
+import static com.example.martin.test.Value.distence2;
 import static com.example.martin.test.Value.rayonPetitCercle;
 
 
@@ -65,6 +66,10 @@ public class ServiceAnalysis extends IntentService {
 	int[] ind;
 	long[] tim;
 	int[] dur;
+	boolean firstLocation=true; //Est-ce le premier point?
+	Localisation firstLocalisation;
+
+
 
     @SuppressLint("MissingPermission")
     @Override
@@ -87,16 +92,23 @@ public class ServiceAnalysis extends IntentService {
 //lecture BDD
 
 
+//localisation : lecture du dernier point
 
+		BDDLocalisation localisationBDD=new BDDLocalisation(this);
+		localisationBDD.openForRead();
+		firstLocation=localisationBDD.isEmpty();
+		if(!firstLocation) firstLocalisation=localisationBDD.getLastLocation();
+		localisationBDD.close();
+
+		firstLocation=true;  //a supprimer
+
+		Log.d("ServiceAnalysis", "firstLocation: "+String.valueOf(firstLocation));
 		//temp
 		Log.d("ServiceAnalysis", "debut lecture tempBDD");
         BDDTemp tempBDD = new BDDTemp(this);
 		tempBDD.openForRead();
         Cursor c = tempBDD.getCursor();
-
         nbPoint = c.getCount();
-
-
 
         if (nbPoint < 15) {
             c.close();
@@ -116,16 +128,46 @@ public class ServiceAnalysis extends IntentService {
 			y = new float[nbPoint];
 
             c.moveToFirst();
+
+
+
 			origineLatitude = Math.toRadians(c.getDouble(NUM_COL_LATDEG_TEMP));
 			origineLongitude = Math.toRadians(c.getDouble(NUM_COL_LONDEG_TEMP));
 			origineTime = c.getLong(NUM_COL_TIME_TEMP);
 
-            x[0] = 0;
-            y[0] = 0;
-            t[0] = 0;
-            p[0] = c.getInt(NUM_COL_PRECISION_TEMP);
-			d[0] = DUREE_DEFAUT;
+			//initialisation petit cercle:
+			if(rayonPetitCercle==0) {
+				distence2(origineLatitude,origineLatitude,0,1);
+			}
+
 			int i = 1;
+			if(firstLocation){
+				p[0] = c.getInt(NUM_COL_PRECISION_TEMP);
+				d[0] = DUREE_DEFAUT;
+				x[0] = 0;
+				y[0] = 0;
+				t[0] = 0;
+
+
+			} else{
+
+			//pour i=0  FirstLocalisation
+				p[0] = c.getInt(NUM_COL_PRECISION_TEMP);
+				d[0] = DUREE_DEFAUT;
+				x[0] = (float) (RAYONTERRE * firstLocalisation.getLatitude() - origineLatitude);
+				y[0] = (float) (rayonPetitCercle * firstLocalisation.getLongitude() - origineLongitude);
+				t[0] = (int) (firstLocalisation.getTime() - origineTime);;
+
+
+				//pour i=1  :
+				x[1] = 0;
+				y[1] = 0;
+				t[1] = 0;
+				p[1] = c.getInt(NUM_COL_PRECISION_TEMP);
+				d[1] = DUREE_DEFAUT;
+				i=2;
+			}
+
             for (c.moveToPosition(1); !c.isAfterLast(); c.moveToNext()) {
                 t[i] = (int) (c.getLong(NUM_COL_TIME_TEMP) - origineTime);
                 x[i] = (float) (RAYONTERRE * (Math.toRadians(c.getDouble(NUM_COL_LATDEG_TEMP)) - origineLatitude));
@@ -137,6 +179,10 @@ public class ServiceAnalysis extends IntentService {
             c.close();
             tempBDD.close();
 			Log.d("ServiceAnalysis", "fin lecture tempBDD");
+
+
+
+
 
             //début des calculs algo
 
@@ -162,10 +208,9 @@ public class ServiceAnalysis extends IntentService {
 
             action();
 
+
             //ecriture des resultats dans la bdd
 
-
-            BDDLocalisation localisationBDD= new BDDLocalisation(this);
             localisationBDD.openForWrite();
             localisationBDD.removeAll();
 			Log.d("ServiceAnalysis", "debut ecriture");
@@ -370,11 +415,15 @@ public class ServiceAnalysis extends IntentService {
     }
 
     private void changementCoordoonee(){
+
+
     	nbPoint2=0;
 		for(int i=0;i<nbPoint-1;i++){
 			if (d[i]!=-1) nbPoint2++;
-			if(t[i+1]-t[i]>DUREE_MIN_FIN) nbPoint2++;
+			if(t[i+1]-t[i]>DUREE_MIN_FIN) nbPoint2++;   //rajout ind stop
 		}
+		if(firstLocation) nbPoint2++;
+
 		Log.d("analyse","nbPoint2 : "+String.valueOf(nbPoint2));
 		latRad=new float[nbPoint2];
 		lonRad=new float[nbPoint2];
@@ -383,7 +432,21 @@ public class ServiceAnalysis extends IntentService {
 
 		tim = new long[nbPoint2];
 		dur= new int[nbPoint2];
-		int k=0;
+		int k;
+
+		if(firstLocation) {
+			tim[0]=t[0] + origineTime-1;
+			latRad[0] = (float) (origineLatitude);
+			lonRad[0] = (float) (origineLongitude);
+			ind[0]=IND_START;
+			dur[0]=DUREE_DEFAUT;
+			idR[0]=ID_RESTO_DEFAUT;
+			k=1;
+		}else{
+			k=0;
+		}
+
+
 		for(int i=0;i<nbPoint-1;i++) {
 			if (d[i] != -1) {
 				tim[k]=t[i] + origineTime;
@@ -408,11 +471,9 @@ public class ServiceAnalysis extends IntentService {
 				latRad[k] = (float) (origineLatitude + (x[i] / RAYONTERRE));
 				lonRad[k] = (float) (origineLongitude + (y[i] / rayonPetitCercle));
 				idR[k]=ID_RESTO_DEFAUT;
-
 				if(k>0&&i>0){
 					dur[k-1]=(int) (t[i]-t[i-1]);
 				}
-
 				k++;
 			}
 		}
@@ -448,6 +509,8 @@ public class ServiceAnalysis extends IntentService {
 		plateformeEnCours = bddAction.getLastPlateforme();
 
     	//recherche action utilisateur sur tout les points à l'arrêt
+
+
 
 		for(int k=0;k<nbPoint2;k++){
 			if (ind[k]==IND_ARRET_INCONNU) {
