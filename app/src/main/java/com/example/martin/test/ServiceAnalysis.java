@@ -439,7 +439,7 @@ public class ServiceAnalysis extends IntentService {
 		bddZone.openForRead();
 		zone = bddZone.getIdZone(origineLatitude, origineLongitude);
 		bddZone.close();
-
+		Log.d("analyse","zone : "+String.valueOf(zone));
 
 		//plateforme
 
@@ -455,7 +455,7 @@ public class ServiceAnalysis extends IntentService {
 			}
 		}
 		bddAction.close();
-
+		Log.d("analyse","plateformeEncours : "+String.valueOf(plateformeEnCours));
 
 
 		//recherche idResto sur tout les points à l'arrêt inconnu ou resto

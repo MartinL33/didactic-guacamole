@@ -14,7 +14,6 @@ import static com.example.martin.test.Value.COL_PLATEFORME_RESTO;
 import static com.example.martin.test.Value.COL_TEXT_RESTO;
 import static com.example.martin.test.Value.COL_ZONE_RESTO;
 import static com.example.martin.test.Value.ID_RESTO_DEFAUT;
-import static com.example.martin.test.Value.IND_PLATEFORME;
 import static com.example.martin.test.Value.TABLE_RESTO;
 
 /**
@@ -45,7 +44,7 @@ public class BaseSQLiteRestaurant extends SQLiteOpenHelper {
 		
 		if(tabLat.length==tabLon.length&&tabLat.length==tabNom.length){
 			for(int i=0;i<tabLat.length;i++){
-				insertResto(db,tabLat[i],tabLon[i],tabNom[i],3,IND_PLATEFORME[0]);
+				insertResto(db,tabLat[i],tabLon[i],tabNom[i],3,0);
 			}
 		}
 		else Log.d("BDD Resto","erreur taille table différente");

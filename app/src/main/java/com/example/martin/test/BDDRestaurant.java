@@ -37,7 +37,7 @@ import static com.example.martin.test.Value.rayonPetitCercle;
  class BDDRestaurant {
 
 
-	private static final int VERSION = 1;
+	private static final int VERSION = 2;
 	private SQLiteDatabase bdd;
 	private BaseSQLiteRestaurant restos;
 	Integer[] idRestoSelect;

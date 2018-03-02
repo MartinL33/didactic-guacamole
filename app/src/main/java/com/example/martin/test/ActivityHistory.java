@@ -17,7 +17,6 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -137,8 +136,7 @@ public class ActivityHistory extends Activity {
 			float latRadPrecedante=0;
 			float lonRadPrecedante=0;
 			long date=0;
-			int heure=0;
-			int heurePrecedante=0;
+			long datePrecedante=0;
 
 
 			for (c.moveToFirst(); !c.isAfterLast(); c.moveToNext()) {
@@ -150,7 +148,7 @@ public class ActivityHistory extends Activity {
 					if(c.isFirst()){
 						latRadPrecedante = c.getFloat(NUM_COL_LATRAD_LOCAL);
 						lonRadPrecedante= c.getFloat(NUM_COL_LONRAD_LOCAL);
-						heurePrecedante=(int) ((c.getLong(NUM_COL_TIME_LOCAL)-dateCalendar)/1000);
+						datePrecedante= c.getLong(NUM_COL_TIME_LOCAL);
 					}
 
 					indicationPrecedante=indication;
@@ -158,16 +156,13 @@ public class ActivityHistory extends Activity {
 					float lonRad= c.getFloat(NUM_COL_LONRAD_LOCAL);
 
 					distance+= (int)(Math.sqrt(distence2(latRadPrecedante,latRad,lonRadPrecedante,lonRad)));
-
 					latRadPrecedante=latRad;
 					lonRadPrecedante=lonRad;
 
 					if(c.isLast()) {
 						date=c.getLong(NUM_COL_TIME_LOCAL);
-						heure=(int) ((date-dateCalendar)/1000);
-
 						data.add(
-								new UneLigne(indicationPrecedante, heurePrecedante,distance,heure-heurePrecedante)
+								new UneLigne(indicationPrecedante, datePrecedante,distance,(int)(date-datePrecedante))
 						);
 
 
@@ -177,21 +172,21 @@ public class ActivityHistory extends Activity {
 				//arrêt
 				else if(indication>=IND_ARRET_INCONNU&&indication<=IND_ATTENTE_CONFIRME){
 					date=c.getLong(NUM_COL_TIME_LOCAL);
-					heure=(int) ((date-dateCalendar)/1000);
+
 
 
 					//ajout déplacement
 					if(!c.isFirst()&&distance!=0) {
 						if(indicationPrecedante>=IND_ARRET_INCONNU) indicationPrecedante=IND_DEPLACEMENT_INCONNU;
 						data.add(
-								new UneLigne(indicationPrecedante, heurePrecedante, distance, heure - heurePrecedante)
+								new UneLigne(indicationPrecedante, datePrecedante, distance, (int) (date - datePrecedante))
 						);
 					}
 					//ajout arret
 
 					int idResto=(c.getInt(NUM_COL_IDRESTO_LOCAL));
 					int duree=c.getInt(NUM_COL_DUREE_LOCAL)/1000;
-					data.add(new UneLigne(indication,heure,0,duree,idResto));
+					data.add(new UneLigne(indication,date,0,duree,idResto));
 					//mise a jour variable
 
 					float latRad= c.getFloat(NUM_COL_LATRAD_LOCAL);
@@ -201,16 +196,16 @@ public class ActivityHistory extends Activity {
 					latRadPrecedante= latRad;
 					lonRadPrecedante=lonRad;
 
-					heurePrecedante=heure;
+					datePrecedante=date;
 					indicationPrecedante=indication;
 				}
+				//fin shift
 				else if(indication==IND_END){
 					date=c.getLong(NUM_COL_TIME_LOCAL);
-					heure=(int) ((date-dateCalendar)/1000);
 					int idResto=(c.getInt(NUM_COL_IDRESTO_LOCAL));
-					int duree=c.getInt(NUM_COL_DUREE_LOCAL)/1000;
-					data.add(new UneLigne(indication,heure,0,duree,idResto));
-					heurePrecedante=0;
+					int duree=c.getInt(NUM_COL_DUREE_LOCAL);
+					data.add(new UneLigne(indication,date,0,duree,idResto));
+					datePrecedante=0;
 					indicationPrecedante=indication;
 				}
 
@@ -240,13 +235,13 @@ public class ActivityHistory extends Activity {
 
 
 			DateFormat df=getDateInstance(DateFormat.MEDIUM, Locale.getDefault());
-			SimpleDateFormat sdf1 = new SimpleDateFormat("dd/MM/yy");
-
 			((TextView) findViewById(R.id.dateHistory)).setText(df.format(dateCalendar));
+			Log.d("h",String.valueOf(data.get(data.size()-1).getDate()));
+			Log.d("h",String.valueOf(data.get(0).getDate()));
 
-			int d=  data.get(0).getDuree()+(data.get(data.size()-1).getHeure()-data.get(0).getHeure());
-			int h=  d/3600;
-			int m= (d%3600)/60;
+			int d=  (int) (data.get(data.size()-1).getDate()-data.get(0).getDate());
+			int h=  d/3600000;
+			int m= (d%3600000)/60000;
 
 			((TextView) findViewById(R.id.dureeHistory)).setText(intToString(h)+"h "+intToString(m)+"m ");
 
@@ -262,24 +257,24 @@ public class ActivityHistory extends Activity {
 	class UneLigne{
 
 		int indi;
-		int heure; //en seconde
+		long date;
 		int idResto;
 		int duree; //en seconde
 		int distance;  //en m
 		String nomResto;
 
 		//constructeur pour arret
-		UneLigne(int indi,int heure,int distance,int duree,int idResto){
+		UneLigne(int indi,long date,int distance,int duree,int idResto){
 			this.indi=indi;
-			this.heure=heure;
+			this.date=date;
 			this.idResto=idResto;
 			this.distance=distance;
-			this.duree=duree;
+			this.duree=duree/1000;  //conversion en seconde
 			this.nomResto="";
 		}
 		//constructeur pour deplacement
-		UneLigne(int indi,int heure,int distance,int duree){
-			this(indi,heure,distance,duree,ID_RESTO_DEFAUT);
+		UneLigne(int indi,long date,int distance,int duree){
+			this(indi,date,distance,duree,ID_RESTO_DEFAUT);
 		}
 
 		void setNomResto(String nomResto) {
@@ -290,7 +285,7 @@ public class ActivityHistory extends Activity {
 			return indi;
 		}
 
-		int getHeure(){ return heure;}
+		long getDate(){ return date;}
 
 		String getNomResto(){ return nomResto;}
 
@@ -309,8 +304,8 @@ public class ActivityHistory extends Activity {
 
 		@Override
 		public String toString() {
-			String res="heure : ";
-			res += String.valueOf(heure);
+			String res="date : ";
+			res += String.valueOf(date);
 			res +=" indi: ";
 			res += String.valueOf(indi);
 			res +=" duree : ";
@@ -356,16 +351,10 @@ public class ActivityHistory extends Activity {
 
 				}
 				final TextView textHeure = convertView.findViewById(R.id.itemHistoryHeure);
-				if (ligne.getHeure()>0&&ligne.getHeure()<86400){
+				if (ligne.getDate()>0){
 
 					DateFormat df=getTimeInstance(DateFormat.MEDIUM, Locale.getDefault());
-
-
-					final int h=  ligne.getHeure()/3600;
-					final int m= (ligne.getHeure()%3600)/60;
-					final int s=  (ligne.getHeure()%60);
-					//textHeure.setText("  "+intToString(h)+"h "+intToString(m)+"m "+intToString(s)+"   ");
-					textHeure.setText(df.format(new Date(1000*ligne.getHeure())));
+					textHeure.setText(df.format(new Date(ligne.getDate())));
 				}
 				final TextView textDistance = convertView.findViewById(R.id.itemHistoryDistance);
 
