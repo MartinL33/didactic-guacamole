@@ -27,7 +27,7 @@ class Localisation {
 	}
 
 
-    Localisation(long time,float latitude,float longitude, int indication,int duree, int idResto){
+    private Localisation(long time, float latitude, float longitude, int indication, int duree, int idResto){
         this.time=time;
         this.latitude=latitude;
         this.longitude=longitude;

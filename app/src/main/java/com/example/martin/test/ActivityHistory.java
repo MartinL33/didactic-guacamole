@@ -107,11 +107,7 @@ public class ActivityHistory extends Activity {
     }
 
 
-    protected void onResume() {
-        super.onResume();
-    }
-
-    private void setList(){
+	private void setList(){
 		BDDLocalisation localisationBDD = new BDDLocalisation(ActivityHistory.this);
 		localisationBDD.openForRead();
 
@@ -136,7 +132,7 @@ public class ActivityHistory extends Activity {
 			int distance=0;
 			float latRadPrecedante=0;
 			float lonRadPrecedante=0;
-			long date=0;
+			long date;
 			long datePrecedante=0;
 
 

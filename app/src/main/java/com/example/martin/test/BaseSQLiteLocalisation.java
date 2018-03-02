@@ -16,7 +16,7 @@ import static com.example.martin.test.Value.TABLE_LOCALISATIONS;
  * Created by martin on 02/02/18.
  */
 
-public class BaseSQLiteLocalisation extends SQLiteOpenHelper {
+class BaseSQLiteLocalisation extends SQLiteOpenHelper {
 
    	private static final String CREATE_BDD="CREATE TABLE " + TABLE_LOCALISATIONS + " (" +
             COL_TIME_LOCAL + "  INTEGER PRIMARY KEY, " +

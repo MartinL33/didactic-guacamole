@@ -13,7 +13,7 @@ import static com.example.martin.test.Value.TABLE_ACTIONS;
  * Created by martin on 13/02/18.
  */
 
-public class BaseSQLiteAction extends SQLiteOpenHelper {
+class BaseSQLiteAction extends SQLiteOpenHelper {
 	private static final String CREATE_BDD="CREATE TABLE " + TABLE_ACTIONS + " (" +
 			COL_TIME_ACTION + "  INTEGER PRIMARY KEY, " +
 			COL_IND_ACTION + " INTEGER);";

@@ -47,32 +47,23 @@ public class ServiceAnalysis extends IntentService {
 
     public ServiceAnalysis() {        super("ServiceAnalysis");     }
 
-	long[] t;
-	int[] d;
-	int[] p;
-	float[] x;
-	float[] y;
-	//int i;
-    int zone;
-    int plateformeEnCours;
-	int nbPoint = 0;
-	double origineLatitude = 0;
-	double origineLongitude = 0;
-	long origineTime = 0;
+	private long[] t;
+	private int[] d;
+	private int[] p;
+	private float[] x;
+	private float[] y;
+	private int nbPoint = 0;
+	private double origineLatitude = 0;
+	private double origineLongitude = 0;
+	private long origineTime = 0;
 
 	//changement coordonnee
 
 	private List<Localisation> listeLoca=new ArrayList<>();
-	int nbPoint2=0;
 
-	float latRad;
-	float lonRad;
-	int idR;
-	int ind;
-	long tim;
-	int dur;
-	boolean firstLocation=true; //Est-ce le premier point?
-	Localisation firstLocalisation;
+	private int ind;
+	private boolean firstLocation=true; //Est-ce le premier point?
+	private Localisation firstLocalisation;
 
 
 
@@ -161,7 +152,7 @@ public class ServiceAnalysis extends IntentService {
 				d[0] = firstLocalisation.getDuree()*1000;
 				x[0] = (float) (RAYONTERRE * firstLocalisation.getLatitude() - origineLatitude);
 				y[0] = (float) (rayonPetitCercle * firstLocalisation.getLongitude() - origineLongitude);
-				t[0] = (int) (firstLocalisation.getTime() - origineTime);;
+				t[0] = (int) (firstLocalisation.getTime() - origineTime);
 
 
 				//pour i=1  :
@@ -421,33 +412,36 @@ public class ServiceAnalysis extends IntentService {
 
 		int k;
 
+		long tim;
+		float lonRad;
+		float latRad;
 		if(firstLocation) {
-			tim=t[0] + origineTime-1;
+			tim =t[0] + origineTime-1;
 			latRad = (float) (origineLatitude);
 			lonRad = (float) (origineLongitude);
-			listeLoca.add(new Localisation(tim,latRad,lonRad,IND_START));
+			listeLoca.add(new Localisation(tim, latRad, lonRad,IND_START));
 		}
 
 		int indPrecedante=0;
 
 		for(int i=0;i<nbPoint-1;i++) {
 			if (d[i] != -1) {
-				tim=t[i] + origineTime;
+				tim =t[i] + origineTime;
 				latRad = (float) (origineLatitude + (x[i] / RAYONTERRE));
 				lonRad = (float) (origineLongitude + (y[i] / rayonPetitCercle));
 
 				if(d[i]<DUREE_MIN_SAUVEGARDE_PAS) ind=IND_DEPLACEMENT_INCONNU;
 				else ind=IND_ARRET_INCONNU;
 
-				dur=d[i]/1000;  //conversion en seconde
-				listeLoca.add(new Localisation(tim,latRad,lonRad,ind,dur));
+				int dur = d[i] / 1000;
+				listeLoca.add(new Localisation(tim, latRad, lonRad,ind, dur));
 
 			}
 
 //si le pas est supérieur a DUREE_MIN_FIN, on considere que le shift 'est arreté puis redemarré
 			if(t[i+1]-t[i]>DUREE_MIN_FIN&&indPrecedante != IND_END) {
 
-				tim= t[i]+ 1000+ origineTime;
+				tim = t[i]+ 1000+ origineTime;
 				latRad = (float) (origineLatitude + (x[i] / RAYONTERRE));
 				lonRad = (float) (origineLongitude + (y[i] / rayonPetitCercle));
 
@@ -455,7 +449,7 @@ public class ServiceAnalysis extends IntentService {
 					//dur[k-1]=(int) (t[i]-t[i-1]);
 					listeLoca.get(listeLoca.size()-1).setDuree((int)((t[i]-t[i-1]))/1000);
 				}
-				listeLoca.add(new Localisation(tim,latRad,lonRad,IND_END));
+				listeLoca.add(new Localisation(tim, latRad, lonRad,IND_END));
 			}
 			indPrecedante=ind;
 
@@ -470,10 +464,10 @@ public class ServiceAnalysis extends IntentService {
 
 		if(listeLoca.get(listeLoca.size()-1).getIndication()!=IND_END){
 			Localisation l =listeLoca.get(listeLoca.size()-1);
-			tim=l.getTime()+1;
+			tim =l.getTime()+1;
 			latRad = l.getLatitude();
 			lonRad = l.getLongitude();
-			listeLoca.add(new Localisation(tim,latRad,lonRad,IND_END));
+			listeLoca.add(new Localisation(tim, latRad, lonRad,IND_END));
 		}
 
 		//liberation des tableaux initiaux
@@ -492,7 +486,7 @@ public class ServiceAnalysis extends IntentService {
 
 		BDDZone bddZone = new BDDZone(this);
 		bddZone.openForRead();
-		zone = bddZone.getIdZone(origineLatitude, origineLongitude);
+		int zone = bddZone.getIdZone(origineLatitude, origineLongitude);
 		bddZone.close();
 		Log.d("analyse","zone : "+String.valueOf(zone));
 
@@ -500,7 +494,7 @@ public class ServiceAnalysis extends IntentService {
 
 		BDDAction bddAction = new BDDAction(this);
 		bddAction.openForRead();
-		plateformeEnCours = bddAction.getLastPlateforme();
+		int plateformeEnCours = bddAction.getLastPlateforme();
 		Log.d("analyse","plateformeEncours : "+String.valueOf(plateformeEnCours));
 
     	//recherche action utilisateur sur tout les points à l'arrêt
@@ -527,7 +521,7 @@ public class ServiceAnalysis extends IntentService {
 		for (Localisation l: listeLoca) {
 			int ind=l.getIndication();
 			if(ind==IND_ARRET_INCONNU||ind==IND_RESTO||ind==IND_RESTO_CONFIRME){
-				int id=bddRestaurant.getIdResto(l.getLatitude(),l.getLongitude(),zone,plateformeEnCours);
+				int id=bddRestaurant.getIdResto(l.getLatitude(),l.getLongitude(), zone, plateformeEnCours);
 				//si on trouve un resto
 				if(id!=-1) {
 					l.setIdResto(id);

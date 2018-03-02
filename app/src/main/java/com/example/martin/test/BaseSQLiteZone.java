@@ -15,7 +15,7 @@ import static com.example.martin.test.Value.TABLE_ZONE;
  * Created by martin on 19/02/18.
  */
 
-public class BaseSQLiteZone extends SQLiteOpenHelper {
+class BaseSQLiteZone extends SQLiteOpenHelper {
 
 	private static final String CREATE_BDD="CREATE TABLE " + TABLE_ZONE + " (" +
 			COL_ID_ZONE + "  INTEGER PRIMARY KEY AUTOINCREMENT, " + COL_LATRAD_ZONE + " REAL, "+COL_LONRAD_ZONE
@@ -42,7 +42,7 @@ public class BaseSQLiteZone extends SQLiteOpenHelper {
 		onCreate(db);
 
 	}
-	void insertZone(SQLiteDatabase db,double latDeg,double lonDeg,String zoneName){
+	private void insertZone(SQLiteDatabase db, double latDeg, double lonDeg, String zoneName){
 
 		double latRad=Math.toRadians(latDeg);
 		double lonRad=Math.toRadians(lonDeg);

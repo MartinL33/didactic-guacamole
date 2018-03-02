@@ -89,6 +89,7 @@ import static com.example.martin.test.Value.TABLE_LOCALISATIONS;
 		l.setIndication(c.getInt(NUM_COL_IND_LOCAL));
 		l.setDuree(c.getInt(NUM_COL_DUREE_LOCAL));
 		l.setIdResto(c.getInt(NUM_COL_IDRESTO_LOCAL));
+		c.close();
 		return l;
 	}
 

@@ -22,13 +22,13 @@ import static com.example.martin.test.Value.verifPermissionLocation;
 
 public class ActivitySelectRestaurant extends Activity {
 
-boolean restoConnu=true;
+private boolean restoConnu=true;
 
-double latRad=0;
-double lonRad=0;
-int z=1;
-int p=1;
-BDDRestaurant bddRestaurant=new BDDRestaurant(ActivitySelectRestaurant.this);
+private double latRad=0;
+private double lonRad=0;
+private int z=1;
+private int p=1;
+private BDDRestaurant bddRestaurant=new BDDRestaurant(ActivitySelectRestaurant.this);
 
 
 	@SuppressLint("MissingPermission")
@@ -56,14 +56,9 @@ BDDRestaurant bddRestaurant=new BDDRestaurant(ActivitySelectRestaurant.this);
 	}
 
 
-	@Override
-	protected void onResume() {
-		super.onResume();
-	}
 
 
-
-	void useLocation (Location location){
+	private void useLocation(Location location){
 		latRad=Math.toRadians(location.getLatitude());
 		lonRad=Math.toRadians(location.getLongitude());
 		BDDZone bddZone = new BDDZone(ActivitySelectRestaurant.this);
@@ -85,7 +80,7 @@ BDDRestaurant bddRestaurant=new BDDRestaurant(ActivitySelectRestaurant.this);
 
 	}
 
-	void setUI(boolean selectResto){
+	private void setUI(boolean selectResto){
 
 		if (selectResto){
 

@@ -12,7 +12,7 @@ import android.widget.RadioGroup;
 
 
 public class FragmentSelectPlateforme extends DialogFragment {
-	OnPlateformeSelectedListener mCallback;
+	private OnPlateformeSelectedListener mCallback;
 
 	public FragmentSelectPlateforme() {
 		// Required empty public constructor
@@ -24,11 +24,7 @@ public class FragmentSelectPlateforme extends DialogFragment {
 		return new FragmentSelectPlateforme();
 	}
 
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
 
-	}
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -77,11 +73,6 @@ public class FragmentSelectPlateforme extends DialogFragment {
 		}
 
 
-	}
-
-	@Override
-	public void onDetach() {
-		super.onDetach();
 	}
 
 	// Container Activity must implement this interface

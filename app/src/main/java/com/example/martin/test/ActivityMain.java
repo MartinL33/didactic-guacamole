@@ -43,16 +43,16 @@ public class ActivityMain extends Activity implements FragmentSelectPlateforme.O
 
 
     private TextView textStatut;
-    Intent intentRecording;
-    Intent intentAction;
-    PendingIntent pendingRecording;
+    private Intent intentRecording;
+    private Intent intentAction;
+    private PendingIntent pendingRecording;
     private boolean isWorking = false;
     private Switch switchStart;
     private Button btnStartAndGo;
     private Button btnCustomer;
     private Button btnWaiting;
     private Button btnRestaurant;
-	String zone="";
+	private String zone="";
     private Button btnHistorique;
     private Button btnExport;
 	private Button setting;
@@ -65,13 +65,13 @@ public class ActivityMain extends Activity implements FragmentSelectPlateforme.O
     private Button btnPlateforme3;
 	private Button btnPlateforme4;
     private int plateformeEnCours=-1;
-	SharedPreferences preferences;
+	private SharedPreferences preferences;
 
     private LinearLayout layoutCgtPlateforme;
 
     private final static int ID_NOTIFICATION = 1989;
-    public Notification myNotication;
-	DialogFragment selectPlateformeFragment;
+    private Notification myNotication;
+	private DialogFragment selectPlateformeFragment;
 
     @SuppressLint("MissingPermission")
 	@Override

@@ -20,7 +20,7 @@ import static com.example.martin.test.Value.TABLE_RESTO;
  * Created by martin on 20/02/18.
  */
 
-public class BaseSQLiteRestaurant extends SQLiteOpenHelper {
+class BaseSQLiteRestaurant extends SQLiteOpenHelper {
 
 	private static final String CREATE_BDD="CREATE TABLE " + TABLE_RESTO + " (" +
 			COL_ID_RESTO + "  INTEGER PRIMARY KEY AUTOINCREMENT, " + COL_LATRAD_RESTO + " REAL, "+
@@ -57,7 +57,7 @@ public class BaseSQLiteRestaurant extends SQLiteOpenHelper {
 		onCreate(db);
 	}
 
-	void insertResto(SQLiteDatabase db,double latDeg,double lonDeg,String restoName,int zone,int plateforme) {
+	private void insertResto(SQLiteDatabase db, double latDeg, double lonDeg, String restoName, int zone, int plateforme) {
 		double latRad=Math.toRadians(latDeg);
 		double lonRad=Math.toRadians(lonDeg);
 		ContentValues content = new ContentValues();

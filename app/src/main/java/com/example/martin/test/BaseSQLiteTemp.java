@@ -14,7 +14,7 @@ import static com.example.martin.test.Value.TABLE_TEMP;
  * Created by martin on 13/02/18.
  */
 
-public class BaseSQLiteTemp extends SQLiteOpenHelper {
+class BaseSQLiteTemp extends SQLiteOpenHelper {
 
 	private static final String CREATE_BDD="CREATE TABLE " + TABLE_TEMP + " (" +
 			COL_TIME_TEMP + "  INTEGER PRIMARY KEY, " + COL_LATDEG_TEMP + " REAL, "+COL_LONDEG_TEMP
