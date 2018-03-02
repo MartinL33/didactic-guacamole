@@ -84,10 +84,10 @@ import static com.example.martin.test.Value.TABLE_LOCALISATIONS;
 		c.moveToFirst();
 		Localisation l=new Localisation();
 		l.setTime(c.getLong(NUM_COL_TIME_LOCAL));
-		l.setLatitude(c.getDouble(NUM_COL_LATRAD_LOCAL));
-		l.setLongitude(c.getDouble(NUM_COL_LONRAD_LOCAL));
-		l.setDuree(c.getInt(NUM_COL_DUREE_LOCAL));
+		l.setLatitude(c.getFloat(NUM_COL_LATRAD_LOCAL));
+		l.setLongitude(c.getFloat(NUM_COL_LONRAD_LOCAL));
 		l.setIndication(c.getInt(NUM_COL_IND_LOCAL));
+		l.setDuree(c.getInt(NUM_COL_DUREE_LOCAL));
 		l.setIdResto(c.getInt(NUM_COL_IDRESTO_LOCAL));
 		return l;
 	}
@@ -121,10 +121,10 @@ import static com.example.martin.test.Value.TABLE_LOCALISATIONS;
         while(c.moveToNext()){
             Localisation l=new Localisation();
             l.setTime(c.getLong(NUM_COL_TIME_LOCAL));
-            l.setLatitude(c.getDouble(NUM_COL_LATRAD_LOCAL));
-            l.setLongitude(c.getDouble(NUM_COL_LONRAD_LOCAL));
+            l.setLatitude(c.getFloat(NUM_COL_LATRAD_LOCAL));
+            l.setLongitude(c.getFloat(NUM_COL_LONRAD_LOCAL));
+			l.setIndication(c.getInt(NUM_COL_IND_LOCAL));
             l.setDuree(c.getInt(NUM_COL_DUREE_LOCAL));
-            l.setIndication(c.getInt(NUM_COL_IND_LOCAL));
             l.setIdResto(c.getInt(NUM_COL_IDRESTO_LOCAL));
             res.add(l);
         }

@@ -39,7 +39,7 @@ import android.os.Build;
 
 
 
-	final static int DUREE_DEFAUT=500;  //en ms
+	final static int DUREE_DEFAUT=1;  //en s
     final static int ID_RESTO_DEFAUT=-1;
 
 //base de donnee localisation

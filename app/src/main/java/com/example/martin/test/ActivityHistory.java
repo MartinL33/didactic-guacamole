@@ -114,8 +114,8 @@ public class ActivityHistory extends Activity {
     private void setList(){
 		BDDLocalisation localisationBDD = new BDDLocalisation(ActivityHistory.this);
 		localisationBDD.openForRead();
-		//Cursor c= localisationBDD.getCursorBetween(dateCalendar,dateCalendar+86400000);
-		Cursor c= localisationBDD.getCursorBetween(dateCalendar,dateCalendar+76400000);
+
+		Cursor c= localisationBDD.getCursorBetween(dateCalendar,dateCalendar+86400000);
 		int nbPoint = c.getCount();
 
 		if (nbPoint==0){
@@ -152,7 +152,7 @@ public class ActivityHistory extends Activity {
 						datePrecedante= c.getLong(NUM_COL_TIME_LOCAL);
 					}
 
-					indicationPrecedante=indication;
+
 					float latRad= c.getFloat(NUM_COL_LATRAD_LOCAL);
 					float lonRad= c.getFloat(NUM_COL_LONRAD_LOCAL);
 
@@ -163,7 +163,7 @@ public class ActivityHistory extends Activity {
 					if(c.isLast()) {
 						date=c.getLong(NUM_COL_TIME_LOCAL);
 						data.add(
-								new UneLigne(indicationPrecedante, datePrecedante,distance,(int)(date-datePrecedante))
+								new UneLigne(indication, datePrecedante,distance,(int)(date-datePrecedante)/1000)
 						);
 
 
@@ -180,13 +180,13 @@ public class ActivityHistory extends Activity {
 					if(!c.isFirst()&&distance!=0) {
 						if(indicationPrecedante>=IND_ARRET_INCONNU) indicationPrecedante=IND_DEPLACEMENT_INCONNU;
 						data.add(
-								new UneLigne(indicationPrecedante, datePrecedante, distance, (int) (date - datePrecedante))
+								new UneLigne(indicationPrecedante, datePrecedante, distance, (int) (date - datePrecedante)/1000)
 						);
 					}
 					//ajout arret
 
 					int idResto=(c.getInt(NUM_COL_IDRESTO_LOCAL));
-					int duree=c.getInt(NUM_COL_DUREE_LOCAL)/1000;
+					int duree=c.getInt(NUM_COL_DUREE_LOCAL);
 					data.add(new UneLigne(indication,date,0,duree,idResto));
 					//mise a jour variable
 
@@ -198,7 +198,6 @@ public class ActivityHistory extends Activity {
 					lonRadPrecedante=lonRad;
 
 					datePrecedante=date;
-					indicationPrecedante=indication;
 				}
 				//fin shift
 				else if(indication==IND_END||indication==IND_START){
@@ -207,15 +206,16 @@ public class ActivityHistory extends Activity {
 					int duree=c.getInt(NUM_COL_DUREE_LOCAL);
 					data.add(new UneLigne(indication,date,0,duree,idResto));
 					datePrecedante=0;
-					indicationPrecedante=indication;
+
 				}
 
-
+				indicationPrecedante=indication;
 			}
 			c.close();
 			localisationBDD.close();
 
 			int distanceTotale=0;
+			int nbCommande=0;
 			int count=0;
 			BDDRestaurant bddRestaurant=new BDDRestaurant(this);
 			bddRestaurant.openForRead();
@@ -225,6 +225,7 @@ public class ActivityHistory extends Activity {
 				distanceTotale=distanceTotale+l.getDistance();
 				if(l.getIdResto()!=-1){
 					l.setNomResto(bddRestaurant.getTextRestaurant(l.getIdResto()));
+					nbCommande++;
 				}
 				Log.d("history","ligne "+ intToString(count)+" : "+l.toString());
 			}
@@ -238,6 +239,7 @@ public class ActivityHistory extends Activity {
 
 			DateFormat df=getDateInstance(DateFormat.MEDIUM, Locale.getDefault());
 			((TextView) findViewById(R.id.dateHistory)).setText(df.format(dateCalendar));
+			((TextView) findViewById(R.id.cmdHistory)).setText(String.valueOf(nbCommande)+" cmd");
 			Log.d("h",String.valueOf(data.get(data.size()-1).getDate()));
 			Log.d("h",String.valueOf(data.get(0).getDate()));
 
@@ -271,7 +273,7 @@ public class ActivityHistory extends Activity {
 			this.date=date;
 			this.idResto=idResto;
 			this.distance=distance;
-			this.duree=duree/1000;  //conversion en seconde
+			this.duree=duree;
 			this.nomResto="";
 		}
 		//constructeur pour deplacement

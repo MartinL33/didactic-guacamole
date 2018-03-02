@@ -1,5 +1,8 @@
 package com.example.martin.test;
 
+import static com.example.martin.test.Value.DUREE_DEFAUT;
+import static com.example.martin.test.Value.ID_RESTO_DEFAUT;
+
 /**
  * Created by martin on 02/02/18.
  */
@@ -8,17 +11,23 @@ class Localisation {
 
     private int id;
     private long time;
-    private double latitude;
-    private double longitude;
-    private int duree;
+    private float latitude;
+    private float longitude;
+    private int duree;    //en seconde
     private int indication;
     private int idResto;
 
-
-
     Localisation(){}
 
-    Localisation(long time,double latitude,double longitude,int duree, int indication, int idResto){
+    Localisation(long time,float latitude,float longitude, int indication){
+    	this(time,latitude,longitude,indication,DUREE_DEFAUT,ID_RESTO_DEFAUT);
+	}
+	Localisation(long time,float latitude,float longitude, int indication,int duree){
+		this(time,latitude,longitude,indication,duree, ID_RESTO_DEFAUT);
+	}
+
+
+    Localisation(long time,float latitude,float longitude, int indication,int duree, int idResto){
         this.time=time;
         this.latitude=latitude;
         this.longitude=longitude;
@@ -39,9 +48,9 @@ class Localisation {
 
     long getTime(){  return time;
     }
-    double getLatitude(){ return latitude;}
+	float getLatitude(){ return latitude;}
 
-    double getLongitude() {
+	float getLongitude() {
         return longitude;
     }
 
@@ -50,11 +59,11 @@ class Localisation {
 	}
     int getDuree(){return duree;}
 
-    void setLatitude(double latitude) {
+    void setLatitude(float latitude) {
         this.latitude = latitude;
     }
 
-    void setLongitude(double longitude) {
+    void setLongitude(float longitude) {
         this.longitude = longitude;
 
     }
