@@ -39,8 +39,6 @@ import static com.example.martin.test.Value.RAYONTERRE;
 import static com.example.martin.test.Value.distence2;
 import static com.example.martin.test.Value.rayonPetitCercle;
 
-
-
 public class ServiceAnalysis extends IntentService {
 
 

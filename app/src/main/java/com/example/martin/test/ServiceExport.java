@@ -14,15 +14,21 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import static com.example.martin.test.Value.NUM_COL_DUREE_LOCAL;
+import static com.example.martin.test.Value.NUM_COL_IDBASE_RESTO;
 import static com.example.martin.test.Value.NUM_COL_IDRESTO_LOCAL;
 import static com.example.martin.test.Value.NUM_COL_IND_LOCAL;
 import static com.example.martin.test.Value.NUM_COL_LATDEG_TEMP;
 import static com.example.martin.test.Value.NUM_COL_LATRAD_LOCAL;
+import static com.example.martin.test.Value.NUM_COL_LATRAD_RESTO;
 import static com.example.martin.test.Value.NUM_COL_LONDEG_TEMP;
 import static com.example.martin.test.Value.NUM_COL_LONRAD_LOCAL;
+import static com.example.martin.test.Value.NUM_COL_LONRAD_RESTO;
+import static com.example.martin.test.Value.NUM_COL_PLATEFORME_RESTO;
 import static com.example.martin.test.Value.NUM_COL_PRECISION_TEMP;
+import static com.example.martin.test.Value.NUM_COL_TEXT_RESTO;
 import static com.example.martin.test.Value.NUM_COL_TIME_LOCAL;
 import static com.example.martin.test.Value.NUM_COL_TIME_TEMP;
+import static com.example.martin.test.Value.NUM_COL_ZONE_RESTO;
 import static com.example.martin.test.Value.RAYONTERRE;
 import static com.example.martin.test.Value.rayonPetitCercle;
 
@@ -240,7 +246,61 @@ public class ServiceExport extends IntentService {
 
 		}
 
+//base restaurant
+		BDDRestaurant restoBDD = new BDDRestaurant(ServiceExport.this);
+		restoBDD.openForRead();
 
+		c = restoBDD.getCursorFrom(1);
+
+		nbPoint = c.getCount();
+
+		Log.d("ServiceExport", "nbPoint =" + String.valueOf(nbPoint));
+
+		if (nbPoint > 0) {
+
+
+			//ecriture fichier résultat
+
+			fileResult = new File(Environment.getExternalStorageDirectory().getPath() + "/" + getResources().getString(R.string.app_name) + "/tableRestaurant-" + currentDate + ".csv");
+
+			try {
+				if (!fileResult.exists()) {
+					if (!fileResult.createNewFile()) throw new AssertionError();
+				}
+				FileOutputStream output = new FileOutputStream(fileResult, false);
+				mess = "name;latitude;longitude;zone;plateforme;idServeur\n";
+				output.write(mess.getBytes());
+
+				for (c.moveToFirst(); !c.isAfterLast(); c.moveToNext()) {
+
+
+
+					String name=c.getString(NUM_COL_TEXT_RESTO);
+					float lati=c.getFloat(NUM_COL_LATRAD_RESTO);
+					float longi=c.getFloat(NUM_COL_LONRAD_RESTO);
+					float ville=c.getInt(NUM_COL_ZONE_RESTO);
+					float plate=c.getInt(NUM_COL_PLATEFORME_RESTO);
+					float idServeur=c.getInt(NUM_COL_IDBASE_RESTO);
+
+					mess = name + ";" + String.valueOf(lati) + ";" + String.valueOf(longi) + ";"
+							+ String.valueOf(ville) + ";" + String.valueOf(plate) + ";"
+							+ String.valueOf(idServeur) + "\n";
+
+					output.write(mess.getBytes());
+
+				}
+				c.close();
+				output.close();
+
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+
+
+		}
+		restoBDD.close();
 
 		stopSelf();
 	}

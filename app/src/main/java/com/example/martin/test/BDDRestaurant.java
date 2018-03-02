@@ -181,5 +181,7 @@ import static com.example.martin.test.Value.rayonPetitCercle;
 
 	}
 
-
+	Cursor getCursorFrom(int start){
+		return bdd.rawQuery("SELECT * FROM " + TABLE_RESTO ,null);
+	}
  }
