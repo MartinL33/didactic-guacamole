@@ -41,10 +41,6 @@ import static com.example.martin.test.Value.rayonPetitCercle;
 
 public class ServiceAnalysis extends IntentService {
 
-
-
-    public ServiceAnalysis() {        super("ServiceAnalysis");     }
-
 	private long[] t;
 	private int[] d;
 	private int[] p;
@@ -62,6 +58,10 @@ public class ServiceAnalysis extends IntentService {
 	private int ind;
 	private boolean firstLocation=true; //Est-ce le premier point?
 	private Localisation firstLocalisation;
+
+
+
+    public ServiceAnalysis() {        super("ServiceAnalysis");     }
 
 
 

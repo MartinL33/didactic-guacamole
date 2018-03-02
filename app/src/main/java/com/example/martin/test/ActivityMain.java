@@ -18,7 +18,6 @@ import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.constraint.ConstraintLayout;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -55,8 +54,9 @@ public class ActivityMain extends Activity implements FragmentSelectPlateforme.O
 	private String zone="";
     private Button btnHistorique;
     private Button btnExport;
-	private Button setting;
-    private ConstraintLayout layoutAction;
+	private Button btnSetting;
+    private LinearLayout layoutAction;
+	private Button btnExportDebug;
 
     private Button btnPlateforme;
     private Button btnPlateforme0;
@@ -98,8 +98,8 @@ public class ActivityMain extends Activity implements FragmentSelectPlateforme.O
 		btnPlateforme4 = findViewById(R.id.idPlateforme5);
         btnHistorique=findViewById(R.id.idHistorique);
         btnExport=findViewById((R.id.idExport));
-		setting=findViewById((R.id.button2));
-
+		btnSetting=findViewById((R.id.idSetting));
+		btnExportDebug=findViewById((R.id.button3));
 		//derniere plateforme utilisée
         BDDAction bddAction = new BDDAction(this);
 		bddAction.openForRead();
@@ -427,31 +427,38 @@ public class ActivityMain extends Activity implements FragmentSelectPlateforme.O
             }
         });
 
-        btnExport.setOnClickListener(new View.OnClickListener() {
+		btnExport.setOnClickListener(new View.OnClickListener() {
             @Override
 
             public void onClick(View view) {
 				Log.d("myActivity","clicExport");
-				Intent i = new Intent(ActivityMain.this, ServiceExport.class);
-
-				startService(i);
-
-
-
+				Intent i = new Intent(ActivityMain.this, ActivityExport.class);
+				startActivity(i);
             }
         });
 
-        setting.setOnClickListener(new View.OnClickListener() {
+		btnExportDebug.setOnClickListener(new View.OnClickListener() {
+			@Override
+
+			public void onClick(View view) {
+				Log.d("myActivity","clicExport");
+				Intent i = new Intent(ActivityMain.this, ServiceExportDebug.class);
+				startService(i);
+			}
+		});
+
+
+        btnSetting.setOnClickListener(new View.OnClickListener() {
 			@Override
 
 			public void onClick(View view) {
 				Log.d("myActivity","clicSetting");
 				Intent i = new Intent(ActivityMain.this, ActivitySettings.class);
 				startActivity(i);
-
-
 			}
 		});
+
+
 
 
 //plateforme

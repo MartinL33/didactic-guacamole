@@ -29,7 +29,14 @@
     <string name="title_activity_new_restaurant">Nouveau Restaurant!</string>
     <string name="select_new_restaurant">Nouveau restaurant</string>
     <string name="textSelectRestaurant">"Veuillez selectionner le restaurant: "</string>
+    <string name="textParametres">Parametres</string>
 
+    <string name="textDateStartExport">Date de début</string>
+    <string name="textDateStopExport">Date de fin</string>
+
+    <string name="textPath">Fichier csv sauvegardé sous </string>
+    <string name="nameFile">"/tableLocalisation-"</string>
+    <string name="titleFile">"time;latitude;longitude;durée attente;indication;idResto;x; y\n"</string>
 
     <string-array name="plateforme">
 

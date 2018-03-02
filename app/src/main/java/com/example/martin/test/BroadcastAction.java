@@ -10,7 +10,7 @@ import static com.example.martin.test.Value.IND_ATTENTE;
 import static com.example.martin.test.Value.IND_CLIENT;
 
 public class BroadcastAction extends BroadcastReceiver {
-	Context broadcastContext;
+
 	@Override
 	public void onReceive(Context context, Intent intent) {
 

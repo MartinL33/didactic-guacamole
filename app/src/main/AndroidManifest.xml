@@ -35,7 +35,7 @@
             android:label="@string/title_activity_history" />
 
         <service
-            android:name=".ServiceExport"
+            android:name=".ServiceExportDebug"
             android:exported="false" />
 
         <receiver
@@ -49,6 +49,8 @@
         <activity
             android:name=".ActivitySettings"
             android:label="@string/title_activity_settings" />
+
+        <activity android:name=".ActivityExport"></activity>
     </application>
 
 </manifest>

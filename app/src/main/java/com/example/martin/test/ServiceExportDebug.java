@@ -33,10 +33,10 @@ import static com.example.martin.test.Value.RAYONTERRE;
 import static com.example.martin.test.Value.rayonPetitCercle;
 
 
-public class ServiceExport extends IntentService {
+public class ServiceExportDebug extends IntentService {
 
 
-	public ServiceExport() {
+	public ServiceExportDebug() {
 		super("ServiceExport");
 	}
 
@@ -69,7 +69,7 @@ public class ServiceExport extends IntentService {
 
 
 		//base localisation
-		BDDLocalisation localisationBDD = new BDDLocalisation(ServiceExport.this);
+		BDDLocalisation localisationBDD = new BDDLocalisation(ServiceExportDebug.this);
 		localisationBDD.openForRead();
 
 		Cursor c = localisationBDD.getCursorFrom(1);
@@ -188,7 +188,7 @@ public class ServiceExport extends IntentService {
 */
 //base temp
 
-		BDDTemp tempBDD = new BDDTemp(ServiceExport.this);
+		BDDTemp tempBDD = new BDDTemp(ServiceExportDebug.this);
 		tempBDD.openForRead();
 		c = tempBDD.getCursor();
 		nbPoint = c.getCount();
@@ -247,7 +247,7 @@ public class ServiceExport extends IntentService {
 		}
 
 //base restaurant
-		BDDRestaurant restoBDD = new BDDRestaurant(ServiceExport.this);
+		BDDRestaurant restoBDD = new BDDRestaurant(ServiceExportDebug.this);
 		restoBDD.openForRead();
 
 		c = restoBDD.getCursorFrom(1);

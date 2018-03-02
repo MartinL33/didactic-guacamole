@@ -34,14 +34,14 @@ public class ActivityHistory extends Activity {
     private DatePicker myDatePicker;
     private Button selectDate;
     private Button retourSelectDate;
+    private Button cancel;
     private ConstraintLayout layoutSelectDate;
     private ConstraintLayout layoutHistory;
     private TextView textViewSelectDate;
 	private long dateCalendar;
-//	private List<UneLigne> data=new ArrayList<>();
 	private	ArrayList<UneLigne> data;
-
-    @Override
+	BDDLocalisation localisationBDD;
+	@Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_history);
@@ -53,26 +53,28 @@ public class ActivityHistory extends Activity {
         layoutHistory=findViewById(R.id.idLayoutHistorique);
         retourSelectDate=findViewById(R.id.idRetourSelectionDate);
         textViewSelectDate=findViewById(R.id.idTextSelectionDate);
+		cancel=findViewById(R.id.idCancelHistory);
 
 
-        selectDate.setOnClickListener(new View.OnClickListener() {
+		cancel.setOnClickListener(new View.OnClickListener(){
+
+			@Override public void onClick(View v) {
+			finish();
+			}
+		});
+
+		selectDate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-
 
                 int day=myDatePicker.getDayOfMonth();
                 int month=myDatePicker.getMonth();
                 int year=myDatePicker.getYear();
                 Calendar myCalendar= Calendar.getInstance();
                 myCalendar.set(year,month,day,0,0,0);
-
                 dateCalendar =myCalendar.getTimeInMillis();
                 Log.d("history","time = "+String.valueOf(dateCalendar));
-
 				setList();
-
-
-
 
             }
         });
@@ -86,14 +88,11 @@ public class ActivityHistory extends Activity {
             }
         });
 
-
     }
-
 
 	private void setList(){
 
-
-		BDDLocalisation localisationBDD = new BDDLocalisation(ActivityHistory.this);
+		localisationBDD = new BDDLocalisation(ActivityHistory.this);
 		localisationBDD.openForRead();
 
 		if (localisationBDD.isEmptyBetween(dateCalendar,dateCalendar+86400000)){
@@ -102,37 +101,52 @@ public class ActivityHistory extends Activity {
 		}
 
 		else {
+			new Thread(new Runnable() {
 
-			data=localisationBDD.getCommandeBetween(this,dateCalendar,dateCalendar+86400000);
+				public void run() {
 
-			layoutSelectDate.setVisibility(View.INVISIBLE);
-			layoutHistory.setVisibility(View.VISIBLE);
+					data=localisationBDD.getCommandeBetween(ActivityHistory.this,dateCalendar,dateCalendar+86400000);
+					localisationBDD.close();
 
-			ListView myListView= findViewById(R.id.listHistory);
-			myAdapter adapter =new myAdapter(ActivityHistory.this);
-			myListView.setAdapter(adapter);
+					runOnUiThread(new Runnable() {
 
-
-			DateFormat df=getDateInstance(DateFormat.MEDIUM, Locale.getDefault());
-			((TextView) findViewById(R.id.dateHistory)).setText(df.format(dateCalendar));
-			((TextView) findViewById(R.id.cmdHistory)).setText(String.valueOf(localisationBDD.nbCommande)+" cmd");
+						public void run() {
 
 
-			int d=localisationBDD.duree;
-			int h=  d/3600000;
-			int m= (d%3600000)/60000;
+							layoutSelectDate.setVisibility(View.INVISIBLE);
+							layoutHistory.setVisibility(View.VISIBLE);
 
-			((TextView) findViewById(R.id.dureeHistory)).setText(intToString(h)+"h "+intToString(m)+"m ");
+							ListView myListView= findViewById(R.id.listHistory);
+							myAdapter adapter =new myAdapter(ActivityHistory.this);
+							myListView.setAdapter(adapter);
 
-			if(localisationBDD.distanceTotale>0) {
-				int di = localisationBDD.distanceTotale / 1000;
-				int di2 = (localisationBDD.distanceTotale % 1000) / 10;
-				((TextView) findViewById(R.id.distanceHistory)).setText(String.valueOf(di)+"."+intToString(di2) + "km ");
-			}
+
+							DateFormat df=getDateInstance(DateFormat.MEDIUM, Locale.getDefault());
+							((TextView) findViewById(R.id.dateHistory)).setText(df.format(dateCalendar));
+							((TextView) findViewById(R.id.cmdHistory)).setText(String.valueOf(localisationBDD.nbCommande)+" cmd");
+
+
+							int d=localisationBDD.duree;
+							int h=  d/3600000;
+							int m= (d%3600000)/60000;
+
+							((TextView) findViewById(R.id.dureeHistory)).setText(intToString(h)+"h "+intToString(m)+"m ");
+
+							if(localisationBDD.distanceTotale>0) {
+								int di = localisationBDD.distanceTotale / 1000;
+								int di2 = (localisationBDD.distanceTotale % 1000) / 10;
+								((TextView) findViewById(R.id.distanceHistory)).setText(String.valueOf(di)+"."+intToString(di2) + "km ");
+							}
+						}
+
+					});
+
+				}
+
+			}).start();
 
 		}
 	}
-
 
 	class myAdapter extends ArrayAdapter<UneLigne>{
     	private Context context;

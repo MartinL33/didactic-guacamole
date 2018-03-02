@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.example.martin.test.ActivityExport"
+    android:orientation="vertical"
+    android:layout_margin="8dp">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/dateStart"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/textDateStartExport"
+            android:textAlignment="center"
+            android:textAppearance="@android:style/TextAppearance.Medium"
+            android:layout_marginBottom="8dp"
+
+            />
+
+        <DatePicker
+            android:id="@+id/datePickerStart"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/dateStop"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/textDateStopExport"
+            android:textAlignment="center"
+
+            android:textAppearance="@android:style/TextAppearance.Medium"
+            android:layout_marginBottom="8dp" />
+
+        <DatePicker
+            android:id="@+id/datePickerStop"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp"
+            >
+
+            <Button
+                android:id="@+id/cancelExport"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/cancel" />
+
+            <Button
+                android:id="@+id/okExport"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/ok" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/pathExport"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+</android.support.constraint.ConstraintLayout>
+
+
+
+
