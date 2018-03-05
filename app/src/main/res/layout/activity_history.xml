@@ -56,6 +56,14 @@
         </LinearLayout>
 
         <ListView
+
+
+            android:alwaysDrawnWithCache="true"
+            android:dividerHeight="1dp"
+            android:horizontalSpacing="3dp"
+            android:scrollingCache="true"
+            android:smoothScrollbar="true"
+
             android:id="@+id/listHistory"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -79,7 +87,8 @@
             android:layout_marginTop="8dp"
             android:text="@string/ok"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/datePicker" />
+            app:layout_constraintTop_toBottomOf="@+id/datePicker"
+            android:layout_marginRight="8dp" />
 
         <Button
             android:id="@+id/idCancelHistory"
@@ -89,7 +98,8 @@
             android:layout_marginTop="8dp"
             android:text="@string/cancel"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/datePicker" />
+            app:layout_constraintTop_toBottomOf="@+id/datePicker"
+            android:layout_marginLeft="8dp" />
 
         <DatePicker
             android:id="@+id/datePicker"

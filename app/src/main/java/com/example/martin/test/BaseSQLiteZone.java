@@ -34,6 +34,7 @@ class BaseSQLiteZone extends SQLiteOpenHelper {
 		insertZone(db,0,0,"Ville inconnue"); //zone inconnue
 		insertZone(db,48.866667,2.333333,"Paris");
 		insertZone(db,44.8333,-0.5667,"Bordeaux");
+		insertZone(db,46.1575141,-1.1537418,"La Rochelle");
 	}
 
 	@Override

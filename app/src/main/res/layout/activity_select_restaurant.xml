@@ -28,10 +28,10 @@
             android:text="@string/textSelectRestaurant" />
 
         <ListView
+
             android:id="@+id/idListViewSelectResto"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            >
+            android:layout_height="match_parent">
 
         </ListView>
 
