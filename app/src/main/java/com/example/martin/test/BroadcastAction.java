@@ -8,6 +8,7 @@ import android.widget.Toast;
 
 import static com.example.martin.test.Value.IND_ATTENTE;
 import static com.example.martin.test.Value.IND_CLIENT;
+import static com.example.martin.test.Value.IND_RESTO;
 
 public class BroadcastAction extends BroadcastReceiver {
 
@@ -35,7 +36,7 @@ public class BroadcastAction extends BroadcastReceiver {
 
 			bddAction.close();
 			Log.d("BroadcastAction", "insertAction = " + String.valueOf(l)+ " indication = "+ String.valueOf(indication));
-			if (indication == IND_ATTENTE || indication == IND_CLIENT) {
+			if (indication == IND_ATTENTE || indication == IND_CLIENT||indication == IND_RESTO) {
 				String[] textIndication = context.getResources().getStringArray(R.array.indication);
 				Toast.makeText(context, textIndication[indication], Toast.LENGTH_LONG).show();
 			}

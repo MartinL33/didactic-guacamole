@@ -126,11 +126,11 @@ import android.os.Build;
 
     static final int MAX_DISTANCE_DOUGLAS = 30;   //en m
 
-    // en fait on garde tous les points pour lesquels on est resté DUREE_MIN_SAUVEGARDE_PAS à la même postion
+    // on garde tous les points pour lesquels on est resté DUREE_MIN_SAUVEGARDE_PAS à la même postion
     // (à MIN_DISTANCE_MOYENNE2 metre près)
     static final int DUREE_MIN_SAUVEGARDE_PAS = 20000; //en ms
-
-
+	//si le coursier attend plus que DUREE_MIN_RESTO à proximité d'un resto, on considere que c'est un pickup
+	static final int DUREE_MIN_RESTO=50;//en s
    /*point aberant:
      si la distance entre un point et le point suivant est sup à MAX_DISTANCE_ABERANT
      et que la distance entre le premier point
@@ -142,7 +142,7 @@ import android.os.Build;
 
 
 	static final int SEUILZONE=10000; //en m
-	static final int SEUILRESTO =10; //en m
+	static final int SEUILRESTO =15; //en m
 	static final int SEUILSELECTRESTO =20; //en m
 
 

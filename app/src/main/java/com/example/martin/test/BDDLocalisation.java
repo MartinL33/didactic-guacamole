@@ -30,7 +30,6 @@ import static com.example.martin.test.Value.NUM_COL_LONRAD_LOCAL;
 import static com.example.martin.test.Value.NUM_COL_TIME_LOCAL;
 import static com.example.martin.test.Value.TABLE_LOCALISATIONS;
 import static com.example.martin.test.Value.distence2;
-import static com.example.martin.test.Value.intToString;
 
 /**
  * Created by martin on 02/02/18.
@@ -42,7 +41,7 @@ import static com.example.martin.test.Value.intToString;
     private BaseSQLiteLocalisation localisations;
 	int distanceTotale=0;
 	int nbCommande=0;
-	int duree=0;
+	int duree=0;  //en ms
 
      BDDLocalisation(Context context) {
         localisations = new BaseSQLiteLocalisation(context, NOM_BDD_LOCAL, null, VERSION);
@@ -107,10 +106,10 @@ import static com.example.martin.test.Value.intToString;
 	}
 
     Cursor getCursorFrom(int start){
-        return bdd.rawQuery("SELECT * FROM " + TABLE_LOCALISATIONS + " WHERE " + COL_TIME_LOCAL + " >= "+String.valueOf(start) ,null);
+        return bdd.rawQuery("SELECT * FROM " + TABLE_LOCALISATIONS + " WHERE " + COL_TIME_LOCAL + " >= "+start ,null);
     }
 
-    Cursor getCursorBetween(long start,long stop){
+    private Cursor getCursorBetween(long start,long stop){
         return bdd.rawQuery("SELECT * FROM " + TABLE_LOCALISATIONS + " WHERE " + COL_TIME_LOCAL + " BETWEEN "+start + " AND " +stop,null);
     }
 
@@ -248,24 +247,46 @@ import static com.example.martin.test.Value.intToString;
 
 
 
+		//suppression des lignes avec aucune cmd
+		int index;
+		for (index=0;index<data.size()-1;index++) {
+			if(data.get(index).getIndi()==IND_START&&data.get(index+1).getIndi()==IND_END){
+				data.remove(index);
+				data.remove(index);
+				index--;
+			}
+		}
 
-		int count=0;
+
+
+//boucle pour trouver le nom des resto
 		BDDRestaurant bddRestaurant=new BDDRestaurant(context);
 		bddRestaurant.openForRead();
+		int lastStart=0;
+		index=0;
+		duree=0;
 
 		for (UneLigne l:data) {
-			count++;
 			distanceTotale=distanceTotale+l.getDistance();
 			if(l.getIdResto()!=-1){
 				l.setNomResto(bddRestaurant.getTextRestaurant(l.getIdResto()));
 				nbCommande++;
 			}
-			Log.d("history","ligne "+ intToString(count)+" : "+l.toString());
+			if(l.getIndi()==IND_START){
+				lastStart=index;
+			}
+			else if(l.getIndi()==IND_END){
+				duree+=(int) (l.getDate()-data.get(lastStart).getDate());
+			}
+			index++;
+		}
+		bddRestaurant.close();
+
+		for (UneLigne l:data) {
+			Log.d("BBD Localisation","get Cmd: "+l.toString(context));
 		}
 
-		duree=(int) (data.get(data.size()-1).getDate()-data.get(0).getDate());
 
-		bddRestaurant.close();
 		return data;
 	}
 

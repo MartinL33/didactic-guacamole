@@ -1,6 +1,17 @@
 package com.example.martin.test;
 
+import android.content.Context;
+
+import java.text.DateFormat;
+import java.util.Date;
+import java.util.Locale;
+
 import static com.example.martin.test.Value.ID_RESTO_DEFAUT;
+import static com.example.martin.test.Value.IND_HYPO_RESTO;
+import static com.example.martin.test.Value.IND_RESTO;
+import static com.example.martin.test.Value.IND_RESTO_CONFIRME;
+import static com.example.martin.test.Value.intToString;
+import static java.text.DateFormat.getTimeInstance;
 
 /**
  * Created by martin on 02/03/18.
@@ -53,18 +64,35 @@ class UneLigne {
 	}
 
 
-	@Override
-	public String toString() {
-		String res="date : ";
-		res += String.valueOf(date);
-		res +=" indi: ";
-		res += String.valueOf(indi);
-		res +=" duree : ";
-		res += String.valueOf(duree);
-		res +=" distance: ";
-		res += String.valueOf(distance);
-		res +=" idResto: ";
-		res += String.valueOf(idResto);
+
+	public String toString(Context context) {
+		String [] stringIndication=context.getResources().getStringArray(R.array.indication);
+
+		String res="";
+		DateFormat df=getTimeInstance(DateFormat.MEDIUM, Locale.getDefault());
+		res+=df.format(new Date(date));
+		res+=";";
+		if (indi == IND_HYPO_RESTO || indi == IND_RESTO || indi == IND_RESTO_CONFIRME) {
+			res+=nomResto;
+		} else res += stringIndication[indi];
+
+		res +=";";
+
+		int du=duree/60;
+		if(duree>1) {
+			if (du < 10) res +=String.valueOf(du) + " min";
+			else res +=String.valueOf(du) + " min";
+					}
+
+		res +=";";
+		if(distance>0) {
+			final int di = distance / 1000;
+			final int di2 = ((distance % 1000) / 10);
+
+			res += String.valueOf(di) + "." + intToString(di2) + "km";
+		}
+
+
 		return res;
 	}
 

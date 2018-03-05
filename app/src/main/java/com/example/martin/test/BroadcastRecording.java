@@ -24,9 +24,6 @@ public class BroadcastRecording extends BroadcastReceiver {
 	@Override
 	public void onReceive(Context context, Intent intent) {
 
-
-
-
 		if (hasResult(intent)) {
 			Log.d("BroadcastRecording", "FusedLocationProviderClient");
 			List<Location> listLocation = extractResult(intent).getLocations();

@@ -40,7 +40,8 @@
             style="@android:style/Widget.Button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/select_new_restaurant" />
+            android:text="@string/select_new_restaurant"
+            android:visibility="invisible" />
 
         <Button
             android:id="@+id/idCancelSelectResto"

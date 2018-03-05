@@ -12,6 +12,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -75,6 +76,12 @@ private BDDRestaurant bddRestaurant=new BDDRestaurant(ActivitySelectRestaurant.t
 		restoConnu =bddRestaurant.bddHasResto(latRad, lonRad,z,p);
         bddRestaurant.close();
 		Log.d("ActivitySelectResto","restaurant connu? : "+String.valueOf(restoConnu));
+
+//a vocation à etre supprimer:  insertion des nouveau resto a faire
+		if(!restoConnu) {
+			Toast.makeText(this, "Pas de restaurant connu à proximité", Toast.LENGTH_LONG).show();
+			finish();
+		}
 
 		setUI(restoConnu);
 

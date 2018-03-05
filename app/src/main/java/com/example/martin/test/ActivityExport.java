@@ -102,12 +102,12 @@ public class ActivityExport extends Activity {
 								}
 
 								FileOutputStream output = new FileOutputStream(fileResult, false);
-								mess = "time;latitude;longitude;durée attente;indication;idResto;x; y\n";
+								mess = "date;indication;durée attente(en min);distance (en Km)\n";
 								output.write(mess.getBytes());
 
 
 								for (UneLigne l : data) {
-									output.write(l.toString().getBytes());
+									output.write(l.toString(ActivityExport.this).getBytes());
 								}
 
 								runOnUiThread(new Runnable() {

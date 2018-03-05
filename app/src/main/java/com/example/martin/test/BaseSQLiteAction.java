@@ -1,11 +1,13 @@
 package com.example.martin.test;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import static com.example.martin.test.Value.COL_IND_ACTION;
 import static com.example.martin.test.Value.COL_TIME_ACTION;
+import static com.example.martin.test.Value.IND_PLATEFORME;
 import static com.example.martin.test.Value.TABLE_ACTIONS;
 
 
@@ -26,6 +28,10 @@ class BaseSQLiteAction extends SQLiteOpenHelper {
 	@Override
 	public void onCreate(SQLiteDatabase db) {
 		db.execSQL(CREATE_BDD);
+		ContentValues content = new ContentValues();
+		content.put(COL_TIME_ACTION, 10);
+		content.put(COL_IND_ACTION, IND_PLATEFORME[0]);
+		db.insert(TABLE_ACTIONS, null, content);
 	}
 
 	@Override

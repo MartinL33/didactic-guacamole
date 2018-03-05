@@ -12,6 +12,7 @@ import java.util.ListIterator;
 
 import static com.example.martin.test.Value.DUREE_DEFAUT;
 import static com.example.martin.test.Value.DUREE_MIN_FIN;
+import static com.example.martin.test.Value.DUREE_MIN_RESTO;
 import static com.example.martin.test.Value.DUREE_MIN_SAUVEGARDE_PAS;
 import static com.example.martin.test.Value.IND_ARRET_INCONNU;
 import static com.example.martin.test.Value.IND_CLIENT;
@@ -408,8 +409,6 @@ public class ServiceAnalysis extends IntentService {
 
     private void changementCoordoonee(){
 
-		int k;
-
 		long tim;
 		float lonRad;
 		float latRad;
@@ -431,7 +430,7 @@ public class ServiceAnalysis extends IntentService {
 				if(d[i]<DUREE_MIN_SAUVEGARDE_PAS) ind=IND_DEPLACEMENT_INCONNU;
 				else ind=IND_ARRET_INCONNU;
 
-				int dur = d[i] / 1000;
+				int dur = d[i] / 1000;  //conversion en seconde
 				listeLoca.add(new Localisation(tim, latRad, lonRad,ind, dur));
 
 			}
@@ -444,21 +443,23 @@ public class ServiceAnalysis extends IntentService {
 				lonRad = (float) (origineLongitude + (y[i] / rayonPetitCercle));
 
 				if(i>0){
-					//dur[k-1]=(int) (t[i]-t[i-1]);
+
 					listeLoca.get(listeLoca.size()-1).setDuree((int)((t[i]-t[i-1]))/1000);
 				}
 				listeLoca.add(new Localisation(tim, latRad, lonRad,IND_END));
+				if(i<nbPoint-2) {
+					tim = t[i+1]+ 999+ origineTime;
+					latRad = (float) (origineLatitude + (x[i+1] / RAYONTERRE));
+					lonRad = (float) (origineLongitude + (y[i+1] / rayonPetitCercle));
+					listeLoca.add(new Localisation(tim, latRad, lonRad,IND_START));
+				}
 			}
 			indPrecedante=ind;
 
 		}
-		k=0;
-		for (Localisation l: listeLoca) {
-			if (l.getIndication()==IND_END&&k<listeLoca.size()-1) {
-				listeLoca.get(k+1).setIndication(IND_START);
-			}
-			k++;
-		}
+
+
+
 
 		if(listeLoca.get(listeLoca.size()-1).getIndication()!=IND_END){
 			Localisation l =listeLoca.get(listeLoca.size()-1);
@@ -467,6 +468,7 @@ public class ServiceAnalysis extends IntentService {
 			lonRad = l.getLongitude();
 			listeLoca.add(new Localisation(tim, latRad, lonRad,IND_END));
 		}
+
 
 		//liberation des tableaux initiaux
 		t = null;
@@ -518,7 +520,8 @@ public class ServiceAnalysis extends IntentService {
 
 		for (Localisation l: listeLoca) {
 			int ind=l.getIndication();
-			if(ind==IND_ARRET_INCONNU||ind==IND_RESTO||ind==IND_RESTO_CONFIRME){
+			int dur=l.getDuree();
+			if(dur>DUREE_MIN_RESTO&&(ind==IND_ARRET_INCONNU||ind==IND_RESTO||ind==IND_RESTO_CONFIRME)){
 				int id=bddRestaurant.getIdResto(l.getLatitude(),l.getLongitude(), zone, plateformeEnCours);
 				//si on trouve un resto
 				if(id!=-1) {

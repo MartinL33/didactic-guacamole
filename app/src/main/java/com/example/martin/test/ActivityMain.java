@@ -35,6 +35,7 @@ import static com.example.martin.test.Value.IND_ATTENTE;
 import static com.example.martin.test.Value.IND_CLIENT;
 import static com.example.martin.test.Value.IND_END;
 import static com.example.martin.test.Value.IND_PLATEFORME;
+import static com.example.martin.test.Value.IND_RESTO;
 import static com.example.martin.test.Value.IND_START;
 import static com.example.martin.test.Value.verifPermissionLocation;
 
@@ -64,7 +65,9 @@ public class ActivityMain extends Activity implements FragmentSelectPlateforme.O
 	private Button btnPlateforme2;
     private Button btnPlateforme3;
 	private Button btnPlateforme4;
-    private int plateformeEnCours=-1;
+   // private int plateformeEnCours=-1;
+
+    private int plateformeEnCours=1;
 	private SharedPreferences preferences;
 
     private LinearLayout layoutCgtPlateforme;
@@ -333,9 +336,9 @@ public class ActivityMain extends Activity implements FragmentSelectPlateforme.O
 
 						builder.setPriority(Notification.PRIORITY_HIGH);
 
-						Intent intentResto= new Intent(ActivityMain.this, ActivitySelectRestaurant.class);
-						// intentResto.putExtra("action", IND_RESTO);
-						PendingIntent pendingResto= PendingIntent.getActivity(ActivityMain.this, 1, intentResto, PendingIntent.FLAG_UPDATE_CURRENT);
+						Intent intentResto= new Intent(ActivityMain.this, BroadcastAction.class);
+						intentResto.putExtra("action", IND_RESTO);
+						PendingIntent pendingResto= PendingIntent.getBroadcast(ActivityMain.this, 1, intentResto, PendingIntent.FLAG_UPDATE_CURRENT);
 
 
 						Intent intentClient= new Intent(ActivityMain.this, BroadcastAction.class);
@@ -462,6 +465,7 @@ public class ActivityMain extends Activity implements FragmentSelectPlateforme.O
 
 
 //plateforme
+		/*
         btnPlateforme.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view) {
@@ -469,6 +473,7 @@ public class ActivityMain extends Activity implements FragmentSelectPlateforme.O
                 btnPlateforme.setVisibility(View.INVISIBLE);
             }
         });
+        */
         btnPlateforme0.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

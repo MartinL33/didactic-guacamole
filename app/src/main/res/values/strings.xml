@@ -56,14 +56,14 @@
         <item>trajet resto</item>
         <item>trajet client</item>
         <item>arrêt inconnu</item>
-        <item>""</item>
+        <item>restaurant</item>
         <item>client</item>
-        <item>IND_ATTENTE=7</item>
-        <item>""</item>
+        <item>attente</item>
+        <item>restaurant</item>
         <item>client</item>
-        <item>""</item>
+        <item>restaurant</item>
         <item>client</item>
-        <item>IND_ATTENTE_CONFIRME</item>
+        <item>attente</item>
 
         <item>Début Shift</item>
         <item>Fin Shift</item>
