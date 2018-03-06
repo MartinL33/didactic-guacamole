@@ -3,7 +3,9 @@ package com.example.martin.test;
 import android.annotation.SuppressLint;
 import android.app.IntentService;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
+import android.preference.PreferenceManager;
 import android.util.Log;
 
 import java.util.ArrayList;
@@ -483,11 +485,17 @@ public class ServiceAnalysis extends IntentService {
 
 		//zone
 
-
+/*
 		BDDZone bddZone = new BDDZone(this);
 		bddZone.openForRead();
 		int zone = bddZone.getIdZone(origineLatitude, origineLongitude);
 		bddZone.close();
+*/
+		SharedPreferences preferences= PreferenceManager.getDefaultSharedPreferences(this);
+		int zone=preferences.getInt("zone",1);
+
+
+
 		Log.d("analyse","zone : "+String.valueOf(zone));
 
 		//plateforme

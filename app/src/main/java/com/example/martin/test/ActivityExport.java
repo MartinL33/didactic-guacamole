@@ -107,7 +107,7 @@ public class ActivityExport extends Activity {
 
 
 								for (UneLigne l : data) {
-									output.write(l.toString(ActivityExport.this).getBytes());
+									output.write((l.toString(ActivityExport.this)+"\n").getBytes());
 								}
 
 								runOnUiThread(new Runnable() {

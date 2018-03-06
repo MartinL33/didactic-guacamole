@@ -52,7 +52,7 @@ public class ActivityMain extends Activity implements FragmentSelectPlateforme.O
     private Button btnCustomer;
     private Button btnWaiting;
     private Button btnRestaurant;
-	private String zone="";
+	private int zone=1;
     private Button btnHistorique;
     private Button btnExport;
 	private Button btnSetting;
@@ -68,6 +68,7 @@ public class ActivityMain extends Activity implements FragmentSelectPlateforme.O
    // private int plateformeEnCours=-1;
 
     private int plateformeEnCours=1;
+
 	private SharedPreferences preferences;
 
     private LinearLayout layoutCgtPlateforme;
@@ -103,6 +104,10 @@ public class ActivityMain extends Activity implements FragmentSelectPlateforme.O
         btnExport=findViewById((R.id.idExport));
 		btnSetting=findViewById((R.id.idSetting));
 		btnExportDebug=findViewById((R.id.button3));
+
+
+
+
 		//derniere plateforme utilisée
         BDDAction bddAction = new BDDAction(this);
 		bddAction.openForRead();
@@ -114,48 +119,55 @@ public class ActivityMain extends Activity implements FragmentSelectPlateforme.O
 		//permission de localisation et ecriture carte SD
 
 		final int MY_PERMISSIONS_REQUEST_LOCATION = 1;
-		final int MY_PERMISSIONS_REQUEST_EXTERNAL_STORAGE = 2;
-		final int MY_PERMISSIONS_REQUEST= 3;
+        final int MY_PERMISSIONS_REQUEST_INTERNET=2;
+		final int MY_PERMISSIONS_REQUEST_EXTERNAL_STORAGE = 3;
+		final int MY_PERMISSIONS_REQUEST= 4;
 
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 			Boolean boolLocation=checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED;
+			//Boolean boolInternet=checkSelfPermission(Manifest.permission.ACCESS_NETWORK_STATE) != PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED;
+
 			Boolean boolExternalStorage=checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED;
 
 			if(boolLocation&&boolExternalStorage){
-				requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.WRITE_EXTERNAL_STORAGE},
+				requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.ACCESS_NETWORK_STATE,Manifest.permission.INTERNET},
 						MY_PERMISSIONS_REQUEST);
-				return;
+
 			}
 			else if (boolLocation) {
 				requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
 						MY_PERMISSIONS_REQUEST_LOCATION);
-				return;
+
 			}
+			/*else if(boolInternet){
+				requestPermissions(new String[]{Manifest.permission.ACCESS_NETWORK_STATE,Manifest.permission.INTERNET},
+						MY_PERMISSIONS_REQUEST_INTERNET);
+				return;
+			}*/
 			else if (boolExternalStorage) {
 
 				requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
 						MY_PERMISSIONS_REQUEST_EXTERNAL_STORAGE);
-				return;
 			}
 
 		}
 
-        //zone
-		if (verifPermissionLocation(this)){
 
-			FusedLocationProviderClient mFusedLocationClient= LocationServices.getFusedLocationProviderClient(this);
-			mFusedLocationClient.getLastLocation()
-					.addOnSuccessListener(this, new OnSuccessListener<Location>() {
-						@Override
-						public void onSuccess(Location location) {
-							// Got last known location. In some rare situations this can be null.
-							if (location != null) {
-								updateZone(location);
-							}
-						}
-					});
+//zone
+		BDDZone bddZone=new BDDZone(this);
+		bddZone.openForRead();
+		boolean bddEmpty=bddZone.isEmpty();
+		bddZone.close();
+		if(bddEmpty){
+			Log.d("MainActivity","bddZone Empty");
+			Intent i = new Intent(ActivityMain.this, ServiceInstall.class);
+			startService(i);
 
+		}else{
+			zone=preferences.getInt("zone",1);
 		}
+
+
 
     }
 
@@ -164,6 +176,12 @@ public class ActivityMain extends Activity implements FragmentSelectPlateforme.O
         Log.d("ActivityMain", "onResume()");
         super.onResume();
 
+
+
+
+
+
+        if(zone==1) updateZone();
 
         //masquage de layoutPlateforme
 
@@ -465,15 +483,22 @@ public class ActivityMain extends Activity implements FragmentSelectPlateforme.O
 
 
 //plateforme
-		/*
+
         btnPlateforme.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View view) {
+            /*
                 layoutCgtPlateforme.setVisibility(View.VISIBLE);
                 btnPlateforme.setVisibility(View.INVISIBLE);
+              */
+				Intent i = new Intent(ActivityMain.this, ServiceInstall.class);
+				startService(i);
+
+
+
             }
         });
-        */
+
         btnPlateforme0.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -587,13 +612,39 @@ public class ActivityMain extends Activity implements FragmentSelectPlateforme.O
 		else throw new AssertionError("plateforme invalide");
 	}
 
-	private void updateZone(Location loc){
+	@SuppressLint("MissingPermission")
+	private void updateZone(){
+
+		if (verifPermissionLocation(this)){
+
+			FusedLocationProviderClient mFusedLocationClient= LocationServices.getFusedLocationProviderClient(this);
+			mFusedLocationClient.getLastLocation()
+					.addOnSuccessListener(this, new OnSuccessListener<Location>() {
+						@Override
+						public void onSuccess(Location location) {
+							// Got last known location. In some rare situations this can be null.
+							if (location != null) {
+								updateUIZone(location);
+							}
+						}
+					});
+
+		}
+
+
+	}
+
+	private void updateUIZone(Location loc){
 		Log.d("activite","actualisation zone");
 		BDDZone bddZone = new BDDZone(this);
 		bddZone.openForRead();
-		zone = bddZone.getTextZone(Math.toRadians(loc.getLatitude()), Math.toRadians(loc.getLongitude()));
+
+		zone = bddZone.getIdZone(Math.toRadians(loc.getLatitude()), Math.toRadians(loc.getLongitude()));
 		bddZone.close();
-		((TextView) findViewById(R.id.idZone)).setText(zone);
+
+		SharedPreferences.Editor editor=preferences.edit();
+		editor.putInt("zone",zone);
+		((TextView) findViewById(R.id.idZone)).setText(bddZone.textZoneActual);
 	}
 
 }
