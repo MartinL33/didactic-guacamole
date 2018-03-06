@@ -53,6 +53,7 @@ public class ActivityMain extends Activity implements FragmentSelectPlateforme.O
     private Button btnWaiting;
     private Button btnRestaurant;
 	private int zone=1;
+	private int pays=0;
     private Button btnHistorique;
     private Button btnExport;
 	private Button btnSetting;
@@ -161,6 +162,7 @@ public class ActivityMain extends Activity implements FragmentSelectPlateforme.O
 		if(bddEmpty){
 			Log.d("MainActivity","bddZone Empty");
 			Intent i = new Intent(ActivityMain.this, ServiceInstall.class);
+			i.putExtra("bddZone",true);
 			startService(i);
 
 		}else{
@@ -624,7 +626,7 @@ public class ActivityMain extends Activity implements FragmentSelectPlateforme.O
 						public void onSuccess(Location location) {
 							// Got last known location. In some rare situations this can be null.
 							if (location != null) {
-								updateUIZone(location);
+								useLocation(location);
 							}
 						}
 					});
@@ -634,7 +636,7 @@ public class ActivityMain extends Activity implements FragmentSelectPlateforme.O
 
 	}
 
-	private void updateUIZone(Location loc){
+	private void useLocation(Location loc){
 		Log.d("activite","actualisation zone");
 		BDDZone bddZone = new BDDZone(this);
 		bddZone.openForRead();
@@ -644,7 +646,22 @@ public class ActivityMain extends Activity implements FragmentSelectPlateforme.O
 
 		SharedPreferences.Editor editor=preferences.edit();
 		editor.putInt("zone",zone);
+		editor.apply();
 		((TextView) findViewById(R.id.idZone)).setText(bddZone.textZoneActual);
+		pays=bddZone.paysActual;
+
+		BDDRestaurant bddRestaurant=new BDDRestaurant(this);
+		bddRestaurant.openForRead();
+		Boolean bddRestaurantEmpty=bddRestaurant.isEmpty();
+		bddRestaurant.close();
+		if(bddRestaurantEmpty&&pays>=0){
+			Log.d("MainActivity","bddZone Empty");
+			Intent i = new Intent(ActivityMain.this, ServiceInstall.class);
+			i.putExtra("pays",pays);
+			startService(i);
+
+
+		}
 	}
 
 }

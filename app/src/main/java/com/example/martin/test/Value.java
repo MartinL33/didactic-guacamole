@@ -90,6 +90,8 @@ import android.os.Build;
 	static final int NUM_COL_LONRAD_ZONE = 2;
 	static final String COL_TEXT_ZONE = "TEXT";
 	static final int NUM_COL_TEXT_ZONE = 3;
+	static final String COL_PAYS_ZONE = "PAYS";
+	static final int NUM_COL_PAYS_ZONE = 4;
 
 	//base de donne restaurant
 
@@ -181,6 +183,6 @@ import android.os.Build;
 		return String.valueOf(i);
 	}
 
-
+	static String[] textPays={"France","Paris"};
 
 }

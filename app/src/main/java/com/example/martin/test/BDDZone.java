@@ -8,10 +8,12 @@ import android.util.Log;
 
 import static com.example.martin.test.Value.COL_LATRAD_ZONE;
 import static com.example.martin.test.Value.COL_LONRAD_ZONE;
+import static com.example.martin.test.Value.COL_PAYS_ZONE;
 import static com.example.martin.test.Value.COL_TEXT_ZONE;
 import static com.example.martin.test.Value.NOM_BDD_ZONE;
 import static com.example.martin.test.Value.NUM_COL_LATRAD_ZONE;
 import static com.example.martin.test.Value.NUM_COL_LONRAD_ZONE;
+import static com.example.martin.test.Value.NUM_COL_PAYS_ZONE;
 import static com.example.martin.test.Value.NUM_COL_TEXT_ZONE;
 import static com.example.martin.test.Value.SEUILZONE;
 import static com.example.martin.test.Value.TABLE_ZONE;
@@ -29,7 +31,7 @@ class BDDZone {
 	private SQLiteDatabase bdd;
 	private BaseSQLiteZone zone;
 	String textZoneActual="Ville inconnue";
-
+	int paysActual=0;
 	BDDZone(Context context) {
 		zone = new BaseSQLiteZone(context, NOM_BDD_ZONE, null, VERSION);
 
@@ -51,7 +53,7 @@ class BDDZone {
 		bdd.execSQL("DELETE FROM "+TABLE_ZONE);
 	}
 
-	long insertZone(double latDeg,double lonDeg,String zoneName) {
+	long insertZone(double latDeg,double lonDeg,String zoneName,int pays) {
 		double latRad=Math.toRadians(latDeg);
 		double lonRad=Math.toRadians(lonDeg);
 
@@ -60,6 +62,7 @@ class BDDZone {
 		content.put(COL_LATRAD_ZONE, latRad);
 		content.put(COL_LONRAD_ZONE, lonRad);
 		content.put(COL_TEXT_ZONE, zoneName);
+		content.put(COL_PAYS_ZONE,pays);
 		return bdd.insert(TABLE_ZONE, null, content);
 	}
 
@@ -94,6 +97,7 @@ class BDDZone {
 			if(minDistence2<SEUILZONE*SEUILZONE){
 				c.moveToPosition(index);
 				textZoneActual=c.getString(NUM_COL_TEXT_ZONE);
+				paysActual=c.getInt(NUM_COL_PAYS_ZONE);
 			}
 			else{
 				index=1;

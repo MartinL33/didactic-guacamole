@@ -65,7 +65,7 @@ import static com.example.martin.test.Value.rayonPetitCercle;
 		bdd.execSQL("DELETE FROM "+TABLE_RESTO);
 	}
 
-	long insertResto(double latRad,double lonRad,String restoName,int zone,int plateforme) {
+	long insertResto(float latRad,float lonRad,String restoName,int zone,int plateforme) {
 
 		ContentValues content = new ContentValues();
 
@@ -184,4 +184,13 @@ import static com.example.martin.test.Value.rayonPetitCercle;
 	Cursor getCursorFrom(int start){
 		return bdd.rawQuery("SELECT * FROM " + TABLE_RESTO ,null);
 	}
+
+	Boolean isEmpty(){
+		Boolean result=true;
+		Cursor c=bdd.rawQuery("SELECT * FROM "+TABLE_RESTO,null);
+		if(c.getCount()>0) result=false;
+		c.close();
+		return result;
+	}
+
  }
