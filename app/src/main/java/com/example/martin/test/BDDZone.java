@@ -27,7 +27,7 @@ import static com.example.martin.test.Value.distence2;
 class BDDZone {
 
 
-	private static final int VERSION = 1;
+	private static final int VERSION = 3;
 	private SQLiteDatabase bdd;
 	private BaseSQLiteZone zone;
 	String textZoneActual="Ville inconnue";

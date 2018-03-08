@@ -440,7 +440,7 @@ public class ServiceAnalysis extends IntentService {
 //si le pas est supérieur a DUREE_MIN_FIN, on considere que le shift 'est arreté puis redemarré
 			if(t[i+1]-t[i]>DUREE_MIN_FIN&&indPrecedante != IND_END) {
 
-				tim = t[i]+ 1000+ origineTime;
+				tim = t[i]+ 1+ origineTime;
 				latRad = (float) (origineLatitude + (x[i] / RAYONTERRE));
 				lonRad = (float) (origineLongitude + (y[i] / rayonPetitCercle));
 
@@ -450,7 +450,7 @@ public class ServiceAnalysis extends IntentService {
 				}
 				listeLoca.add(new Localisation(tim, latRad, lonRad,IND_END));
 				if(i<nbPoint-2) {
-					tim = t[i+1]+ 999+ origineTime;
+					tim = t[i+1]-1+ origineTime;
 					latRad = (float) (origineLatitude + (x[i+1] / RAYONTERRE));
 					lonRad = (float) (origineLongitude + (y[i+1] / rayonPetitCercle));
 					listeLoca.add(new Localisation(tim, latRad, lonRad,IND_START));
@@ -485,12 +485,6 @@ public class ServiceAnalysis extends IntentService {
 
 		//zone
 
-/*
-		BDDZone bddZone = new BDDZone(this);
-		bddZone.openForRead();
-		int zone = bddZone.getIdZone(origineLatitude, origineLongitude);
-		bddZone.close();
-*/
 		SharedPreferences preferences= PreferenceManager.getDefaultSharedPreferences(this);
 		int zone=preferences.getInt("zone",1);
 
@@ -534,7 +528,9 @@ public class ServiceAnalysis extends IntentService {
 				//si on trouve un resto
 				if(id!=-1) {
 					l.setIdResto(id);
-					if(ind==IND_ARRET_INCONNU) l.setIndication(IND_HYPO_RESTO);
+					if(ind==IND_ARRET_INCONNU) {
+						l.setIndication(IND_HYPO_RESTO);
+					}
 					Log.d("Analyse","resto trouvé!");
 
 				}
@@ -580,9 +576,9 @@ public class ServiceAnalysis extends IntentService {
 			if(l.getIndication()==IND_ARRET_INCONNU) l.setIndication(IND_DEPLACEMENT_INCONNU);
 		}
 
-		//deplacement
+		//set indication deplacement
 		int mode=0;   //1-> deplacement vers resto  2-> deplacement vers client
-
+//parcours de la liste à l'envers
 		ListIterator<Localisation> iterator = listeLoca.listIterator(listeLoca.size()); // On précise la position initiale de l'iterator. Ici on le place à la fin de la liste
 		while(iterator.hasPrevious()){
 			Localisation l = iterator.previous();
@@ -606,24 +602,9 @@ public class ServiceAnalysis extends IntentService {
 				default:
 					mode = 0;
 					break;
-
-
-
-
 			}
-
-
-			// ...
 		}
-
-
-
-
-
 	}
-
-
-
 }
 
 

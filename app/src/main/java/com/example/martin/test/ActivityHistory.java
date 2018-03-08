@@ -101,6 +101,7 @@ public class ActivityHistory extends Activity {
 		}
 
 		else {
+			textViewSelectDate.setText("");
 			new Thread(new Runnable() {
 
 				public void run() {

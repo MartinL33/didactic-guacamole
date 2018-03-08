@@ -16,7 +16,6 @@ import static com.example.martin.test.Value.COL_LONRAD_RESTO;
 import static com.example.martin.test.Value.COL_PLATEFORME_RESTO;
 import static com.example.martin.test.Value.COL_TEXT_RESTO;
 import static com.example.martin.test.Value.COL_ZONE_RESTO;
-import static com.example.martin.test.Value.ID_RESTO_DEFAUT;
 import static com.example.martin.test.Value.NOM_BDD_RESTO;
 import static com.example.martin.test.Value.NUM_COL_ID_RESTO;
 import static com.example.martin.test.Value.NUM_COL_LATRAD_RESTO;
@@ -37,7 +36,7 @@ import static com.example.martin.test.Value.rayonPetitCercle;
  class BDDRestaurant {
 
 
-	private static final int VERSION = 2;
+	private static final int VERSION = 4;
 	private SQLiteDatabase bdd;
 	private BaseSQLiteRestaurant restos;
 	Integer[] idRestoSelect;
@@ -65,7 +64,7 @@ import static com.example.martin.test.Value.rayonPetitCercle;
 		bdd.execSQL("DELETE FROM "+TABLE_RESTO);
 	}
 
-	long insertResto(float latRad,float lonRad,String restoName,int zone,int plateforme) {
+	long insertResto(float latRad,float lonRad,String restoName,int zone,int plateforme,int idWeb) {
 
 		ContentValues content = new ContentValues();
 
@@ -74,7 +73,7 @@ import static com.example.martin.test.Value.rayonPetitCercle;
 		content.put(COL_TEXT_RESTO, restoName);
 		 content.put(COL_ZONE_RESTO, zone);
 		 content.put(COL_PLATEFORME_RESTO, plateforme);
-		 content.put(COL_IDBASE_RESTO, ID_RESTO_DEFAUT);
+		 content.put(COL_IDBASE_RESTO, idWeb);
 		return bdd.insert(TABLE_RESTO, null, content);
 	}
 
@@ -109,7 +108,9 @@ import static com.example.martin.test.Value.rayonPetitCercle;
 			int d2;
 			for (c.moveToFirst(); !c.isAfterLast(); c.moveToNext()) {
 				latRad2=c.getDouble(NUM_COL_LATRAD_RESTO);
+
 				lonRad2=c.getDouble(NUM_COL_LONRAD_RESTO);
+
 				d2=distence2(latRad1,latRad2,lonRad1,lonRad2);
 				if (d2<minDistence2) {
 					index=c.getPosition();
@@ -118,6 +119,7 @@ import static com.example.martin.test.Value.rayonPetitCercle;
 			}
 			if(minDistence2<SEUILRESTO*SEUILRESTO){
 				c.moveToPosition(index);
+
 				res=c.getInt(NUM_COL_ID_RESTO);
 				Log.d("resto","idResto : "+res);
 			}

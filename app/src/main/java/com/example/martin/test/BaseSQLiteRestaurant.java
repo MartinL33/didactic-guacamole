@@ -1,6 +1,5 @@
 package com.example.martin.test;
 
-import android.content.ContentValues;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -12,7 +11,6 @@ import static com.example.martin.test.Value.COL_LONRAD_RESTO;
 import static com.example.martin.test.Value.COL_PLATEFORME_RESTO;
 import static com.example.martin.test.Value.COL_TEXT_RESTO;
 import static com.example.martin.test.Value.COL_ZONE_RESTO;
-import static com.example.martin.test.Value.ID_RESTO_DEFAUT;
 import static com.example.martin.test.Value.TABLE_RESTO;
 
 /**
@@ -34,7 +32,7 @@ class BaseSQLiteRestaurant extends SQLiteOpenHelper {
 	@Override
 	public void onCreate(SQLiteDatabase db) {
 		db.execSQL(CREATE_BDD);
-		
+
 	}
 
 	@Override
@@ -43,18 +41,6 @@ class BaseSQLiteRestaurant extends SQLiteOpenHelper {
 		onCreate(db);
 	}
 
-	private void insertResto(SQLiteDatabase db, double latDeg, double lonDeg, String restoName, int zone, int plateforme) {
-		double latRad=Math.toRadians(latDeg);
-		double lonRad=Math.toRadians(lonDeg);
-		ContentValues content = new ContentValues();
-		content.put(COL_LATRAD_RESTO, latRad);
-		content.put(COL_LONRAD_RESTO, lonRad);
-		content.put(COL_TEXT_RESTO, restoName);
-		content.put(COL_ZONE_RESTO, zone);
-		content.put(COL_PLATEFORME_RESTO, plateforme);
-		content.put(COL_IDBASE_RESTO, ID_RESTO_DEFAUT);
-		db.insert(TABLE_RESTO, null, content);
 
-	}
 
 }

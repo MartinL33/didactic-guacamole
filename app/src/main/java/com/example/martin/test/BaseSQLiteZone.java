@@ -20,7 +20,7 @@ class BaseSQLiteZone extends SQLiteOpenHelper {
 
 	private static final String CREATE_BDD="CREATE TABLE " + TABLE_ZONE + " (" +
 			COL_ID_ZONE + "  INTEGER PRIMARY KEY AUTOINCREMENT, " + COL_LATRAD_ZONE + " REAL, "+COL_LONRAD_ZONE
-			+ " REAL, "+ COL_TEXT_ZONE + "  TEXT"+COL_PAYS_ZONE+" INTEGER);";
+			+ " REAL, "+ COL_TEXT_ZONE + "  TEXT,"+COL_PAYS_ZONE+" INTEGER);";
 
 
 

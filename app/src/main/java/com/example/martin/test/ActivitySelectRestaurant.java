@@ -18,6 +18,7 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 
+import static com.example.martin.test.Value.ID_RESTO_DEFAUT;
 import static com.example.martin.test.Value.IND_RESTO;
 import static com.example.martin.test.Value.verifPermissionLocation;
 
@@ -186,7 +187,7 @@ private BDDRestaurant bddRestaurant=new BDDRestaurant(ActivitySelectRestaurant.t
 					EditText editText=findViewById(R.id.editTextNewRestaurant);
 					String NomResto=editText.getText().toString();
 					bddRestaurant.openForWrite();
-					long idResto=bddRestaurant.insertResto(latRad,lonRad,NomResto,z,p);
+					long idResto=bddRestaurant.insertResto((float)latRad,(float)lonRad,NomResto,z,p,ID_RESTO_DEFAUT);
 					bddRestaurant.close();
 
 					Intent intentAction=new Intent(ActivitySelectRestaurant.this, BroadcastAction.class);

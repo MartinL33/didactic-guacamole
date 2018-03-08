@@ -16,7 +16,9 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="false"
         android:theme="@style/AppTheme">
-        <activity android:name=".ActivityMain">
+        <activity
+            android:name=".ActivityMain"
+            android:finishOnTaskLaunch="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -54,7 +56,10 @@
         <activity android:name=".ActivityExport" />
 
         <service
-            android:name=".ServiceInstall"
+            android:name=".ServiceInstallZone"
+            android:exported="false" />
+        <service
+            android:name=".ServiceInstallRestaurant"
             android:exported="false"></service>
     </application>
 

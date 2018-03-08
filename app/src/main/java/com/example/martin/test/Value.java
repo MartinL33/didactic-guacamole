@@ -183,6 +183,6 @@ import android.os.Build;
 		return String.valueOf(i);
 	}
 
-	static String[] textPays={"France","Paris"};
+	static String[] textPays={"france","paris"};
 
 }

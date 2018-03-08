@@ -16,10 +16,16 @@ import static com.example.martin.test.Value.COL_LONRAD_LOCAL;
 import static com.example.martin.test.Value.COL_TIME_LOCAL;
 import static com.example.martin.test.Value.IND_ARRET_INCONNU;
 import static com.example.martin.test.Value.IND_ATTENTE_CONFIRME;
+import static com.example.martin.test.Value.IND_CLIENT;
+import static com.example.martin.test.Value.IND_CLIENT_CONFIRME;
 import static com.example.martin.test.Value.IND_DEPLACEMENT_INCONNU;
 import static com.example.martin.test.Value.IND_DEPLACEMENT_VERS_CLIENT;
 import static com.example.martin.test.Value.IND_DEPLACEMENT_VERS_RESTO;
 import static com.example.martin.test.Value.IND_END;
+import static com.example.martin.test.Value.IND_HYPO_CLIENT;
+import static com.example.martin.test.Value.IND_HYPO_RESTO;
+import static com.example.martin.test.Value.IND_RESTO;
+import static com.example.martin.test.Value.IND_RESTO_CONFIRME;
 import static com.example.martin.test.Value.IND_START;
 import static com.example.martin.test.Value.NOM_BDD_LOCAL;
 import static com.example.martin.test.Value.NUM_COL_DUREE_LOCAL;
@@ -210,7 +216,23 @@ import static com.example.martin.test.Value.distence2;
 
 				//ajout déplacement
 				if(!c.isFirst()&&distance!=0) {
-					if(indicationPrecedante>=IND_ARRET_INCONNU) indicationPrecedante=IND_DEPLACEMENT_INCONNU;
+					//cas particulier dans lequel il n'y pas de point en déplacement
+					if(indicationPrecedante>=IND_ARRET_INCONNU) {
+						switch (indicationPrecedante) {
+							case IND_CLIENT:
+							case IND_HYPO_CLIENT:
+							case IND_CLIENT_CONFIRME:
+								indicationPrecedante=IND_DEPLACEMENT_VERS_RESTO;
+								break;
+							case IND_HYPO_RESTO:
+							case IND_RESTO:
+							case IND_RESTO_CONFIRME:
+								indicationPrecedante=IND_DEPLACEMENT_VERS_CLIENT;
+								break;
+							default:
+								indicationPrecedante=IND_DEPLACEMENT_INCONNU;
+						}
+					}
 					data.add(
 							new UneLigne(indicationPrecedante, datePrecedante, distance, (int) (date - datePrecedante)/1000)
 					);

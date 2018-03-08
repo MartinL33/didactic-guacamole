@@ -39,10 +39,12 @@ import static com.example.martin.test.Value.IND_RESTO;
 import static com.example.martin.test.Value.IND_START;
 import static com.example.martin.test.Value.verifPermissionLocation;
 
-public class ActivityMain extends Activity implements FragmentSelectPlateforme.OnPlateformeSelectedListener {
+public class ActivityMain extends Activity
+		implements FragmentSelectPlateforme.OnPlateformeSelectedListener {
 
 
-    private TextView textStatut;
+
+	private TextView textStatut;
     private Intent intentRecording;
     private Intent intentAction;
     private PendingIntent pendingRecording;
@@ -126,7 +128,7 @@ public class ActivityMain extends Activity implements FragmentSelectPlateforme.O
 
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 			Boolean boolLocation=checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED;
-			//Boolean boolInternet=checkSelfPermission(Manifest.permission.ACCESS_NETWORK_STATE) != PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED;
+			Boolean boolInternet=checkSelfPermission(Manifest.permission.ACCESS_NETWORK_STATE) != PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED;
 
 			Boolean boolExternalStorage=checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED;
 
@@ -140,16 +142,18 @@ public class ActivityMain extends Activity implements FragmentSelectPlateforme.O
 						MY_PERMISSIONS_REQUEST_LOCATION);
 
 			}
-			/*else if(boolInternet){
-				requestPermissions(new String[]{Manifest.permission.ACCESS_NETWORK_STATE,Manifest.permission.INTERNET},
-						MY_PERMISSIONS_REQUEST_INTERNET);
-				return;
-			}*/
+
 			else if (boolExternalStorage) {
 
 				requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
 						MY_PERMISSIONS_REQUEST_EXTERNAL_STORAGE);
 			}
+			if(boolInternet){
+				requestPermissions(new String[]{Manifest.permission.ACCESS_NETWORK_STATE,Manifest.permission.INTERNET},
+						MY_PERMISSIONS_REQUEST_INTERNET);
+
+			}
+
 
 		}
 
@@ -161,12 +165,11 @@ public class ActivityMain extends Activity implements FragmentSelectPlateforme.O
 		bddZone.close();
 		if(bddEmpty){
 			Log.d("MainActivity","bddZone Empty");
-			Intent i = new Intent(ActivityMain.this, ServiceInstall.class);
-			i.putExtra("bddZone",true);
+			Intent i = new Intent(ActivityMain.this, ServiceInstallZone.class);
 			startService(i);
 
 		}else{
-			zone=preferences.getInt("zone",1);
+			updateZone();
 		}
 
 
@@ -178,12 +181,6 @@ public class ActivityMain extends Activity implements FragmentSelectPlateforme.O
         Log.d("ActivityMain", "onResume()");
         super.onResume();
 
-
-
-
-
-
-        if(zone==1) updateZone();
 
         //masquage de layoutPlateforme
 
@@ -341,6 +338,8 @@ public class ActivityMain extends Activity implements FragmentSelectPlateforme.O
 						// création notification
 
 						Intent notificationIntent = new Intent(ActivityMain.this, ActivityMain.class);
+						notificationIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+						notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 						PendingIntent notificationPending = PendingIntent.getActivity(ActivityMain.this, 0, notificationIntent, 0);
 						NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
@@ -493,7 +492,7 @@ public class ActivityMain extends Activity implements FragmentSelectPlateforme.O
                 layoutCgtPlateforme.setVisibility(View.VISIBLE);
                 btnPlateforme.setVisibility(View.INVISIBLE);
               */
-				Intent i = new Intent(ActivityMain.this, ServiceInstall.class);
+				Intent i = new Intent(ActivityMain.this, ServiceInstallZone.class);
 				startService(i);
 
 
@@ -655,14 +654,13 @@ public class ActivityMain extends Activity implements FragmentSelectPlateforme.O
 		Boolean bddRestaurantEmpty=bddRestaurant.isEmpty();
 		bddRestaurant.close();
 		if(bddRestaurantEmpty&&pays>=0){
-			Log.d("MainActivity","bddZone Empty");
-			Intent i = new Intent(ActivityMain.this, ServiceInstall.class);
+			Log.d("MainActivity","bddRestaurant Empty");
+			Intent i = new Intent(ActivityMain.this, ServiceInstallRestaurant.class);
 			i.putExtra("pays",pays);
 			startService(i);
-
-
 		}
 	}
+
 
 }
 
