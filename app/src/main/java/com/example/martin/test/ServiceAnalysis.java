@@ -17,6 +17,7 @@ import static com.example.martin.test.Value.DUREE_MIN_FIN;
 import static com.example.martin.test.Value.DUREE_MIN_RESTO;
 import static com.example.martin.test.Value.DUREE_MIN_SAUVEGARDE_PAS;
 import static com.example.martin.test.Value.IND_ARRET_INCONNU;
+import static com.example.martin.test.Value.IND_ATTENTE;
 import static com.example.martin.test.Value.IND_CLIENT;
 import static com.example.martin.test.Value.IND_CLIENT_CONFIRME;
 import static com.example.martin.test.Value.IND_DEPLACEMENT_INCONNU;
@@ -97,7 +98,7 @@ public class ServiceAnalysis extends IntentService {
 		if(!firstLocation) firstLocalisation=localisationBDD.getLastLocation();
 		localisationBDD.close();
 
-		firstLocation=true;  //a supprimer
+	//	firstLocation=true;  //a supprimer
 
 		Log.d("ServiceAnalysis", "firstLocation: "+String.valueOf(firstLocation));
 		//temp
@@ -110,6 +111,7 @@ public class ServiceAnalysis extends IntentService {
         if (nbPoint < 15) {
             c.close();
 			tempBDD.close();
+			Log.d("ServiceAnalysis", "fin nbPoint<15");
             stopSelf();
 
         } else {
@@ -148,8 +150,9 @@ public class ServiceAnalysis extends IntentService {
 
 			} else{
 
-			//pour i=0  FirstLocalisation
-				p[0] = 5;
+				//pour i=0  FirstLocalisation
+				SharedPreferences preferences= PreferenceManager.getDefaultSharedPreferences(this);
+				p[0] = preferences.getInt("lastPrecision",5);
 				d[0] = firstLocalisation.getDuree()*1000;
 				x[0] = (float) (RAYONTERRE * firstLocalisation.getLatitude() - origineLatitude);
 				y[0] = (float) (rayonPetitCercle * firstLocalisation.getLongitude() - origineLongitude);
@@ -199,7 +202,7 @@ public class ServiceAnalysis extends IntentService {
 
 			calculPas();
 
-            douglasPeucker(2, nbPoint - 1);
+            douglasPeucker(0, nbPoint-1);
 
 			changementCoordoonee();
 
@@ -209,16 +212,25 @@ public class ServiceAnalysis extends IntentService {
             //ecriture des resultats dans la bdd
 
             localisationBDD.openForWrite();
-            localisationBDD.removeAll();
+            //localisationBDD.removeAll();
 			Log.d("ServiceAnalysis", "debut ecriture");
-            for (Localisation l: listeLoca) {
-				if(l.getTime()>0) {
-					localisationBDD.insertLocalisation(l);
-				}
-            }
+
+			int k=0;
+			if(!firstLocation){
+				localisationBDD.updateLocalisation(listeLoca.get(0));
+				k++;
+			}
+            for (;k<listeLoca.size();k++) {
+
+				localisationBDD.insertLocalisation(listeLoca.get(k));
+			}
+
             localisationBDD.close();
 
 
+			tempBDD.openForWrite();
+			tempBDD.removeAllTemp();
+			tempBDD.close();
             Log.d("ServiceAnalysis", "fin ecriture");
 
 
@@ -362,10 +374,6 @@ public class ServiceAnalysis extends IntentService {
 
             if (d[i]!=-1) {
                 d[i]=(int) (t[nextIndex(i)]-t[i]);
-
-				//if (d[i] > DUREE_MIN_SAUVEGARDE_PAS) {
-				//	ind[i]=IND_ARRET_INCONNU;
-				//}
             }
         }
     }
@@ -410,6 +418,28 @@ public class ServiceAnalysis extends IntentService {
     }
 
     private void changementCoordoonee(){
+    	//last Precision
+
+
+		double somme=1.0/p[nbPoint-1];
+
+		for(int i=nbPoint-1;i>=0;i--){
+			if(x[i]==x[i-1]){
+				somme=somme+1.0/p[i-1];
+			}else{
+				break;
+			}
+		}
+		float lastPrecision= (float) (1.0/somme);
+
+		Log.d("ServiceAnalysis", "lastPrecision : "+String.valueOf(lastPrecision));
+
+		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+		SharedPreferences.Editor editor=preferences.edit();
+		editor.putFloat("lastPrecision",lastPrecision);
+		editor.apply();
+
+
 
 		long tim;
 		float lonRad;
@@ -460,9 +490,6 @@ public class ServiceAnalysis extends IntentService {
 
 		}
 
-
-
-
 		if(listeLoca.get(listeLoca.size()-1).getIndication()!=IND_END){
 			Localisation l =listeLoca.get(listeLoca.size()-1);
 			tim =l.getTime()+1;
@@ -504,6 +531,8 @@ public class ServiceAnalysis extends IntentService {
 		for (Localisation l: listeLoca) {
 
 			if(l.getIndication()==IND_ARRET_INCONNU){
+				int ind=bddAction.getIndicationBeetween(l.getTime(),l.getTime()+l.getDuree()*1000);
+				if(ind==IND_RESTO||ind==IND_CLIENT||ind==IND_ATTENTE) l.setIndication(ind);
 
 			}
 			k++;

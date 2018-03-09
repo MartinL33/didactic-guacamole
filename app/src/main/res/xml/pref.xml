@@ -2,16 +2,26 @@
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
 
-    <PreferenceCategory android:title="Actualisation GPS">
+    <PreferenceCategory android:title="GPS">
         <SwitchPreference
             android:defaultValue="false"
             android:key="GPSModeActif"
+            android:persistent="true"
+            android:summaryOff="Le mode passif récupére la position fournie par les autres applications"
+            android:summaryOn="Le mode actif permet d'être plus précis mais consomme de la batterie"
             android:switchTextOff="Passif"
             android:switchTextOn="Actif"
-            android:summaryOn="Le mode actif permet d'être plus précis mais consomme de la batterie"
-            android:summaryOff="Le mode passif permet d'économiser de la batterie en récupérant la position fournie par les autres applications"
-            android:title="mode d'utilisation GPS "
-/>
+            android:title="mode d'utilisation GPS" />
+
+        <SwitchPreference
+            android:defaultValue="true"
+            android:key="AutoShift"
+            android:persistent="true"
+            android:summaryOff="Début et fin des shifts géré manuellement"
+            android:summaryOn="Détection automatique des shifts"
+            android:switchTextOff="OFF"
+            android:switchTextOn="ON"
+            android:title="Détection auto shifts" />
 
     </PreferenceCategory>
 

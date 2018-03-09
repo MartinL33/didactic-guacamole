@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteDatabase;
 import static com.example.martin.test.Value.COL_IND_ACTION;
 import static com.example.martin.test.Value.COL_TIME_ACTION;
 import static com.example.martin.test.Value.IND_PLATEFORME;
+import static com.example.martin.test.Value.IND_START;
 import static com.example.martin.test.Value.NOM_BDD_ACTION;
 import static com.example.martin.test.Value.NUM_COL_IND_ACTION;
 import static com.example.martin.test.Value.TABLE_ACTIONS;
@@ -62,7 +63,7 @@ class BDDAction {
 	int getLastPlateforme(){
 
 		int result=-1;
-		bdd = actions.getReadableDatabase();
+
 		Cursor c = bdd.rawQuery("SELECT * FROM "+ TABLE_ACTIONS +" WHERE "+ COL_IND_ACTION+ " >= "+IND_PLATEFORME[0]+" ORDER BY "+ COL_TIME_ACTION +" DESC LIMIT 1",null);
 
 		if (c.getCount()==1) {
@@ -74,7 +75,14 @@ class BDDAction {
 		return result;
 	}
 
-	Cursor getCursorFrom(int start){
-		return bdd.rawQuery("SELECT * FROM " + TABLE_ACTIONS + " WHERE " + COL_TIME_ACTION + " >= "+ start ,null);
+	int getIndicationBeetween(long start,long stop){
+		int result=-1;
+		Cursor c = bdd.rawQuery("SELECT * FROM "+ TABLE_ACTIONS +" WHERE "+ COL_IND_ACTION+ " < "+IND_START+ " AND "+COL_TIME_ACTION+ " BETWEEN "+start +" AND "+ stop +" ORDER BY "+COL_TIME_ACTION+" DESC LIMIT 1",null);
+		if (c.getCount()==1) {
+			c.moveToFirst();
+			result = c.getInt(NUM_COL_IND_ACTION);
+		}
+		c.close();
+		return result;
 	}
 }

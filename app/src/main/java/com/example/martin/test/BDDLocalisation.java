@@ -78,7 +78,7 @@ import static com.example.martin.test.Value.distence2;
         return bdd.insert(TABLE_LOCALISATIONS, null, content);
     }
 
-     int updateLocalisation(int id, Localisation localisation) {
+     int updateLocalisation(Localisation localisation) {
         ContentValues content = new ContentValues();
         content.put(COL_TIME_LOCAL, localisation.getTime());
         content.put(COL_LATRAD_LOCAL, localisation.getLatitude());
@@ -86,7 +86,7 @@ import static com.example.martin.test.Value.distence2;
 		content.put(COL_DUREE_LOCAL, localisation.getDuree());
 		content.put(COL_IND_LOCAL,localisation.getIndication());
         content.put(COL_IDRESTO_LOCAL, localisation.getIdResto());
-        return bdd.update(TABLE_LOCALISATIONS, content, COL_TIME_LOCAL + " = " + id, null);
+        return bdd.update(TABLE_LOCALISATIONS, content, COL_TIME_LOCAL + " = " + localisation.getTime(), null);
     }
 
     boolean isEmpty(){

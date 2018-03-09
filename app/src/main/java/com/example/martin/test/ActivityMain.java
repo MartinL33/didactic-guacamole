@@ -33,10 +33,8 @@ import com.google.android.gms.tasks.OnSuccessListener;
 
 import static com.example.martin.test.Value.IND_ATTENTE;
 import static com.example.martin.test.Value.IND_CLIENT;
-import static com.example.martin.test.Value.IND_END;
 import static com.example.martin.test.Value.IND_PLATEFORME;
 import static com.example.martin.test.Value.IND_RESTO;
-import static com.example.martin.test.Value.IND_START;
 import static com.example.martin.test.Value.verifPermissionLocation;
 
 public class ActivityMain extends Activity
@@ -213,14 +211,6 @@ public class ActivityMain extends Activity
 
                     isWorking = false;
 
-                    //arret Action
-
-                    intentAction.removeExtra("action");
-                    intentAction.putExtra("action", IND_END);
-                    sendBroadcast(intentAction);
-                    intentAction.removeExtra("action");
-
-
                     //fin enregistrement position
                     pendingRecording = PendingIntent.getBroadcast(ActivityMain.this, 2989, intentRecording, PendingIntent.FLAG_UPDATE_CURRENT);
                     LocationManager myLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -279,13 +269,6 @@ public class ActivityMain extends Activity
 
 
 						isWorking = true;
-
-						//lancement Action
-
-						intentAction.removeExtra("action");
-						intentAction.putExtra("action", IND_START);
-						sendBroadcast(intentAction);
-						intentAction.removeExtra("action");
 
 						//enregistrement position
 
@@ -492,10 +475,6 @@ public class ActivityMain extends Activity
                 layoutCgtPlateforme.setVisibility(View.VISIBLE);
                 btnPlateforme.setVisibility(View.INVISIBLE);
               */
-				Intent i = new Intent(ActivityMain.this, ServiceInstallZone.class);
-				startService(i);
-
-
 
             }
         });

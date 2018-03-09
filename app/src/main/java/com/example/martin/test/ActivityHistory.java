@@ -167,43 +167,48 @@ public class ActivityHistory extends Activity {
 		@NonNull
 		@Override
 		public View getView(int position, View convertView, @NonNull ViewGroup parent){
+
+
 			if(convertView==null) {
 				LayoutInflater layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 				assert layoutInflater != null;
 				convertView = layoutInflater.inflate(resource, parent, false);
-				final UneLigne ligne = data.get(position);
-				final TextView textIndication = convertView.findViewById(R.id.itemHistoryIndication);
-				if (ligne.getIndi() > 0 && ligne.getIndi() < stringIndication.length) {
-					if (ligne.getIndi() == IND_HYPO_RESTO || ligne.getIndi() == IND_RESTO || ligne.getIndi() == IND_RESTO_CONFIRME) {
-						textIndication.setText(String.valueOf(ligne.getNomResto()));
-					} else textIndication.setText(stringIndication[ligne.getIndi()]);
+			}
 
-				}
-				final TextView textHeure = convertView.findViewById(R.id.itemHistoryHeure);
-				if (ligne.getDate()>0){
-
-					DateFormat df=getTimeInstance(DateFormat.MEDIUM, Locale.getDefault());
-					textHeure.setText(df.format(new Date(ligne.getDate())));
-				}
-				final TextView textDistance = convertView.findViewById(R.id.itemHistoryDistance);
-
-				if(ligne.getDistance()>0) {
-					final int di = ligne.getDistance() / 1000;
-					final int di2 = ((ligne.getDistance() % 1000) / 10);
-
-					textDistance.setText(String.valueOf(di)+"."+intToString(di2) + "km");
-					textDistance.setVisibility(View.VISIBLE);
-				}
-				else textDistance.setText("");
-
-				final TextView textDuree = convertView.findViewById(R.id.itemHistoryDuree);
-				int du=ligne.getDuree()/60;
-				if(ligne.getDuree()>1) {
-					if (du < 10) textDuree.setText("  " + String.valueOf(du) + " min");
-					else textDuree.setText(String.valueOf(du) + " min");
-				}
+			final UneLigne ligne = data.get(position);
+			final TextView textIndication = convertView.findViewById(R.id.itemHistoryIndication);
+			if (ligne.getIndi() > 0 && ligne.getIndi() < stringIndication.length) {
+				if (ligne.getIndi() == IND_HYPO_RESTO || ligne.getIndi() == IND_RESTO || ligne.getIndi() == IND_RESTO_CONFIRME) {
+					textIndication.setText(String.valueOf(ligne.getNomResto()));
+				} else textIndication.setText(stringIndication[ligne.getIndi()]);
 
 			}
+			final TextView textHeure = convertView.findViewById(R.id.itemHistoryHeure);
+			if (ligne.getDate()>0){
+
+				DateFormat df=getTimeInstance(DateFormat.MEDIUM, Locale.getDefault());
+				textHeure.setText(df.format(new Date(ligne.getDate())));
+			}
+			final TextView textDistance = convertView.findViewById(R.id.itemHistoryDistance);
+
+			if(ligne.getDistance()>0) {
+				final int di = ligne.getDistance() / 1000;
+				final int di2 = ((ligne.getDistance() % 1000) / 10);
+
+				textDistance.setText(String.valueOf(di)+"."+intToString(di2) + "km");
+				textDistance.setVisibility(View.VISIBLE);
+			}
+			else textDistance.setText("");
+
+			final TextView textDuree = convertView.findViewById(R.id.itemHistoryDuree);
+			int du=ligne.getDuree()/60;
+			if(ligne.getDuree()>1) {
+				if (du < 10) textDuree.setText("  " + String.valueOf(du) + " min");
+				else textDuree.setText(String.valueOf(du) + " min");
+			}
+
+
+
 			return convertView;
 		}
 		@Override
