@@ -21,7 +21,7 @@ class UneLigne {
 	int indi;
 	long date;
 	int idResto;
-	int duree; //en seconde
+	int duree; //en ms
 	int distance;  //en m
 	String nomResto;
 
@@ -78,8 +78,8 @@ class UneLigne {
 
 		res +=";";
 
-		int du=duree/60;
-		if(duree>1) {
+		int du=duree/60000;
+		if(duree>10) {
 			if (du < 10) res +=String.valueOf(du) + " min";
 			else res +=String.valueOf(du) + " min";
 					}

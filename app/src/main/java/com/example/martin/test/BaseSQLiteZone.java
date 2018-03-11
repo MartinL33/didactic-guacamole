@@ -5,20 +5,31 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import static com.example.martin.test.Value.COL_ID_ZONE;
-import static com.example.martin.test.Value.COL_LATRAD_ZONE;
-import static com.example.martin.test.Value.COL_LONRAD_ZONE;
-import static com.example.martin.test.Value.COL_PAYS_ZONE;
-import static com.example.martin.test.Value.COL_TEXT_ZONE;
-import static com.example.martin.test.Value.TABLE_ZONE;
-
 /**
  * Created by martin on 19/02/18.
  */
 
 class BaseSQLiteZone extends SQLiteOpenHelper {
 
-	private static final String CREATE_BDD="CREATE TABLE " + TABLE_ZONE + " (" +
+
+
+	//base de donnee zone
+	final String NOM_BDD_ZONE = "zone.db";
+	final String TABLE_ZONE = "table_zone";
+	final String COL_ID_ZONE = "ID";
+	final int NUM_COL_ID_ZONE = 0;
+	final String COL_LATRAD_ZONE = "LATITUDE";
+	final int NUM_COL_LATRAD_ZONE = 1;
+	final String COL_LONRAD_ZONE = "LONGITUDE";
+	final int NUM_COL_LONRAD_ZONE = 2;
+	final String COL_TEXT_ZONE = "TEXT";
+	final int NUM_COL_TEXT_ZONE = 3;
+	final String COL_PAYS_ZONE = "PAYS";
+	final int NUM_COL_PAYS_ZONE = 4;
+
+
+
+	private final String CREATE_BDD="CREATE TABLE " + TABLE_ZONE + " (" +
 			COL_ID_ZONE + "  INTEGER PRIMARY KEY AUTOINCREMENT, " + COL_LATRAD_ZONE + " REAL, "+COL_LONRAD_ZONE
 			+ " REAL, "+ COL_TEXT_ZONE + "  TEXT,"+COL_PAYS_ZONE+" INTEGER);";
 

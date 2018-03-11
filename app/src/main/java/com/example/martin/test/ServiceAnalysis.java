@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.app.IntentService;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.database.Cursor;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
@@ -12,14 +11,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 
-import static com.example.martin.test.Value.DUREE_DEFAUT;
-import static com.example.martin.test.Value.DUREE_MIN_FIN;
 import static com.example.martin.test.Value.DUREE_MIN_RESTO;
 import static com.example.martin.test.Value.DUREE_MIN_SAUVEGARDE_PAS;
 import static com.example.martin.test.Value.IND_ARRET_INCONNU;
 import static com.example.martin.test.Value.IND_ATTENTE;
 import static com.example.martin.test.Value.IND_CLIENT;
 import static com.example.martin.test.Value.IND_CLIENT_CONFIRME;
+import static com.example.martin.test.Value.IND_DEFAUT;
 import static com.example.martin.test.Value.IND_DEPLACEMENT_INCONNU;
 import static com.example.martin.test.Value.IND_DEPLACEMENT_VERS_CLIENT;
 import static com.example.martin.test.Value.IND_DEPLACEMENT_VERS_RESTO;
@@ -28,42 +26,20 @@ import static com.example.martin.test.Value.IND_HYPO_CLIENT;
 import static com.example.martin.test.Value.IND_HYPO_RESTO;
 import static com.example.martin.test.Value.IND_RESTO;
 import static com.example.martin.test.Value.IND_RESTO_CONFIRME;
-import static com.example.martin.test.Value.IND_START;
 import static com.example.martin.test.Value.MAX_DISTANCE_ABERANT;
 import static com.example.martin.test.Value.MAX_DISTANCE_DOUGLAS;
 import static com.example.martin.test.Value.MIN_DISTANCE_ABERANT;
 import static com.example.martin.test.Value.MIN_DISTANCE_MOYENNE;
 import static com.example.martin.test.Value.MIN_DISTANCE_MOYENNE2;
 import static com.example.martin.test.Value.MIN_DISTANCE_MOYENNE3;
-import static com.example.martin.test.Value.NUM_COL_LATDEG_TEMP;
-import static com.example.martin.test.Value.NUM_COL_LONDEG_TEMP;
-import static com.example.martin.test.Value.NUM_COL_PRECISION_TEMP;
-import static com.example.martin.test.Value.NUM_COL_TIME_TEMP;
 import static com.example.martin.test.Value.RAYONTERRE;
-import static com.example.martin.test.Value.distence2;
 import static com.example.martin.test.Value.rayonPetitCercle;
 
 public class ServiceAnalysis extends IntentService {
 
-	private long[] t;
-	private int[] d;
-	private int[] p;
-	private float[] x;
-	private float[] y;
-	private int nbPoint = 0;
-	private double origineLatitude = 0;
-	private double origineLongitude = 0;
-	private long origineTime = 0;
-
-	//changement coordonnee
-
 	private List<Localisation> listeLoca=new ArrayList<>();
-
-	private int ind;
-	private boolean firstLocation=true; //Est-ce le premier point?
-	private Localisation firstLocalisation;
-
-
+	BDDLocalisation localisationBDD;
+	long timeFirstPoint;
 
     public ServiceAnalysis() {        super("ServiceAnalysis");     }
 
@@ -87,480 +63,379 @@ public class ServiceAnalysis extends IntentService {
         }*/
 
 
-//lecture BDD
 
+		initialiation();
 
-//localisation : lecture du dernier point
+		pointAberrant();
 
-		BDDLocalisation localisationBDD=new BDDLocalisation(this);
-		localisationBDD.openForRead();
-		firstLocation=localisationBDD.isEmpty();
-		if(!firstLocation) firstLocalisation=localisationBDD.getLastLocation();
-		localisationBDD.close();
+		moyennePointProche(MIN_DISTANCE_MOYENNE, 1);
 
-	//	firstLocation=true;  //a supprimer
+		moyennePointProche(MIN_DISTANCE_MOYENNE, 2);
 
-		Log.d("ServiceAnalysis", "firstLocation: "+String.valueOf(firstLocation));
-		//temp
-		Log.d("ServiceAnalysis", "debut lecture tempBDD");
-        BDDTemp tempBDD = new BDDTemp(this);
-		tempBDD.openForRead();
-        Cursor c = tempBDD.getCursor();
-        nbPoint = c.getCount();
+        moyennePointProche(MIN_DISTANCE_MOYENNE2, 4);
 
-        if (nbPoint < 15) {
-            c.close();
-			tempBDD.close();
-			Log.d("ServiceAnalysis", "fin nbPoint<15");
-            stopSelf();
+		moyennePointProche(MIN_DISTANCE_MOYENNE2, 2);
 
-        } else {
+     	moyennePointProche(MIN_DISTANCE_MOYENNE3,3);
 
-			//intialisation variable
+		calculPas();
 
+        douglasPeucker(0, listeLoca.size()-1);
 
-			t = new long[nbPoint];
-			p = new int[nbPoint];
-			d = new int[nbPoint];
+        removePoint();
 
-			x = new float[nbPoint];
-			y = new float[nbPoint];
+		indication();
 
-            c.moveToFirst();
+        if(rechResto()) rechClient();
 
-
-
-			origineLatitude = Math.toRadians(c.getDouble(NUM_COL_LATDEG_TEMP));
-			origineLongitude = Math.toRadians(c.getDouble(NUM_COL_LONDEG_TEMP));
-			origineTime = c.getLong(NUM_COL_TIME_TEMP);
-
-			//initialisation petit cercle:
-			if(rayonPetitCercle==0) {
-				distence2(origineLatitude,origineLatitude,0,1);
-			}
-
-			int i = 1;
-			if(firstLocation){
-				p[0] = c.getInt(NUM_COL_PRECISION_TEMP);
-				d[0] = DUREE_DEFAUT;
-				x[0] = 0;
-				y[0] = 0;
-				t[0] = 0;
-
-
-			} else{
-
-				//pour i=0  FirstLocalisation
-				SharedPreferences preferences= PreferenceManager.getDefaultSharedPreferences(this);
-				p[0] = preferences.getInt("lastPrecision",5);
-				d[0] = firstLocalisation.getDuree()*1000;
-				x[0] = (float) (RAYONTERRE * firstLocalisation.getLatitude() - origineLatitude);
-				y[0] = (float) (rayonPetitCercle * firstLocalisation.getLongitude() - origineLongitude);
-				t[0] = (int) (firstLocalisation.getTime() - origineTime);
-
-
-				//pour i=1  :
-				x[1] = 0;
-				y[1] = 0;
-				t[1] = 0;
-				p[1] = c.getInt(NUM_COL_PRECISION_TEMP);
-				d[1] = DUREE_DEFAUT;
-				i=2;
-			}
-
-            for (c.moveToPosition(1); !c.isAfterLast(); c.moveToNext()) {
-                t[i] = (int) (c.getLong(NUM_COL_TIME_TEMP) - origineTime);
-                x[i] = (float) (RAYONTERRE * (Math.toRadians(c.getDouble(NUM_COL_LATDEG_TEMP)) - origineLatitude));
-                y[i] = (float) (rayonPetitCercle * (Math.toRadians(c.getDouble(NUM_COL_LONDEG_TEMP)) - origineLongitude));
-                p[i] = c.getInt(NUM_COL_PRECISION_TEMP);
-                d[i] = DUREE_DEFAUT;
-                i++;
-            }
-            c.close();
-            tempBDD.close();
-			Log.d("ServiceAnalysis", "fin lecture tempBDD");
-
-
-
-
-
-            //début des calculs algo
-
-            pointAberrant();
-
-            moyennePointProche(MIN_DISTANCE_MOYENNE, 1);
-
-			moyennePointProche(MIN_DISTANCE_MOYENNE, 2);
-
-            moyennePointProche(MIN_DISTANCE_MOYENNE2, 2);
-
-            moyennePointProche(MIN_DISTANCE_MOYENNE2,2);
-
-            calculPas();
-
-			moyennePointProche(MIN_DISTANCE_MOYENNE3,3);
-
-			calculPas();
-
-            douglasPeucker(0, nbPoint-1);
-
-			changementCoordoonee();
-
-            action();
-
-
-            //ecriture des resultats dans la bdd
-
-            localisationBDD.openForWrite();
-            //localisationBDD.removeAll();
-			Log.d("ServiceAnalysis", "debut ecriture");
-
-			int k=0;
-			if(!firstLocation){
-				localisationBDD.updateLocalisation(listeLoca.get(0));
-				k++;
-			}
-            for (;k<listeLoca.size();k++) {
-
-				localisationBDD.insertLocalisation(listeLoca.get(k));
-			}
-
-            localisationBDD.close();
-
-
-			tempBDD.openForWrite();
-			tempBDD.removeAllTemp();
-			tempBDD.close();
-            Log.d("ServiceAnalysis", "fin ecriture");
-
-
-        }
+		ecritureBBD();
 
         stopSelf();
     }
 
-    private void pointAberrant(){
+	private void initialiation() {
+
+//lecture BDD
+
+//localisation : lecture des deux derniers
+
+		localisationBDD = new BDDLocalisation(this);
+	/*	localisationBDD.openForRead();
+		firstLocation = localisationBDD.isEmpty();
+		if (!firstLocation) firstLocalisation = localisationBDD.getLastLocation();
+		localisationBDD.close();
+
+
+		Log.d("ServiceAnalysis", "firstLocation: " + String.valueOf(firstLocation));
+
+		*/
+		//temp
+		Log.d("ServiceAnalysis", "debut lecture tempBDD");
+		BDDTemp tempBDD = new BDDTemp(this);
+		tempBDD.openForRead();
+		timeFirstPoint =tempBDD.getFirstTime();
+		listeLoca=tempBDD.getAllLocalisation();
+
+		if (listeLoca.size()< 10) {
+
+			tempBDD.close();
+
+			//on pourrait verifier le timpstanp du dernier point:
+			// si l'ecart est suffisament important: on traite les points et fin shift
+			Log.d("ServiceAnalysis", "fin nbPoint<10");
+			stopSelf();
+
+		} else {
+
+			tempBDD.close();
+			Log.d("ServiceAnalysis", "fin lecture tempBDD");
+/*
+			if(firstLocation) {
+				tim =t[0] + origineTime-1;
+				latRad = (float) (origineLatitude);
+				lonRad = (float) (origineLongitude);
+				listeLoca.add(new Localisation(tim, latRad, lonRad,IND_START));
+			}
+
+			int indPrecedante=0;
+			int ind=IND_DEFAUT;
+			for(int i=0;i<nbPoint-1;i++) {
+				if (d[i] != -1) {
+					tim =t[i] + origineTime;
+					latRad = (float) (origineLatitude + (x[i] / RAYONTERRE));
+					lonRad = (float) (origineLongitude + (y[i] / rayonPetitCercle));
+
+					if(d[i]<DUREE_MIN_SAUVEGARDE_PAS) ind=IND_DEPLACEMENT_INCONNU;
+					else ind=IND_ARRET_INCONNU;
+
+					int dur = d[i] / 1000;  //conversion en seconde
+					listeLoca.add(new Localisation(tim, latRad, lonRad,ind, dur));
+
+				}
+
+//si le pas est supérieur a DUREE_MIN_FIN, on considere que le shift 'est arreté puis redemarré
+				if(t[i+1]-t[i]>DUREE_MIN_FIN&&indPrecedante != IND_END) {
+
+					tim = t[i]+ 1+ origineTime;
+					latRad = (float) (origineLatitude + (x[i] / RAYONTERRE));
+					lonRad = (float) (origineLongitude + (y[i] / rayonPetitCercle));
+
+					if(i>0){
+
+						listeLoca.get(listeLoca.size()-1).setDuree((int)((t[i]-t[i-1]))/1000);
+					}
+					listeLoca.add(new Localisation(tim, latRad, lonRad,IND_END));
+					if(i<nbPoint-2) {
+						tim = t[i+1]-1+ origineTime;
+						latRad = (float) (origineLatitude + (x[i+1] / RAYONTERRE));
+						lonRad = (float) (origineLongitude + (y[i+1] / rayonPetitCercle));
+						listeLoca.add(new Localisation(tim, latRad, lonRad,IND_START));
+					}
+				}
+				indPrecedante=ind;
+
+			}
+*/
+
+		}
+
+	}
+
+
+	private void pointAberrant(){
+
+		for (int k=0;k<listeLoca.size()-3;k++){
 
 
 
-        for (int i=0;i<nbPoint-3;i++){
-
-            boolean dist = distance2(i, i + 1) > MAX_DISTANCE_ABERANT * MAX_DISTANCE_ABERANT;
-            boolean dist2 = distance2(i, i + 2) < MIN_DISTANCE_ABERANT * MIN_DISTANCE_ABERANT;
-            boolean dist3 = distance2(i, i + 3) < MIN_DISTANCE_ABERANT * MIN_DISTANCE_ABERANT;
-
-
+            boolean dist = distance2(k, k+1) > MAX_DISTANCE_ABERANT * MAX_DISTANCE_ABERANT;
+            boolean dist2 = distance2(k, k+2) < MIN_DISTANCE_ABERANT * MIN_DISTANCE_ABERANT;
+            boolean dist3 = distance2(k, k+3) < MIN_DISTANCE_ABERANT * MIN_DISTANCE_ABERANT;
 
             if (dist && dist2) {
-                x[i + 1] = x[i];
-                y[i + 1] = y[i];
+				listeLoca.get(k+1).fixPosition(listeLoca.get(k));
+
 
             } else if (dist && dist3) {
-                x[i + 1] = x[i];
-                y[i + 1] = y[i];
-                x[i + 2] = x[i];
-                y[i + 2] = y[i];
+				listeLoca.get(k+1).fixPosition(listeLoca.get(k));
+				listeLoca.get(k+2).fixPosition(listeLoca.get(k));
             }
         }
     }
+
 
 	// calcule la moyenne des points entre indexDebut et indexFin (non compris) pondérée par l'inverse de la précision de la mesure,
-    private void moyenne (int indexDebut, int indexFin){
+	private void moyenne (int indexDebut, int indexFin){
 
-        if (indexFin>indexDebut){
+		if (indexFin>indexDebut+1){
 
-            double moyenneX=0;
-			double moyenneY=0;
-            double ponderation=0.0;
+			double moyenneLat=0;
+			double moyenneLon=0;
+			double ponderation=0.0;
 
 
-            for(int i=indexDebut; i<indexFin;i++){
+			for(int i=indexDebut; i<indexFin;i++){
 
-				ponderation=1.0/p[i]+ponderation;
-				moyenneX = moyenneX + x[i] / p[i];
-				moyenneY = moyenneY + y[i] / p[i];
+				double p=listeLoca.get(i).getPrecision();
+				double lat=listeLoca.get(i).getLatitude();
+				double lon=listeLoca.get(i).getLongitude();
+
+				ponderation=(1.0/p)+ponderation;
+				moyenneLat = moyenneLat + (lat / p);
+				moyenneLon = moyenneLon + (lon / p);
 			}
-			moyenneX= moyenneX/ponderation;
-			moyenneY=moyenneY/ponderation;
+			moyenneLat= moyenneLat/ponderation;
+			moyenneLon=moyenneLon/ponderation;
 
-            for(int i= indexDebut; i<indexFin;i++){
-                x[i]=(float) moyenneX;
-                y[i]=(float) moyenneY;
-            }
-            for(int i= indexDebut+1; i<indexFin;i++){
-                d[i]=-1;
-            }
-        }
-    }
+			Localisation l =listeLoca.get(indexDebut);
+			l.setLatitude((float) moyenneLat);
+			l.setLongitude((float) moyenneLon);
+			l.setPrecision((float) (1.0/ponderation));
+			l.setDuree((int) (listeLoca.get(indexFin-1).getTime()-l.getTime()));
 
-    private int distanceDroite2(int indexPoint,int indexDebut, int indexFin){
 
-        if (indexDebut<indexPoint&&indexPoint<indexFin){
-            float num=(x[indexPoint]-x[indexDebut])*(y[indexFin]-y[indexDebut])-(x[indexFin]-x[indexDebut])*(y[indexPoint]-y[indexDebut]);
-            float dem=(x[indexFin]-x[indexDebut])*(x[indexFin]-x[indexDebut])+(y[indexFin]-y[indexDebut])*(y[indexFin]-y[indexDebut]);
-            return Math.abs((int)( num*num/dem));
-        }
-        else return 0;
-
-    }
-
-    private float distance2(int indexD, int indexF){
-        return (x[indexF]-x[indexD])*(x[indexF]-x[indexD])+(y[indexF]-y[indexD])*(y[indexF]-y[indexD]);
-    }
-
-    private int nextIndex(int index){
-    	if (index <nbPoint-1) {
-			index++;
-			while (index < nbPoint && d[index] == -1) {
-				index++;
+			for(int i= indexDebut+1; i<indexFin;i++){
+				listeLoca.get(i).setIndication(-1);
 			}
 		}
-        if ( index>=nbPoint)   return  nbPoint-1;
-        else return  index;
-    }
+	}
 
-    private boolean moyennePointProche(int distanceMax,int mode){
-        boolean result=false;
 
-        //moyenne des points proches
 
-        int indexF;
-        int i=0;
+	private int distance2(int indexD, int indexF) {
+		Localisation lD=listeLoca.get(indexD);
+		Localisation lF=listeLoca.get(indexF);
+		return Value.distence2(lD.getLatitude(),lF.getLatitude(),
+				lD.getLongitude(),lF.getLongitude());
 
-        while(i<nbPoint-2) {
+	}
 
-			if(d[i]!=-1) {
 
-				indexF = i + 1;
 
-				while ( indexF < nbPoint - 1 && conditionDistance(mode,i,indexF,distanceMax)) {
-					result = true;
-					indexF++;
-				}
+	private boolean moyennePointProche(int distanceMax,int mode){
+		boolean result=false;
 
-				if (result) {
-					moyenne(i, indexF);
-					i = indexF - 1;
-				}
+		//moyenne des points proches
+
+		int indexF;
+
+		for(int i=0;i<listeLoca.size()-1;i++) {
+			indexF = i + 1;
+			while ((indexF < listeLoca.size())  && conditionDistance(mode, i, indexF, distanceMax)) {
+				result = true;
+				indexF++;
 			}
-			i++;
-        }
-        return result;
-    }
+
+			if (result) {
+				moyenne(i, indexF);
+				i = indexF - 1;
+			}
+		}
+
+		if(result){
+			removePoint();
+		}
+
+		return result;
+	}
 
 	private boolean conditionDistance(int mode,int indexD,int indexF,int distanceMax){
-    	if(d[indexD]==-1) throw new AssertionError("erreur d["+String.valueOf(indexD)+"] = -1");
 
-    	if (d[indexF]==-1) return true;
 
-    	switch (mode) {
+		switch (mode) {
 			case 1:
-				return distance2(indexD, indexF) < ((distanceMax + p[indexF]) * (distanceMax + p[indexF]));
+				return distance2(indexD, indexF) < ((distanceMax + listeLoca.get(indexF).getPrecision()) * (distanceMax + listeLoca.get(indexF).getPrecision()));
 
 			case 3:
-				return  d[indexF]> DUREE_MIN_SAUVEGARDE_PAS&& d[indexD]> DUREE_MIN_SAUVEGARDE_PAS && (distance2(indexD, indexF) < (distanceMax * distanceMax));
+				return  listeLoca.get(indexF).getDuree()> DUREE_MIN_SAUVEGARDE_PAS&& listeLoca.get(indexD).getDuree()> DUREE_MIN_SAUVEGARDE_PAS && (distance2(indexD, indexF) < (distanceMax * distanceMax));
+
+			case 4: return (indexF<listeLoca.size()-2) && listeLoca.get(indexF).getDuree()<DUREE_MIN_SAUVEGARDE_PAS&&distance2(indexD,indexF+1)<(distanceMax * distanceMax);
 
 			default:
 				return distance2(indexD, indexF) < (distanceMax * distanceMax);
+		}
+	}
 
+	private void calculPas(){
+
+		for(int i=0;i<listeLoca.size()-1;i++){
+			listeLoca.get(i).setDuree((int) (listeLoca.get(i+1).getTime()-listeLoca.get(i).getTime()));
+		}
+	}
+
+	private int distanceDroite2(int indexPoint,int indexDebut, int indexFin){
+
+		if (indexDebut<indexPoint&&indexPoint<indexFin){
+			Localisation Ld=listeLoca.get(indexDebut);
+			Localisation Lf=listeLoca.get(indexFin);
+			Localisation Lp=listeLoca.get(indexPoint);
+
+			if(rayonPetitCercle==0) rayonPetitCercle = (int) (RAYONTERRE * Math.cos(Lp.getLatitude()));
+
+			float xDF=rayonPetitCercle*(Lf.getLongitude()-Ld.getLongitude());
+			float yDF=RAYONTERRE*(Lf.getLatitude()-Ld.getLatitude());
+
+			float xDP=rayonPetitCercle*(Lp.getLongitude()-Ld.getLongitude());
+			float yDP=RAYONTERRE*(Lp.getLatitude()-Ld.getLatitude());
+
+			return (int)( (xDP*yDF-yDP*xDF)*(xDP*yDF-yDP*xDF)/(xDF*xDF+yDF*yDF));
+		}
+		else return 0;
+
+	}
+
+	private void douglasPeucker(int indexDebut, int indexFin){
+
+		if (indexDebut+1<indexFin) {
+			int dmax = 0;
+			boolean pointInterressant = false;
+			int index = -1;
+
+			for (int i = indexDebut + 1; i < indexFin; i++) {
+
+				if (listeLoca.get(i).getDuree() > DUREE_MIN_SAUVEGARDE_PAS) {
+					index = i;
+					pointInterressant = true;
+					break; //si le point est interressant, on le sauve en arretant la boucle
+				}
+			}
+			//si on n'a pas trouvé de point interressant, on cherche la distance max
+			if (!pointInterressant) {
+				for (int i = indexDebut + 1; i < indexFin; i++) {
+					int distance = distanceDroite2(i, indexDebut, indexFin);
+					if (dmax < distance) {
+						dmax = distance;
+						index = i;
+					}
+				}
+			}
+
+			if (!pointInterressant && dmax < MAX_DISTANCE_DOUGLAS * MAX_DISTANCE_DOUGLAS) {
+
+				for (int i = indexDebut + 1; i < indexFin; i++) {
+					listeLoca.get(i).setIndication(-1);
+				}
+			}
+			else if (indexDebut < index && index < indexFin) {
+				douglasPeucker(indexDebut, index);
+				douglasPeucker(index, indexFin);
+			}
+		}
+	}
+
+	private void removePoint(){
+
+		for(int i=0;i<listeLoca.size();i++){
+			if(listeLoca.get(i).getIndication()==-1) {
+				listeLoca.remove(i);
+				i--;
+			}
 		}
 
 
 	}
 
-    private void calculPas(){
+	private void indication(){
 
-        for(int i=0;i<nbPoint-1;i++){
+		for(Localisation l: listeLoca) {
 
-            if (d[i]!=-1) {
-                d[i]=(int) (t[nextIndex(i)]-t[i]);
-            }
-        }
-    }
+			if(l.getIndication()==IND_DEFAUT) {
 
-    private void douglasPeucker(int indexDebut, int indexFin){
-
-        if (indexDebut+1<indexFin) {
-            int dmax = 0;
-            boolean pointInterressant = false;
-            int index = -1;
-
-            for (int i = indexDebut + 1; i < indexFin; i++) {
-
-
-                if (d[i] > DUREE_MIN_SAUVEGARDE_PAS) {
-                    index = i;
-                    pointInterressant = true;
-                    break; //si le point est interressant, on le sauve en arretant la boucle
-                }
-            }
-            //si on n'a pas trouvé de point interressant, on cherche la distance max
-            if (!pointInterressant) {
-                for (int i = indexDebut + 1; i < indexFin; i++) {
-                    int distance = distanceDroite2(i, indexDebut, indexFin);
-                    if (dmax < distance && d[i] != -1) {
-                        dmax = distance;
-                        index = i;
-                    }
-                }
-            }
-
-            if (!pointInterressant && dmax < MAX_DISTANCE_DOUGLAS * MAX_DISTANCE_DOUGLAS) {
-
-                for (int i = indexDebut + 1; i < indexFin; i++) {
-                    d[i] = -1;
-                }
-            } else if (indexDebut < index && index < indexFin) {
-                douglasPeucker(indexDebut, index);
-                douglasPeucker(index, indexFin);
-            }
-        }
-    }
-
-    private void changementCoordoonee(){
-    	//last Precision
-
-
-		double somme=1.0/p[nbPoint-1];
-
-		for(int i=nbPoint-1;i>=0;i--){
-			if(x[i]==x[i-1]){
-				somme=somme+1.0/p[i-1];
-			}else{
-				break;
+				if (l.getDuree() < DUREE_MIN_SAUVEGARDE_PAS) l.setIndication(IND_DEPLACEMENT_INCONNU);
+				else l.setIndication(IND_ARRET_INCONNU) ;
 			}
 		}
-		float lastPrecision= (float) (1.0/somme);
-
-		Log.d("ServiceAnalysis", "lastPrecision : "+String.valueOf(lastPrecision));
-
-		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-		SharedPreferences.Editor editor=preferences.edit();
-		editor.putFloat("lastPrecision",lastPrecision);
-		editor.apply();
-
-
-
-		long tim;
-		float lonRad;
-		float latRad;
-		if(firstLocation) {
-			tim =t[0] + origineTime-1;
-			latRad = (float) (origineLatitude);
-			lonRad = (float) (origineLongitude);
-			listeLoca.add(new Localisation(tim, latRad, lonRad,IND_START));
-		}
-
-		int indPrecedante=0;
-
-		for(int i=0;i<nbPoint-1;i++) {
-			if (d[i] != -1) {
-				tim =t[i] + origineTime;
-				latRad = (float) (origineLatitude + (x[i] / RAYONTERRE));
-				lonRad = (float) (origineLongitude + (y[i] / rayonPetitCercle));
-
-				if(d[i]<DUREE_MIN_SAUVEGARDE_PAS) ind=IND_DEPLACEMENT_INCONNU;
-				else ind=IND_ARRET_INCONNU;
-
-				int dur = d[i] / 1000;  //conversion en seconde
-				listeLoca.add(new Localisation(tim, latRad, lonRad,ind, dur));
-
-			}
-
-//si le pas est supérieur a DUREE_MIN_FIN, on considere que le shift 'est arreté puis redemarré
-			if(t[i+1]-t[i]>DUREE_MIN_FIN&&indPrecedante != IND_END) {
-
-				tim = t[i]+ 1+ origineTime;
-				latRad = (float) (origineLatitude + (x[i] / RAYONTERRE));
-				lonRad = (float) (origineLongitude + (y[i] / rayonPetitCercle));
-
-				if(i>0){
-
-					listeLoca.get(listeLoca.size()-1).setDuree((int)((t[i]-t[i-1]))/1000);
-				}
-				listeLoca.add(new Localisation(tim, latRad, lonRad,IND_END));
-				if(i<nbPoint-2) {
-					tim = t[i+1]-1+ origineTime;
-					latRad = (float) (origineLatitude + (x[i+1] / RAYONTERRE));
-					lonRad = (float) (origineLongitude + (y[i+1] / rayonPetitCercle));
-					listeLoca.add(new Localisation(tim, latRad, lonRad,IND_START));
-				}
-			}
-			indPrecedante=ind;
-
-		}
-
-		if(listeLoca.get(listeLoca.size()-1).getIndication()!=IND_END){
-			Localisation l =listeLoca.get(listeLoca.size()-1);
-			tim =l.getTime()+1;
-			latRad = l.getLatitude();
-			lonRad = l.getLongitude();
-			listeLoca.add(new Localisation(tim, latRad, lonRad,IND_END));
-		}
-
-
-		//liberation des tableaux initiaux
-		t = null;
-		p = null;
-		d = null;
-		x = null;
-		y = null;
-
 	}
 
-    private void action(){
-
+	private boolean rechResto() {
+		boolean result=false;
 		//zone
 
-		SharedPreferences preferences= PreferenceManager.getDefaultSharedPreferences(this);
-		int zone=preferences.getInt("zone",1);
+		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+		int zone = preferences.getInt("zone", 1);
 
 
-
-		Log.d("analyse","zone : "+String.valueOf(zone));
+		Log.d("analyse", "zone : " + String.valueOf(zone));
 
 		//plateforme
 
 		BDDAction bddAction = new BDDAction(this);
 		bddAction.openForRead();
 		int plateformeEnCours = bddAction.getLastPlateforme();
-		Log.d("analyse","plateformeEncours : "+String.valueOf(plateformeEnCours));
+		Log.d("analyse", "plateformeEncours : " + String.valueOf(plateformeEnCours));
 
-    	//recherche action utilisateur sur tout les points à l'arrêt
-		int k=0;
-		for (Localisation l: listeLoca) {
+		//recherche action utilisateur sur tout les points à l'arrêt
 
-			if(l.getIndication()==IND_ARRET_INCONNU){
-				int ind=bddAction.getIndicationBeetween(l.getTime(),l.getTime()+l.getDuree()*1000);
-				if(ind==IND_RESTO||ind==IND_CLIENT||ind==IND_ATTENTE) l.setIndication(ind);
+		for (Localisation l : listeLoca) {
 
+			if (l.getIndication() == IND_ARRET_INCONNU) {
+				int ind = bddAction.getIndicationBeetween(l.getTime(), l.getTime() + l.getDuree());
+				if (ind == IND_RESTO || ind == IND_CLIENT || ind == IND_ATTENTE)
+					l.setIndication(ind);
 			}
-			k++;
+
 		}
-
-
 		bddAction.close();
-
-
 
 		//recherche idResto sur tout les points à l'arrêt inconnu ou resto
 
-		BDDRestaurant bddRestaurant=new BDDRestaurant(this);
+		BDDRestaurant bddRestaurant = new BDDRestaurant(this);
 		bddRestaurant.openForRead();
 
 
-		for (Localisation l: listeLoca) {
-			int ind=l.getIndication();
-			int dur=l.getDuree();
-			if(dur>DUREE_MIN_RESTO&&(ind==IND_ARRET_INCONNU||ind==IND_RESTO||ind==IND_RESTO_CONFIRME)){
-				int id=bddRestaurant.getIdResto(l.getLatitude(),l.getLongitude(), zone, plateformeEnCours);
+		for (Localisation l : listeLoca) {
+			int ind = l.getIndication();
+			int dur = l.getDuree();
+			if (dur > DUREE_MIN_RESTO && (ind == IND_ARRET_INCONNU || ind == IND_RESTO || ind == IND_RESTO_CONFIRME)) {
+				int id = bddRestaurant.getIdResto(l.getLatitude(), l.getLongitude(), zone, plateformeEnCours);
 				//si on trouve un resto
-				if(id!=-1) {
+				if (id != -1) {
+					result=true;
 					l.setIdResto(id);
-					if(ind==IND_ARRET_INCONNU) {
+					if (ind == IND_ARRET_INCONNU) {
 						l.setIndication(IND_HYPO_RESTO);
+						Log.d("Analyse", "resto trouvé!");
 					}
-					Log.d("Analyse","resto trouvé!");
 
 				}
 
@@ -569,12 +444,15 @@ public class ServiceAnalysis extends IntentService {
 		}
 
 		bddRestaurant.close();
+		return  result;
+	}
 
+	private void rechClient(){
 		//recherche client
 		boolean hasCmd=false;
 		int maxDuree=0;
 		int indexClient=-1;
-		k=0;
+		int k=0;
 		for (Localisation l: listeLoca) {
 			int ind=l.getIndication();
 
@@ -596,7 +474,7 @@ public class ServiceAnalysis extends IntentService {
 				indexClient=-1;
 				hasCmd=false;
 			}
-		k++;
+			k++;
 		}
 
 
@@ -610,8 +488,9 @@ public class ServiceAnalysis extends IntentService {
 //parcours de la liste à l'envers
 		ListIterator<Localisation> iterator = listeLoca.listIterator(listeLoca.size()); // On précise la position initiale de l'iterator. Ici on le place à la fin de la liste
 		while(iterator.hasPrevious()){
+
 			Localisation l = iterator.previous();
-			ind=l.getIndication();
+			int ind=l.getIndication();
 			switch (ind) {
 
 				case IND_DEPLACEMENT_INCONNU:
@@ -634,6 +513,32 @@ public class ServiceAnalysis extends IntentService {
 			}
 		}
 	}
+
+	private void ecritureBBD(){
+	//ecriture des resultats dans la bdd
+
+	localisationBDD.openForWrite();
+	localisationBDD.removeAll();
+	Log.d("ServiceAnalysis", "debut ecriture");
+
+	for (Localisation l: listeLoca) {
+		if(l.getTime()<timeFirstPoint){
+			localisationBDD.updateLocalisation(l);
+		}
+		else{
+			localisationBDD.insertLocalisation(l);
+		}
+
+	}
+
+	localisationBDD.close();
+
+//	tempBDD.openForWrite();
+//	tempBDD.removeTempExceptLast();
+//	tempBDD.close();
+	Log.d("ServiceAnalysis", "fin ecriture");
+	}
+
 }
 
 

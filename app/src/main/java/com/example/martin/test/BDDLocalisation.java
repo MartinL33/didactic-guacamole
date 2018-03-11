@@ -74,7 +74,14 @@ import static com.example.martin.test.Value.distence2;
         content.put(COL_LONRAD_LOCAL, localisation.getLongitude());
 		content.put(COL_DUREE_LOCAL, localisation.getDuree());
 		content.put(COL_IND_LOCAL,localisation.getIndication());
-        content.put(COL_IDRESTO_LOCAL, localisation.getIdResto());
+		if(localisation.getIndication()==IND_RESTO||localisation.getIndication()==IND_RESTO_CONFIRME||
+				localisation.getIndication()==IND_HYPO_RESTO){
+			content.put(COL_IDRESTO_LOCAL, localisation.getIdResto());
+		}
+		else {
+			content.put(COL_IDRESTO_LOCAL, (int) (100*localisation.getPrecision()));
+		}
+
         return bdd.insert(TABLE_LOCALISATIONS, null, content);
     }
 
@@ -172,6 +179,7 @@ import static com.example.martin.test.Value.distence2;
 		int indicationPrecedante=-1;
 
 		int distance=0;
+		int dureePrecedente=0;
 		float latRadPrecedante=0;
 		float lonRadPrecedante=0;
 		long date;
@@ -201,16 +209,23 @@ import static com.example.martin.test.Value.distence2;
 				if(c.isLast()) {
 					date=c.getLong(NUM_COL_TIME_LOCAL);
 					data.add(
-							new UneLigne(indication, datePrecedante,distance,(int)(date-datePrecedante)/1000)
+							new UneLigne(indication, datePrecedante+dureePrecedente,distance,(int)(date-datePrecedante))
 					);
-
-
 				}
+
 
 			}
 			//arrêt
 			else if(indication>=IND_ARRET_INCONNU&&indication<=IND_ATTENTE_CONFIRME){
 				date=c.getLong(NUM_COL_TIME_LOCAL);
+
+
+				float latRad= c.getFloat(NUM_COL_LATRAD_LOCAL);
+				float lonRad= c.getFloat(NUM_COL_LONRAD_LOCAL);
+				if(!c.isFirst()) distance = (int) (Math.sqrt(distence2(latRadPrecedante, latRad, lonRadPrecedante, lonRad)));
+
+				latRadPrecedante= latRad;
+				lonRadPrecedante=lonRad;
 
 
 
@@ -234,8 +249,9 @@ import static com.example.martin.test.Value.distence2;
 						}
 					}
 					data.add(
-							new UneLigne(indicationPrecedante, datePrecedante, distance, (int) (date - datePrecedante)/1000)
+							new UneLigne(indicationPrecedante, datePrecedante+dureePrecedente, distance, (int) (date - datePrecedante-dureePrecedente))
 					);
+
 				}
 				//ajout arret
 
@@ -244,13 +260,8 @@ import static com.example.martin.test.Value.distence2;
 				data.add(new UneLigne(indication,date,0,duree,idResto));
 				//mise a jour variable
 
-				float latRad= c.getFloat(NUM_COL_LATRAD_LOCAL);
-				float lonRad= c.getFloat(NUM_COL_LONRAD_LOCAL);
-				if(!c.isFirst()) distance = (int) (Math.sqrt(distence2(latRadPrecedante, latRad, lonRadPrecedante, lonRad)));
 
-				latRadPrecedante= latRad;
-				lonRadPrecedante=lonRad;
-
+				dureePrecedente=duree;
 				datePrecedante=date;
 			}
 			//fin shift

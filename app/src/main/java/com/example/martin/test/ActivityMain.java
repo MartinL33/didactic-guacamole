@@ -281,10 +281,6 @@ public class ActivityMain extends Activity
 						if (myLocationManager != null) {
 							//myLocationManager.requestLocationUpdates(LocationManager.PASSIVE_PROVIDER, MIN_TIME_UPDATE_LOCATION, MIN_DISTANCE_UPDATE_LOCATION, pendingRecording);
 						}
-
-
-
-
 						LocationRequest mLocationRequest = new LocationRequest();
 						if(gpsModeActif) {
 							mLocationRequest.setFastestInterval(50);
@@ -309,7 +305,7 @@ public class ActivityMain extends Activity
 						PendingIntent analysisPending = PendingIntent.getService(ActivityMain.this, 5, analysisIntent,0);
 						AlarmManager AlarmeManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
 						if (AlarmeManager != null) {
-							//  AlarmeManager.setInexactRepeating(ELAPSED_REALTIME_WAKEUP, elapsedRealtime() + 2000, INTERVAL_FIFTEEN_MINUTES, analysisPending);
+							//  AlarmeManager.setInexactRepeating(ELAPSED_REALTIME_WAKEUP, elapsedRealtime() + 2000, INTERVAL_FIFTEEN_MINUTES/10, analysisPending);
 						}
 
 
@@ -342,7 +338,6 @@ public class ActivityMain extends Activity
 						intentResto.putExtra("action", IND_RESTO);
 						PendingIntent pendingResto= PendingIntent.getBroadcast(ActivityMain.this, 1, intentResto, PendingIntent.FLAG_UPDATE_CURRENT);
 
-
 						Intent intentClient= new Intent(ActivityMain.this, BroadcastAction.class);
 						intentClient.putExtra("action", IND_CLIENT);
 						PendingIntent pendingClient= PendingIntent.getBroadcast(ActivityMain.this, 2, intentClient, PendingIntent.FLAG_UPDATE_CURRENT);
@@ -355,18 +350,11 @@ public class ActivityMain extends Activity
 								builder.setVisibility(Notification.VISIBILITY_SECRET);
 							}
 						}
-
-
 						builder.build();
-
 						myNotication = builder.getNotification();
 						if (notificationManager != null) notificationManager.notify(ID_NOTIFICATION, myNotication);
 
-
-
 					}
-
-
 					else{
 					Toast.makeText(ActivityMain.this, R.string.taostPermissionRefusee, Toast.LENGTH_LONG).show();
 				}

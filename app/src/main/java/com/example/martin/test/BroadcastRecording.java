@@ -33,12 +33,12 @@ public class BroadcastRecording extends BroadcastReceiver {
 				for (Location l : listLocation) {
 
 					if (l != null) {
-						double latDeg = l.getLatitude();
-						double lonDeg = l.getLongitude();
+						double latRad = Math.toRadians(l.getLatitude());
+						double lonRad = Math.toRadians(l.getLongitude());
 						long time = l.getTime();
 
 						int precision = (int) l.getAccuracy();
-						long index = tempBDD.insertTemp(time, latDeg, lonDeg, precision);
+						long index = tempBDD.insertTemp(time, latRad, lonRad, precision);
 						Log.d("BroadcastRecording", "insertLocalisation = " + String.valueOf(index));
 					}
 				}

@@ -36,7 +36,7 @@ import static com.example.martin.test.Value.rayonPetitCercle;
  class BDDRestaurant {
 
 
-	private static final int VERSION = 4;
+	private static final int VERSION = 1;
 	private SQLiteDatabase bdd;
 	private BaseSQLiteRestaurant restos;
 	Integer[] idRestoSelect;
@@ -145,9 +145,6 @@ import static com.example.martin.test.Value.rayonPetitCercle;
 
 		List<Integer> idResto= new ArrayList<>();
 		List<String> nameResto= new ArrayList<>();
-
-
-		rayonPetitCercle = (int) (RAYONTERRE*Math.cos(latRad1));
 
 		Cursor c=bdd.rawQuery("SELECT * FROM "+TABLE_RESTO+" WHERE "+COL_ZONE_RESTO + " = " + zone + " AND "+COL_PLATEFORME_RESTO + " = " + plateforme,null);
 

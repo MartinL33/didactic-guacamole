@@ -14,21 +14,11 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import static com.example.martin.test.Value.NUM_COL_DUREE_LOCAL;
-import static com.example.martin.test.Value.NUM_COL_IDBASE_RESTO;
 import static com.example.martin.test.Value.NUM_COL_IDRESTO_LOCAL;
 import static com.example.martin.test.Value.NUM_COL_IND_LOCAL;
-import static com.example.martin.test.Value.NUM_COL_LATDEG_TEMP;
 import static com.example.martin.test.Value.NUM_COL_LATRAD_LOCAL;
-import static com.example.martin.test.Value.NUM_COL_LATRAD_RESTO;
-import static com.example.martin.test.Value.NUM_COL_LONDEG_TEMP;
 import static com.example.martin.test.Value.NUM_COL_LONRAD_LOCAL;
-import static com.example.martin.test.Value.NUM_COL_LONRAD_RESTO;
-import static com.example.martin.test.Value.NUM_COL_PLATEFORME_RESTO;
-import static com.example.martin.test.Value.NUM_COL_PRECISION_TEMP;
-import static com.example.martin.test.Value.NUM_COL_TEXT_RESTO;
 import static com.example.martin.test.Value.NUM_COL_TIME_LOCAL;
-import static com.example.martin.test.Value.NUM_COL_TIME_TEMP;
-import static com.example.martin.test.Value.NUM_COL_ZONE_RESTO;
 import static com.example.martin.test.Value.RAYONTERRE;
 import static com.example.martin.test.Value.rayonPetitCercle;
 
@@ -185,7 +175,7 @@ public class ServiceExportDebug extends IntentService {
 
 		}
 /*
-*/
+
 //base temp
 
 		BDDTemp tempBDD = new BDDTemp(ServiceExportDebug.this);
@@ -205,8 +195,8 @@ public class ServiceExportDebug extends IntentService {
 			for (c.moveToFirst(); !c.isAfterLast(); c.moveToNext()) {
 
 				t[i] = c.getLong(NUM_COL_TIME_TEMP);
-				lat[i] = (float) c.getDouble(NUM_COL_LATDEG_TEMP);
-				lon[i] = (float) c.getDouble(NUM_COL_LONDEG_TEMP);
+				lat[i] = (float) Math.toDegrees(c.getDouble(NUM_COL_LATRAD_TEMP));
+				lon[i] = (float) Math.toDegrees(c.getDouble(NUM_COL_LONRAD_TEMP));
 				p[i] = c.getInt(NUM_COL_PRECISION_TEMP);
 
 				i++;
@@ -254,7 +244,7 @@ public class ServiceExportDebug extends IntentService {
 
 		nbPoint = c.getCount();
 
-		Log.d("ServiceExport", "nbPoint =" + String.valueOf(nbPoint));
+		Log.d("ServiceExport", "nbPoint Restaurant =" + String.valueOf(nbPoint));
 
 		if (nbPoint > 0) {
 
@@ -301,7 +291,7 @@ public class ServiceExportDebug extends IntentService {
 
 		}
 		restoBDD.close();
-
+*/
 		stopSelf();
 	}
 }

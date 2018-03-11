@@ -39,8 +39,9 @@ import android.os.Build;
 
 
 
-	final static int DUREE_DEFAUT=1;  //en s
+	final static int DUREE_DEFAUT=0;  //en s
     final static int ID_RESTO_DEFAUT=-1;
+    final static int PRECISION_DEFAUT=1;
 
 //base de donnee localisation
     static final String NOM_BDD_LOCAL = "localisations.db";
@@ -72,26 +73,14 @@ import android.os.Build;
 	static final String TABLE_TEMP = "table_temp";
 	static final String COL_TIME_TEMP = "TIME";
 	static final int NUM_COL_TIME_TEMP = 0;
-	static final String COL_LATDEG_TEMP = "LATITUDE";
-	static final int NUM_COL_LATDEG_TEMP = 1;
-	static final String COL_LONDEG_TEMP = "LONGITUDE";
-	static final int NUM_COL_LONDEG_TEMP = 2;
+	static final String COL_LATRAD_TEMP = "LATITUDE";
+	static final int NUM_COL_LATRAD_TEMP = 1;
+	static final String COL_LONRAD_TEMP = "LONGITUDE";
+	static final int NUM_COL_LONRAD_TEMP = 2;
 	static final String COL_PRECISION_TEMP="PRECISION";
 	static final int NUM_COL_PRECISION_TEMP = 3;
 
-//base de donnee zone
-	static final String NOM_BDD_ZONE = "zone.db";
-	static final String TABLE_ZONE = "table_zone";
-	static final String COL_ID_ZONE = "ID";
-	static final int NUM_COL_ID_ZONE = 0;
-	static final String COL_LATRAD_ZONE = "LATITUDE";
-	static final int NUM_COL_LATRAD_ZONE = 1;
-	static final String COL_LONRAD_ZONE = "LONGITUDE";
-	static final int NUM_COL_LONRAD_ZONE = 2;
-	static final String COL_TEXT_ZONE = "TEXT";
-	static final int NUM_COL_TEXT_ZONE = 3;
-	static final String COL_PAYS_ZONE = "PAYS";
-	static final int NUM_COL_PAYS_ZONE = 4;
+
 
 	//base de donne restaurant
 
@@ -126,13 +115,14 @@ import android.os.Build;
     static final int MIN_DISTANCE_MOYENNE2 = 10;     //en m
 	static final int MIN_DISTANCE_MOYENNE3 = 100;     //en m
 
-    static final int MAX_DISTANCE_DOUGLAS = 30;   //en m
+
+    static final int MAX_DISTANCE_DOUGLAS = 10;   //en m
 
     // on garde tous les points pour lesquels on est resté DUREE_MIN_SAUVEGARDE_PAS à la même postion
     // (à MIN_DISTANCE_MOYENNE2 metre près)
     static final int DUREE_MIN_SAUVEGARDE_PAS = 20000; //en ms
 	//si le coursier attend plus que DUREE_MIN_RESTO à proximité d'un resto, on considere que c'est un pickup
-	static final int DUREE_MIN_RESTO=50;//en s
+	static final int DUREE_MIN_RESTO=50000;//en ms
    /*point aberant:
      si la distance entre un point et le point suivant est sup à MAX_DISTANCE_ABERANT
      et que la distance entre le premier point

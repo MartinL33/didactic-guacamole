@@ -2,6 +2,8 @@ package com.example.martin.test;
 
 import static com.example.martin.test.Value.DUREE_DEFAUT;
 import static com.example.martin.test.Value.ID_RESTO_DEFAUT;
+import static com.example.martin.test.Value.IND_DEFAUT;
+import static com.example.martin.test.Value.PRECISION_DEFAUT;
 
 /**
  * Created by martin on 02/02/18.
@@ -13,11 +15,17 @@ class Localisation {
     private long time;
     private float latitude;
     private float longitude;
-    private int duree;    //en seconde
+    private int duree;    //en ms
     private int indication;
     private int idResto;
+    private float precision;
 
-    Localisation(){}
+    Localisation(){
+		duree=DUREE_DEFAUT;
+		idResto=ID_RESTO_DEFAUT;
+		indication=IND_DEFAUT;
+		precision=PRECISION_DEFAUT;
+	}
 
     Localisation(long time,float latitude,float longitude, int indication){
     	this(time,latitude,longitude,indication,DUREE_DEFAUT,ID_RESTO_DEFAUT);
@@ -35,9 +43,24 @@ class Localisation {
         this.indication=indication;
         this.idResto=idResto;
     }
+
+    void fixPosition(Localisation l){
+    	this.latitude=l.getLatitude();
+		this.longitude=l.getLongitude();
+	}
+
     void setId(int id){
         this.id=id;
     }
+
+    void setPrecision(float precision){
+    	this.precision=precision;
+	}
+
+	float getPrecision(){
+    	return precision;
+	}
+
     int getId(){
         return id;
     }

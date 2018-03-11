@@ -201,10 +201,13 @@ public class ActivityHistory extends Activity {
 			else textDistance.setText("");
 
 			final TextView textDuree = convertView.findViewById(R.id.itemHistoryDuree);
-			int du=ligne.getDuree()/60;
-			if(ligne.getDuree()>1) {
+			int du=ligne.getDuree()/60000;
+			if(ligne.getDuree()>10) {
 				if (du < 10) textDuree.setText("  " + String.valueOf(du) + " min");
 				else textDuree.setText(String.valueOf(du) + " min");
+			}
+			else{
+				textDuree.setText( "00 min");
 			}
 
 
