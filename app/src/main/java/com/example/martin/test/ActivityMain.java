@@ -31,6 +31,9 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 
+import static android.app.AlarmManager.ELAPSED_REALTIME_WAKEUP;
+import static android.app.AlarmManager.INTERVAL_FIFTEEN_MINUTES;
+import static android.os.SystemClock.elapsedRealtime;
 import static com.example.martin.test.Value.IND_ATTENTE;
 import static com.example.martin.test.Value.IND_CLIENT;
 import static com.example.martin.test.Value.IND_PLATEFORME;
@@ -165,6 +168,7 @@ public class ActivityMain extends Activity
 			Log.d("MainActivity","bddZone Empty");
 			Intent i = new Intent(ActivityMain.this, ServiceInstallZone.class);
 			startService(i);
+			finish();
 
 		}else{
 			updateZone();
@@ -283,15 +287,15 @@ public class ActivityMain extends Activity
 						}
 						LocationRequest mLocationRequest = new LocationRequest();
 						if(gpsModeActif) {
-							mLocationRequest.setFastestInterval(50);
+							mLocationRequest.setFastestInterval(10);
 							mLocationRequest.setInterval(1000);
-							mLocationRequest.setMaxWaitTime(10000);
+							mLocationRequest.setMaxWaitTime(30000);
 							mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 						}
 						else {
-							mLocationRequest.setFastestInterval(50);
-							mLocationRequest.setInterval(50);
-							mLocationRequest.setMaxWaitTime(10000);
+							mLocationRequest.setFastestInterval(10);
+							mLocationRequest.setInterval(11);
+							mLocationRequest.setMaxWaitTime(30000);
 							mLocationRequest.setPriority(LocationRequest.PRIORITY_NO_POWER);
 						}
 
@@ -305,7 +309,7 @@ public class ActivityMain extends Activity
 						PendingIntent analysisPending = PendingIntent.getService(ActivityMain.this, 5, analysisIntent,0);
 						AlarmManager AlarmeManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
 						if (AlarmeManager != null) {
-							//  AlarmeManager.setInexactRepeating(ELAPSED_REALTIME_WAKEUP, elapsedRealtime() + 2000, INTERVAL_FIFTEEN_MINUTES/10, analysisPending);
+							  AlarmeManager.setInexactRepeating(ELAPSED_REALTIME_WAKEUP, elapsedRealtime() + 2000, INTERVAL_FIFTEEN_MINUTES/10, analysisPending);
 						}
 
 
@@ -627,6 +631,11 @@ public class ActivityMain extends Activity
 			startService(i);
 		}
 	}
+
+
+
+
+
 
 
 }

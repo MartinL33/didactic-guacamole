@@ -96,26 +96,38 @@ import static com.example.martin.test.Value.distence2;
         return bdd.update(TABLE_LOCALISATIONS, content, COL_TIME_LOCAL + " = " + localisation.getTime(), null);
     }
 
-    boolean isEmpty(){
+    boolean isCountInferieurTo2(){
 
 		Cursor c=bdd.rawQuery("SELECT * FROM "+ TABLE_LOCALISATIONS ,null);
-		Boolean result=(c.getCount()==0);
+		Boolean result=(c.getCount()<3);
         c.close();
 		return result;
     }
-	Localisation getLastLocation(){
+	ArrayList<Localisation> getLastLocations(){
 
-		Cursor c=bdd.rawQuery("SELECT * FROM "+ TABLE_LOCALISATIONS+" ORDER BY "+ COL_TIME_LOCAL +" DESC LIMIT 1" ,null);
-		c.moveToFirst();
-		Localisation l=new Localisation();
-		l.setTime(c.getLong(NUM_COL_TIME_LOCAL));
-		l.setLatitude(c.getFloat(NUM_COL_LATRAD_LOCAL));
-		l.setLongitude(c.getFloat(NUM_COL_LONRAD_LOCAL));
-		l.setIndication(c.getInt(NUM_COL_IND_LOCAL));
-		l.setDuree(c.getInt(NUM_COL_DUREE_LOCAL));
-		l.setIdResto(c.getInt(NUM_COL_IDRESTO_LOCAL));
+		ArrayList<Localisation> res= new ArrayList<>();
+
+		Cursor c=bdd.rawQuery("SELECT * FROM "+ TABLE_LOCALISATIONS+" ORDER BY "+ COL_TIME_LOCAL +" DESC LIMIT 2" ,null);
+
+
+		if(c.getCount()==0) {
+			c.close();
+			return null;
+		}
+		while(c.moveToNext()){
+			Localisation l=new Localisation();
+			l.setTime(c.getLong(NUM_COL_TIME_LOCAL));
+			l.setLatitude(c.getFloat(NUM_COL_LATRAD_LOCAL));
+			l.setLongitude(c.getFloat(NUM_COL_LONRAD_LOCAL));
+			l.setIndication(c.getInt(NUM_COL_IND_LOCAL));
+			l.setDuree(c.getInt(NUM_COL_DUREE_LOCAL));
+			l.setIdResto(c.getInt(NUM_COL_IDRESTO_LOCAL));
+			res.add(l);
+		}
 		c.close();
-		return l;
+
+
+		return res;
 	}
 
     Cursor getCursorFrom(int start){
@@ -131,6 +143,17 @@ import static com.example.martin.test.Value.distence2;
 		boolean res=c.getCount()==0;
 		c.close();
 		return res;
+	}
+
+	long replaceLocalisation(Localisation l){
+		ContentValues content = new ContentValues();
+		content.put(COL_TIME_LOCAL, l.getTime());
+		content.put(COL_LATRAD_LOCAL, l.getLatitude());
+		content.put(COL_LONRAD_LOCAL, l.getLongitude());
+		content.put(COL_DUREE_LOCAL, l.getDuree());
+		content.put(COL_IND_LOCAL,l.getIndication());
+		content.put(COL_IDRESTO_LOCAL, l.getIdResto());
+		return bdd.replace(TABLE_LOCALISATIONS,null,content);
 	}
 
      int removeLocalisation(int id){

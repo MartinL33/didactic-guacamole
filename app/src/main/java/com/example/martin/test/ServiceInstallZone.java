@@ -82,7 +82,6 @@ public class ServiceInstallZone extends IntentService {
 				Intent i = new Intent(this, ActivityMain.class);
 				i.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
 				i.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-
 				startActivity(i);
 			}
 		}

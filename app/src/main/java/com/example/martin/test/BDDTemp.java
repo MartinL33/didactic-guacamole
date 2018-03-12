@@ -2,8 +2,11 @@ package com.example.martin.test;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.preference.PreferenceManager;
+import android.util.Log;
 
 import java.util.ArrayList;
 
@@ -88,28 +91,27 @@ class BDDTemp {
 	}
 
 
-
-	Cursor getCursor(){
-		return bdd.rawQuery("SELECT * FROM " + TABLE_TEMP ,null);
-	}
-
-	ArrayList<Localisation> getAllLocalisation(){
-
-		Cursor c=bdd.rawQuery("SELECT * FROM "+TABLE_TEMP,null);
+	ArrayList<Localisation> getAllLocalisation(Context context){
+		long lastPointAnalysed;
+		ArrayList<Localisation> res= new ArrayList<>();
+		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+		if(preferences.contains("lastPointAnalysed"))
+			lastPointAnalysed = preferences.getLong("lastPointAnalysed", 1);
+		else lastPointAnalysed=1;
+		Log.d("BDDtemp","lastPointAnalysed= "+String.valueOf(lastPointAnalysed));
+		Cursor c=bdd.rawQuery("SELECT * FROM "+TABLE_TEMP+" WHERE " + COL_TIME_TEMP+" > "+ lastPointAnalysed,null);
 
 		if(c.getCount()==0) {
 			c.close();
-			return null;
+			Log.d("BDDtemp","c.getCount()==0");
+			res.add(new Localisation());
 		}
-		ArrayList<Localisation> res= new ArrayList<>();
-
 		while(c.moveToNext()){
 			Localisation l=new Localisation();
 			l.setTime(c.getLong(NUM_COL_TIME_TEMP));
 			l.setLatitude(c.getFloat(NUM_COL_LATRAD_TEMP));
 			l.setLongitude(c.getFloat(NUM_COL_LONRAD_TEMP));
 			l.setPrecision(c.getFloat(NUM_COL_PRECISION_TEMP));
-
 			res.add(l);
 		}
 		c.close();

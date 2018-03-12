@@ -39,7 +39,7 @@ import android.os.Build;
 
 
 
-	final static int DUREE_DEFAUT=0;  //en s
+	final static int DUREE_DEFAUT=0;  //en ms
     final static int ID_RESTO_DEFAUT=-1;
     final static int PRECISION_DEFAUT=1;
 
