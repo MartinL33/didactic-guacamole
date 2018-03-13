@@ -38,6 +38,8 @@
     <string name="nameFile">"/tableCommande-"</string>
     <string name="titleFile">"date;indication;durée attente(en min);distance (en Km)"</string>
 
+    <string name="missingPermission">"Permission de localisation refusée" </string>
+
     <string-array name="plateforme">
 
         <item>Deliveroo</item>

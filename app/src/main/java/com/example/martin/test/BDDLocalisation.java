@@ -42,12 +42,12 @@ import static com.example.martin.test.Value.distence2;
  */
 
  class BDDLocalisation {
-    private static final int VERSION = 1;
+    private static final int VERSION = 4;
     private SQLiteDatabase bdd;
     private BaseSQLiteLocalisation localisations;
 	int distanceTotale=0;
 	int nbCommande=0;
-	int duree=0;  //en ms
+	int dureeDate=0;  //en ms
 
      BDDLocalisation(Context context) {
         localisations = new BaseSQLiteLocalisation(context, NOM_BDD_LOCAL, null, VERSION);
@@ -192,47 +192,48 @@ import static com.example.martin.test.Value.distence2;
 
 		distanceTotale=0;
 		nbCommande=0;
-		duree=0;
+		dureeDate=0;
 
 		ArrayList<UneLigne> data= new ArrayList<>();
 		Cursor c= getCursorBetween(start,stop);
 		int nbPoint = c.getCount();
 		Log.d("BBDLocalisation",String.valueOf(nbPoint)+ " points");
 
-		int indicationPrecedante=-1;
 
-		int distance=0;
-		int dureePrecedente=0;
-		float latRadPrecedante=0;
-		float lonRadPrecedante=0;
 		long date;
-		long datePrecedante=0;
-
+		float latRad;
+		float lonRad;
+		int indication;
+		int distance=0;
+		int duree;
+		int indicationPrecedante=-1;
+		float latRadPrecedante=5; //latitude non initialisé car >Pi
+		float lonRadPrecedante=5;
+		long dateArretPrecedant=0;
+		int dureeArretPrecedent=0;
 
 		for (c.moveToFirst(); !c.isAfterLast(); c.moveToNext()) {
 
-			int indication=c.getInt(NUM_COL_IND_LOCAL);
+			indication=c.getInt(NUM_COL_IND_LOCAL);
+			latRad= c.getFloat(NUM_COL_LATRAD_LOCAL);
+			lonRad= c.getFloat(NUM_COL_LONRAD_LOCAL);
+			date=c.getLong(NUM_COL_TIME_LOCAL);
+			duree=c.getInt(NUM_COL_DUREE_LOCAL);
+			if(latRadPrecedante!=5) {
+				distance += (int) (Math.sqrt(distence2(latRadPrecedante, latRad, lonRadPrecedante, lonRad)));
+			}
 
 			//deplacement
 			if(indication==IND_DEPLACEMENT_INCONNU||indication==IND_DEPLACEMENT_VERS_CLIENT||indication==IND_DEPLACEMENT_VERS_RESTO){
 				if(c.isFirst()||indicationPrecedante==IND_START){
-					latRadPrecedante = c.getFloat(NUM_COL_LATRAD_LOCAL);
-					lonRadPrecedante= c.getFloat(NUM_COL_LONRAD_LOCAL);
-					datePrecedante= c.getLong(NUM_COL_TIME_LOCAL);
+					dateArretPrecedant= date;
+
 				}
 
-
-				float latRad= c.getFloat(NUM_COL_LATRAD_LOCAL);
-				float lonRad= c.getFloat(NUM_COL_LONRAD_LOCAL);
-
-				distance+= (int)(Math.sqrt(distence2(latRadPrecedante,latRad,lonRadPrecedante,lonRad)));
-				latRadPrecedante=latRad;
-				lonRadPrecedante=lonRad;
-
 				if(c.isLast()) {
-					date=c.getLong(NUM_COL_TIME_LOCAL);
+
 					data.add(
-							new UneLigne(indication, datePrecedante+dureePrecedente,distance,(int)(date-datePrecedante))
+							new UneLigne(indication, dateArretPrecedant+dureeArretPrecedent,distance,(int)(date-dateArretPrecedant))
 					);
 				}
 
@@ -240,17 +241,6 @@ import static com.example.martin.test.Value.distence2;
 			}
 			//arrêt
 			else if(indication>=IND_ARRET_INCONNU&&indication<=IND_ATTENTE_CONFIRME){
-				date=c.getLong(NUM_COL_TIME_LOCAL);
-
-
-				float latRad= c.getFloat(NUM_COL_LATRAD_LOCAL);
-				float lonRad= c.getFloat(NUM_COL_LONRAD_LOCAL);
-				if(!c.isFirst()) distance = (int) (Math.sqrt(distence2(latRadPrecedante, latRad, lonRadPrecedante, lonRad)));
-
-				latRadPrecedante= latRad;
-				lonRadPrecedante=lonRad;
-
-
 
 				//ajout déplacement
 				if(!c.isFirst()&&distance!=0) {
@@ -272,38 +262,39 @@ import static com.example.martin.test.Value.distence2;
 						}
 					}
 					data.add(
-							new UneLigne(indicationPrecedante, datePrecedante+dureePrecedente, distance, (int) (date - datePrecedante-dureePrecedente))
+							new UneLigne(indicationPrecedante, dateArretPrecedant+dureeArretPrecedent, distance, (int) (date - dateArretPrecedant-dureeArretPrecedent))
 					);
 
 				}
 				//ajout arret
 
 				int idResto=(c.getInt(NUM_COL_IDRESTO_LOCAL));
-				int duree=c.getInt(NUM_COL_DUREE_LOCAL);
+
 				data.add(new UneLigne(indication,date,0,duree,idResto));
 				//mise a jour variable
-
-
-				dureePrecedente=duree;
-				datePrecedante=date;
+				dateArretPrecedant=date;
+				dureeArretPrecedent=duree;
+				distance=0;
 			}
 			//fin shift
 			else if(indication==IND_END||indication==IND_START){
-				date=c.getLong(NUM_COL_TIME_LOCAL);
-				int idResto=(c.getInt(NUM_COL_IDRESTO_LOCAL));
-				int duree=c.getInt(NUM_COL_DUREE_LOCAL);
-				data.add(new UneLigne(indication,date,0,duree,idResto));
-				datePrecedante=0;
 
+				data.add(new UneLigne(indication,date,0,duree));
+				distance=0;
 			}
 
-			indicationPrecedante=indication;
+			if(indication<IND_START) {
+				latRadPrecedante = latRad;
+				lonRadPrecedante = lonRad;
+			}
+
+			indicationPrecedante = indication;
 		}
 		c.close();
 
 
 
-		//suppression des lignes avec aucune cmd
+		//suppression des lignes avec seulement ind Start et ind End
 		int index;
 		for (index=0;index<data.size()-1;index++) {
 			if(data.get(index).getIndi()==IND_START&&data.get(index+1).getIndi()==IND_END){
@@ -320,7 +311,7 @@ import static com.example.martin.test.Value.distence2;
 		bddRestaurant.openForRead();
 		int lastStart=0;
 		index=0;
-		duree=0;
+		dureeDate=0;
 
 		for (UneLigne l:data) {
 			distanceTotale=distanceTotale+l.getDistance();
@@ -331,8 +322,8 @@ import static com.example.martin.test.Value.distence2;
 			if(l.getIndi()==IND_START){
 				lastStart=index;
 			}
-			else if(l.getIndi()==IND_END){
-				duree+=(int) (l.getDate()-data.get(lastStart).getDate());
+			else if(l.getIndi()==IND_END||index== data.size()-1){
+				dureeDate+=(int) (l.getDate()-data.get(lastStart).getDate());
 			}
 			index++;
 		}

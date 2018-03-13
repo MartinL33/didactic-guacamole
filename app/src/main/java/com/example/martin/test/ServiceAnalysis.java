@@ -42,17 +42,20 @@ public class ServiceAnalysis extends IntentService {
 	private List<Localisation> listeLoca=new ArrayList<>();
 	private List<Localisation> listeInsertLoca=new ArrayList<>();
 	private BDDLocalisation localisationBDD;
-	private int indexFirstPoint=0;
 
 
-    public ServiceAnalysis() {        super("ServiceAnalysis");     }
+	Boolean finShift=false;
+	Boolean debutShift=false;
+	Boolean resto=false;
+
+	public ServiceAnalysis() {        super("ServiceAnalysis");     }
 
 
 
-    @SuppressLint("MissingPermission")
-    @Override
-    protected void onHandleIntent(Intent intent) {
-        Log.d("ServiceAnalysis", "debut analyse");
+	@SuppressLint("MissingPermission")
+	@Override
+	protected void onHandleIntent(Intent intent) {
+		Log.d("ServiceAnalysis", "debut analyse");
 
 
 /*
@@ -93,13 +96,13 @@ public class ServiceAnalysis extends IntentService {
 			ecritureBBD();
 		}
 
-        stopSelf();
-    }
+		stopSelf();
+	}
 
 	private boolean initialiation() {
 
 
-    	boolean res=false;
+		boolean res=false;
 //lecture BDD
 
 //localisation : lecture des deux derniers
@@ -108,30 +111,62 @@ public class ServiceAnalysis extends IntentService {
 		localisationBDD.openForRead();
 
 		listeLoca=localisationBDD.getLastLocations();
-
 		localisationBDD.close();
+
 		if(listeLoca==null) {
-			indexFirstPoint=0;
+			debutShift=true;
 			listeLoca=new ArrayList<>();
+		}else if(listeLoca.size()<=2){
+			SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+			float precisionlastPointAnalysed = preferences.getFloat("precisionLastPointAnalysed", 1);
+			listeLoca.get(listeLoca.size()-1).setPrecision(precisionlastPointAnalysed);
 		}
-		else if(listeLoca.size()<2) indexFirstPoint=0;
-		else if(listeLoca.size()==2) indexFirstPoint=1;
+
 		else throw new AssertionError("localisationBDD.getLastLocations contain more than deux localisations");
 		//temp
 		Log.d("ServiceAnalysis", "debut lecture tempBDD");
 		BDDTemp tempBDD = new BDDTemp(this);
 		tempBDD.openForRead();
-
-		listeLoca.addAll(tempBDD.getAllLocalisation(this));
+		List<Localisation> listeTempLoca=tempBDD.getAllLocalisation(this);
 		tempBDD.close();
+		if(listeTempLoca!=null) {
+
+			if(!listeLoca.isEmpty()&&!debutShift){
+				debutShift=(listeTempLoca.get(0).getTime() - listeLoca.get(listeLoca.size() - 1).getTime() > DUREE_MIN_FIN);
+
+			}
+			if(debutShift){
+				Localisation l;
+				l = listeTempLoca.get(0);
+				l.setIndication(IND_START);
+				l.setDuree(1);
+				l.setTime(l.getTime() - 1);
+				listeLoca.add(l);
+			}
+			listeLoca.addAll(listeTempLoca);
+
+		}
 
 
+		if(!listeLoca.isEmpty()) {
+			finShift = (System.currentTimeMillis() - listeLoca.get(listeLoca.size() - 1).getTime() > DUREE_MIN_FIN);
+			if(finShift){
+				Localisation l;
+				l=listeLoca.get(listeLoca.size() - 1);
+				l.setIndication(IND_END);
+				l.setDuree(1);
+				l.setTime(l.getTime() + 1);
+				listeLoca.add(l);
+			}
 
-		if (listeLoca.size()< 15) {
 
-			//on pourrait verifier le timpstanp du dernier point:
-			// si l'ecart est suffisament important: on traite les points et fin shift
-			Log.d("ServiceAnalysis", "fin nbPoint<10");
+		}
+		listeTempLoca=null;
+
+		if (listeLoca.size() < 15 && !finShift) {
+
+
+			Log.d("ServiceAnalysis", "fin nbPoint<15");
 
 			stopSelf();
 			onDestroy();
@@ -140,47 +175,51 @@ public class ServiceAnalysis extends IntentService {
 
 		} else {
 
-			res=true;
+			res = true;
 			Log.d("ServiceAnalysis", "fin lecture tempBDD");
 
 			SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-			float precisionlastPointAnalysed = preferences.getFloat("precisionLastPointAnalysed", 1);
-			listeLoca.get(listeLoca.size()-1).setPrecision(precisionlastPointAnalysed);
 
-			long lastPointAnalysed=listeLoca.get(listeLoca.size()-1).getTime();
+
+
 			SharedPreferences.Editor editor=preferences.edit();
-			editor.putLong("lastPointAnalysed",lastPointAnalysed);
+			editor.putFloat("precisionLastPointAnalysed",listeLoca.get(listeLoca.size()-1).getPrecision());
+
+
+			long lastPointAnalysed = listeLoca.get(listeLoca.size() - 1).getTime();
+
+			editor.putLong("lastPointAnalysed", lastPointAnalysed);
 			editor.apply();
 
-			if(indexFirstPoint==0) {
-				Localisation l= listeLoca.get(0);
-				l.setIndication(IND_START);
-				listeInsertLoca.add(l);
-			}
 
-			for(int i=indexFirstPoint;i<listeLoca.size()-1;i++) {
+			Localisation l;
+			for (int i =  1; i < listeLoca.size() - 1; i++) {
 
 //si le pas est supérieur a DUREE_MIN_FIN, on considere que le shift 'est arreté puis redemarré
 
-				if(listeLoca.get(i+1).getTime()-listeLoca.get(i).getTime()>DUREE_MIN_FIN) {
+				if (listeLoca.get(i + 1).getTime() - listeLoca.get(i).getTime() > DUREE_MIN_FIN) {
 
-					Localisation l= listeLoca.get(i);
+					l = listeLoca.get(i);
 					l.setIndication(IND_END);
-					l.setTime(l.getTime()+1);
-					listeInsertLoca.add(l);
+					l.setDuree(1);
+					l.setTime(l.getTime() + 1);
+					listeLoca.add(i,l);
 
-					l= listeLoca.get(i+1);
+					l = listeLoca.get(i + 1);
 					l.setIndication(IND_START);
-					l.setTime(l.getTime()-1);
-					listeInsertLoca.add(l);
-
+					l.setDuree(1);
+					l.setTime(l.getTime() - 1);
+					listeInsertLoca.add(i+1,l);
+					i+=2;
 				}
-
-
 			}
 
 
+
+
+
 		}
+
 		return res;
 
 	}
@@ -188,24 +227,24 @@ public class ServiceAnalysis extends IntentService {
 
 	private void pointAberrant(){
 
-		for (int k=indexFirstPoint;k<listeLoca.size()-3;k++){
+		for (int k=0;k<listeLoca.size()-3;k++){
 
 
 
-            boolean dist = distance2(k, k+1) > MAX_DISTANCE_ABERANT * MAX_DISTANCE_ABERANT;
-            boolean dist2 = distance2(k, k+2) < MIN_DISTANCE_ABERANT * MIN_DISTANCE_ABERANT;
-            boolean dist3 = distance2(k, k+3) < MIN_DISTANCE_ABERANT * MIN_DISTANCE_ABERANT;
+			boolean dist = distance2(k, k+1) > MAX_DISTANCE_ABERANT * MAX_DISTANCE_ABERANT;
+			boolean dist2 = distance2(k, k+2) < MIN_DISTANCE_ABERANT * MIN_DISTANCE_ABERANT;
+			boolean dist3 = distance2(k, k+3) < MIN_DISTANCE_ABERANT * MIN_DISTANCE_ABERANT;
 
-            if (dist && dist2) {
+			if (dist && dist2) {
 				listeLoca.get(k+1).fixPosition(listeLoca.get(k));
 
 
-            } else if (dist && dist3) {
+			} else if (dist && dist3) {
 				listeLoca.get(k+1).fixPosition(listeLoca.get(k));
 				listeLoca.get(k+2).fixPosition(listeLoca.get(k));
-            }
-        }
-    }
+			}
+		}
+	}
 
 	// calcule la moyenne des points entre indexDebut et indexFin (non compris) pondérée par l'inverse de la précision de la mesure,
 	private void moyenne (int indexDebut, int indexFin){
@@ -258,7 +297,7 @@ public class ServiceAnalysis extends IntentService {
 
 		int indexF;
 
-		for(int i=indexFirstPoint;i<listeLoca.size()-1;i++) {
+		for(int i=0;i<listeLoca.size()-1;i++) {
 			indexF = i + 1;
 			while ((indexF < listeLoca.size())  && conditionDistance(mode, i, indexF, distanceMax)) {
 				result = true;
@@ -279,7 +318,8 @@ public class ServiceAnalysis extends IntentService {
 	}
 
 	private boolean conditionDistance(int mode,int indexD,int indexF,int distanceMax){
-
+		if(listeLoca.get(indexF).getIndication()>=IND_START
+				||listeLoca.get(indexD).getIndication()>=IND_START) return false;
 
 		switch (mode) {
 			case 1:
@@ -297,33 +337,14 @@ public class ServiceAnalysis extends IntentService {
 
 	private void indication(){
 
-
-		//precision dernier point
-		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-		SharedPreferences.Editor editor=preferences.edit();
-		editor.putFloat("precisionLastPointAnalysed",listeLoca.get(listeLoca.size()-1).getPrecision());
-		editor.apply();
-
-		//insertion listInsertion
-
-		int i=0;
-		for(Localisation l: listeInsertLoca) {
-			long insertTime=l.getTime();
-			for(;i<listeLoca.size();i++) {
-				if(listeLoca.get(i).getTime()>insertTime){
-					listeLoca.add(i,l);
-					break;
-				}
-
+/*
+		//calcul pas
+		for(int i=0;i<listeLoca.size()-1;i++){
+			if(listeLoca.get(i).getDuree()==DUREE_DEFAUT) {
+				listeLoca.get(i).setDuree((int) (listeLoca.get(i + 1).getTime() - listeLoca.get(i).getTime()));
 			}
 		}
-
-		//calcul pas
-		for(i=indexFirstPoint;i<listeLoca.size()-1;i++){
-
-			listeLoca.get(i).setDuree((int) (listeLoca.get(i+1).getTime()-listeLoca.get(i).getTime()));
-		}
-
+*/
 		for(Localisation l: listeLoca) {
 
 			if(l.getIndication()==IND_DEFAUT) {
@@ -449,9 +470,11 @@ public class ServiceAnalysis extends IntentService {
 				int id = bddRestaurant.getIdResto(l.getLatitude(), l.getLongitude(), zone, plateformeEnCours);
 				//si on trouve un resto
 				if (id != -1) {
-					result=true;
+
 					l.setIdResto(id);
 					if (ind == IND_ARRET_INCONNU) {
+						result=true;
+						resto=true;
 						l.setIndication(IND_HYPO_RESTO);
 						Log.d("Analyse", "resto trouvé!");
 					}
@@ -462,6 +485,7 @@ public class ServiceAnalysis extends IntentService {
 		}
 
 		bddRestaurant.close();
+		if(finShift) result=true;
 		return  result;
 	}
 
@@ -533,22 +557,29 @@ public class ServiceAnalysis extends IntentService {
 	}
 
 	private void ecritureBBD(){
-	//ecriture des resultats dans la bdd
+		//ecriture des resultats dans la bdd
 
-	localisationBDD.openForWrite();
-	localisationBDD.removeAll();
-	Log.d("ServiceAnalysis", "debut ecriture");
+		localisationBDD.openForWrite();
 
-	for (Localisation l: listeLoca) {
-		localisationBDD.replaceLocalisation(l);
-	}
+		Log.d("ServiceAnalysis", "debut ecriture");
 
-	localisationBDD.close();
+		for (Localisation l: listeLoca) {
+			localisationBDD.replaceLocalisation(l);
+		}
+
+		localisationBDD.close();
 
 //	tempBDD.openForWrite();
 //	tempBDD.removeTempExceptLast();
 //	tempBDD.close();
-	Log.d("ServiceAnalysis", "fin ecriture");
+		Log.d("ServiceAnalysis", "fin ecriture");
+
+		listeLoca=null;
+		listeInsertLoca=null;
+
+
+
+
 	}
 
 }

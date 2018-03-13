@@ -127,7 +127,7 @@ public class ActivityHistory extends Activity {
 							((TextView) findViewById(R.id.cmdHistory)).setText(String.valueOf(localisationBDD.nbCommande)+" cmd");
 
 
-							int d=localisationBDD.duree;
+							int d=localisationBDD.dureeDate;
 							int h=  d/3600000;
 							int m= (d%3600000)/60000;
 

@@ -27,7 +27,7 @@ import static com.example.martin.test.Value.TABLE_TEMP;
 
 class BDDTemp {
 
-	private static final int VERSION = 1;
+	private static final int VERSION = 3;
 	private SQLiteDatabase bdd;
 	private BaseSQLiteTemp temp;
 
@@ -104,7 +104,7 @@ class BDDTemp {
 		if(c.getCount()==0) {
 			c.close();
 			Log.d("BDDtemp","c.getCount()==0");
-			res.add(new Localisation());
+			return null;
 		}
 		while(c.moveToNext()){
 			Localisation l=new Localisation();
@@ -114,6 +114,7 @@ class BDDTemp {
 			l.setPrecision(c.getFloat(NUM_COL_PRECISION_TEMP));
 			res.add(l);
 		}
+		Log.d("BDDtemp","c.getCount()= "+String.valueOf(c.getCount()));
 		c.close();
 		return res;
 	}

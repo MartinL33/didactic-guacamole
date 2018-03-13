@@ -9,8 +9,10 @@ import android.app.FragmentTransaction;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -18,6 +20,7 @@ import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -34,6 +37,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import static android.app.AlarmManager.ELAPSED_REALTIME_WAKEUP;
 import static android.app.AlarmManager.INTERVAL_FIFTEEN_MINUTES;
 import static android.os.SystemClock.elapsedRealtime;
+import static android.support.v4.content.PermissionChecker.PERMISSION_GRANTED;
 import static com.example.martin.test.Value.IND_ATTENTE;
 import static com.example.martin.test.Value.IND_CLIENT;
 import static com.example.martin.test.Value.IND_PLATEFORME;
@@ -44,6 +48,10 @@ public class ActivityMain extends Activity
 		implements FragmentSelectPlateforme.OnPlateformeSelectedListener {
 
 
+	final int MY_PERMISSIONS_REQUEST_LOCATION = 1;
+	final int MY_PERMISSIONS_REQUEST_INTERNET=2;
+	final int MY_PERMISSIONS_REQUEST_EXTERNAL_STORAGE = 3;
+	final int MY_PERMISSIONS_REQUEST= 4;
 
 	private TextView textStatut;
     private Intent intentRecording;
@@ -80,6 +88,7 @@ public class ActivityMain extends Activity
     private final static int ID_NOTIFICATION = 1989;
     private Notification myNotication;
 	private DialogFragment selectPlateformeFragment;
+	private MyReceiver receiver;
 
     @SuppressLint("MissingPermission")
 	@Override
@@ -87,6 +96,7 @@ public class ActivityMain extends Activity
         Log.d("ActivityMain", "onCreate");
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
 
 		preferences = PreferenceManager.getDefaultSharedPreferences(this);
         intentRecording = new Intent(ActivityMain.this, BroadcastRecording.class);
@@ -122,41 +132,10 @@ public class ActivityMain extends Activity
         }
 		//permission de localisation et ecriture carte SD
 
-		final int MY_PERMISSIONS_REQUEST_LOCATION = 1;
-        final int MY_PERMISSIONS_REQUEST_INTERNET=2;
-		final int MY_PERMISSIONS_REQUEST_EXTERNAL_STORAGE = 3;
-		final int MY_PERMISSIONS_REQUEST= 4;
-
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-			Boolean boolLocation=checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED;
-			Boolean boolInternet=checkSelfPermission(Manifest.permission.ACCESS_NETWORK_STATE) != PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED;
-
-			Boolean boolExternalStorage=checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED;
-
-			if(boolLocation&&boolExternalStorage){
-				requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.ACCESS_NETWORK_STATE,Manifest.permission.INTERNET},
-						MY_PERMISSIONS_REQUEST);
-
-			}
-			else if (boolLocation) {
-				requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-						MY_PERMISSIONS_REQUEST_LOCATION);
-
-			}
-
-			else if (boolExternalStorage) {
-
-				requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-						MY_PERMISSIONS_REQUEST_EXTERNAL_STORAGE);
-			}
-			if(boolInternet){
-				requestPermissions(new String[]{Manifest.permission.ACCESS_NETWORK_STATE,Manifest.permission.INTERNET},
-						MY_PERMISSIONS_REQUEST_INTERNET);
-
-			}
 
 
-		}
+
+
 
 
 //zone
@@ -165,10 +144,19 @@ public class ActivityMain extends Activity
 		boolean bddEmpty=bddZone.isEmpty();
 		bddZone.close();
 		if(bddEmpty){
+
 			Log.d("MainActivity","bddZone Empty");
+			// on déclare notre Broadcast Receiver
+			receiver = new MyReceiver();
+			IntentFilter filter = new IntentFilter(MyReceiver.ACTION_RESP);
+			filter.addCategory(Intent.CATEGORY_DEFAULT);
+			registerReceiver(receiver, filter);
+
+
 			Intent i = new Intent(ActivityMain.this, ServiceInstallZone.class);
 			startService(i);
-			finish();
+
+
 
 		}else{
 			updateZone();
@@ -182,6 +170,7 @@ public class ActivityMain extends Activity
     protected void onResume() {
         Log.d("ActivityMain", "onResume()");
         super.onResume();
+
 
 
         //masquage de layoutPlateforme
@@ -601,9 +590,38 @@ public class ActivityMain extends Activity
 						}
 					});
 
+		}else {
+			Log.d("activite", "Missing Permission");
+
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+				Boolean boolLocation = checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED;
+				Boolean boolInternet = checkSelfPermission(Manifest.permission.ACCESS_NETWORK_STATE) != PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.INTERNET) != PackageManager.PERMISSION_GRANTED;
+
+				Boolean boolExternalStorage = checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED;
+
+				if (boolLocation && boolExternalStorage) {
+					requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.ACCESS_NETWORK_STATE, Manifest.permission.INTERNET},
+							MY_PERMISSIONS_REQUEST);
+
+				} else if (boolLocation) {
+					requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+							MY_PERMISSIONS_REQUEST_LOCATION);
+
+				} else if (boolExternalStorage) {
+
+					requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+							MY_PERMISSIONS_REQUEST_EXTERNAL_STORAGE);
+				}
+				if (boolInternet) {
+					requestPermissions(new String[]{Manifest.permission.ACCESS_NETWORK_STATE, Manifest.permission.INTERNET},
+							MY_PERMISSIONS_REQUEST_INTERNET);
+
+				}
+
+
+			}
+
 		}
-
-
 	}
 
 	private void useLocation(Location loc){
@@ -632,9 +650,30 @@ public class ActivityMain extends Activity
 		}
 	}
 
+	public class MyReceiver extends BroadcastReceiver {
+		public static final String ACTION_RESP ="com.myapp.intent.action.ZoneInstalled";
 
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			Log.d("MainActivity","onReceiveBroadcast");
+			updateZone();
+			// on désenregistre notre broadcast
+			unregisterReceiver(receiver);
+		}
+	}
 
+	@Override
+	public void onRequestPermissionsResult(int requestCode,
+										   @NonNull String[] permissions,
+										   @NonNull int[] grantResults){
 
+		if((requestCode==MY_PERMISSIONS_REQUEST_LOCATION||requestCode==MY_PERMISSIONS_REQUEST)&&grantResults[0]==PERMISSION_GRANTED){
+			updateZone();
+		}else{
+			((TextView) findViewById(R.id.idZone)).setText(R.string.missingPermission);
+		}
+
+	}
 
 
 

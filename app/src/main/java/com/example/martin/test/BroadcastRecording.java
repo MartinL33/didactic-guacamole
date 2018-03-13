@@ -43,6 +43,8 @@ public class BroadcastRecording extends BroadcastReceiver {
 					}
 				}
 				tempBDD.close();
+
+
 			}
 
 		}

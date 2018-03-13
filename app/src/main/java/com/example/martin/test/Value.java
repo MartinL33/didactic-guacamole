@@ -4,6 +4,7 @@ import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.support.annotation.NonNull;
 
 /**
  * Created by martin on 04/02/18.
@@ -109,7 +110,7 @@ import android.os.Build;
     static final int DUREE_MAX_INTERRUPTION = 100000;    //en ms
 
     //si le pas si supérieur, on considere que le shift 'est arreté puis redemarré
-    static final int DUREE_MIN_FIN = 600000;    //en ms soit 10min
+    static final int DUREE_MIN_FIN = 600000;    //en ms soit environ 10min
 
    static final int MIN_DISTANCE_MOYENNE = 5;     //en m
     static final int MIN_DISTANCE_MOYENNE2 = 10;     //en m
@@ -122,7 +123,7 @@ import android.os.Build;
     // (à MIN_DISTANCE_MOYENNE2 metre près)
     static final int DUREE_MIN_SAUVEGARDE_PAS = 20000; //en ms
 	//si le coursier attend plus que DUREE_MIN_RESTO à proximité d'un resto, on considere que c'est un pickup
-	static final int DUREE_MIN_RESTO=50000;//en ms
+	static final int DUREE_MIN_RESTO=50000;//en ms   : 50s
    /*point aberant:
      si la distance entre un point et le point suivant est sup à MAX_DISTANCE_ABERANT
      et que la distance entre le premier point
@@ -168,7 +169,10 @@ import android.os.Build;
 		}
 		return res;
 	}
+
+	@NonNull
 	static String intToString(int i){
+
 		if (i < 10) return "0" + String.valueOf(i);
 		return String.valueOf(i);
 	}
