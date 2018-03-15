@@ -38,10 +38,10 @@ import static android.app.AlarmManager.ELAPSED_REALTIME_WAKEUP;
 import static android.app.AlarmManager.INTERVAL_FIFTEEN_MINUTES;
 import static android.os.SystemClock.elapsedRealtime;
 import static android.support.v4.content.PermissionChecker.PERMISSION_GRANTED;
+import static com.example.martin.test.Value.DUREE_MIN_FIN;
 import static com.example.martin.test.Value.IND_ATTENTE;
 import static com.example.martin.test.Value.IND_CLIENT;
 import static com.example.martin.test.Value.IND_PLATEFORME;
-import static com.example.martin.test.Value.IND_RESTO;
 import static com.example.martin.test.Value.verifPermissionLocation;
 
 public class ActivityMain extends Activity
@@ -219,12 +219,15 @@ public class ActivityMain extends Activity
                     //arret analyse
 
                     Intent analysisIntent = new Intent(ActivityMain.this, ServiceAnalysis.class);
-                    analysisIntent.putExtra("isWorkingName", false);
+
                     startService(analysisIntent);
                   	PendingIntent analysisPending = PendingIntent.getService(ActivityMain.this, 5, analysisIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-                   	AlarmManager AlarmeManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-                    if (AlarmeManager != null) AlarmeManager.cancel(analysisPending);
-                   	analysisPending.cancel();
+                   	AlarmManager alarmeManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+                    if (alarmeManager != null) {
+                    	alarmeManager.cancel(analysisPending);
+                    	alarmeManager.set(ELAPSED_REALTIME_WAKEUP,elapsedRealtime()+DUREE_MIN_FIN+1000,analysisPending);
+					}
+
 
                     //mise a jour interface
                     textStatut.setText(R.string.StatutStop);
@@ -308,7 +311,7 @@ public class ActivityMain extends Activity
 						btnStartAndGo.setText(R.string.textStop);
 
 						// création notification
-
+/*
 						Intent notificationIntent = new Intent(ActivityMain.this, ActivityMain.class);
 						notificationIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
 						notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -346,7 +349,7 @@ public class ActivityMain extends Activity
 						builder.build();
 						myNotication = builder.getNotification();
 						if (notificationManager != null) notificationManager.notify(ID_NOTIFICATION, myNotication);
-
+*/
 					}
 					else{
 					Toast.makeText(ActivityMain.this, R.string.taostPermissionRefusee, Toast.LENGTH_LONG).show();

@@ -16,6 +16,7 @@ import android.support.annotation.NonNull;
 	final static int IND_DEFAUT=1;
 	//deplacement
 	final static int IND_DEPLACEMENT_INCONNU=2;
+
 	final static int IND_DEPLACEMENT_VERS_RESTO=3;
 	final static int IND_DEPLACEMENT_VERS_CLIENT=4;
 	//arrêt
@@ -38,6 +39,9 @@ import android.support.annotation.NonNull;
 
     
 
+//notification:
+
+	final static int ID_NOTIFICATION_RESTO=10;
 
 
 	final static int DUREE_DEFAUT=0;  //en ms

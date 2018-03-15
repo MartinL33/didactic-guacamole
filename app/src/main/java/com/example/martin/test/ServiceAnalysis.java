@@ -2,8 +2,13 @@ package com.example.martin.test;
 
 import android.annotation.SuppressLint;
 import android.app.IntentService;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
@@ -14,6 +19,7 @@ import java.util.ListIterator;
 import static com.example.martin.test.Value.DUREE_MIN_FIN;
 import static com.example.martin.test.Value.DUREE_MIN_RESTO;
 import static com.example.martin.test.Value.DUREE_MIN_SAUVEGARDE_PAS;
+import static com.example.martin.test.Value.ID_NOTIFICATION_RESTO;
 import static com.example.martin.test.Value.IND_ARRET_INCONNU;
 import static com.example.martin.test.Value.IND_ATTENTE;
 import static com.example.martin.test.Value.IND_CLIENT;
@@ -40,13 +46,15 @@ import static com.example.martin.test.Value.rayonPetitCercle;
 public class ServiceAnalysis extends IntentService {
 
 	private List<Localisation> listeLoca=new ArrayList<>();
-	private List<Localisation> listeInsertLoca=new ArrayList<>();
+
 	private BDDLocalisation localisationBDD;
 
 
 	Boolean finShift=false;
 	Boolean debutShift=false;
 	Boolean resto=false;
+	long lastPointAnalysed;
+	String nameResto="";
 
 	public ServiceAnalysis() {        super("ServiceAnalysis");     }
 
@@ -56,20 +64,6 @@ public class ServiceAnalysis extends IntentService {
 	@Override
 	protected void onHandleIntent(Intent intent) {
 		Log.d("ServiceAnalysis", "debut analyse");
-
-
-/*
-        //si l'enregistrment etait en cours, on l'arrete et on le redemarre a la fin de l'analyse
-        Boolean isWorking = intent.getBooleanExtra("isWorkingName", false);
-        if (isWorking) {
-            LocationManager myLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
-            Intent intentRecording = new Intent(ServiceAnalysis.this, BroadcastRecording.class);
-            PendingIntent pendingRecording = PendingIntent.getBroadcast(ServiceAnalysis.this, 1989, intentRecording, PendingIntent.FLAG_UPDATE_CURRENT);
-            if (myLocationManager != null) myLocationManager.removeUpdates(pendingRecording);
-
-        }*/
-
-
 
 		if(initialiation()) {
 
@@ -94,6 +88,8 @@ public class ServiceAnalysis extends IntentService {
 			if (rechResto()) rechClient();
 
 			ecritureBBD();
+
+			afficheNotification();
 		}
 
 		stopSelf();
@@ -101,7 +97,7 @@ public class ServiceAnalysis extends IntentService {
 
 	private boolean initialiation() {
 
-
+		listeLoca=new ArrayList<>();
 		boolean res=false;
 //lecture BDD
 
@@ -116,6 +112,8 @@ public class ServiceAnalysis extends IntentService {
 		if(listeLoca==null) {
 			debutShift=true;
 			listeLoca=new ArrayList<>();
+
+
 		}else if(listeLoca.size()<=2){
 			SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
 			float precisionlastPointAnalysed = preferences.getFloat("precisionLastPointAnalysed", 1);
@@ -130,18 +128,13 @@ public class ServiceAnalysis extends IntentService {
 		List<Localisation> listeTempLoca=tempBDD.getAllLocalisation(this);
 		tempBDD.close();
 		if(listeTempLoca!=null) {
-
-			if(!listeLoca.isEmpty()&&!debutShift){
-				debutShift=(listeTempLoca.get(0).getTime() - listeLoca.get(listeLoca.size() - 1).getTime() > DUREE_MIN_FIN);
-
-			}
 			if(debutShift){
 				Localisation l;
-				l = listeTempLoca.get(0);
+				l=listeTempLoca.get(0);
 				l.setIndication(IND_START);
 				l.setDuree(1);
 				l.setTime(l.getTime() - 1);
-				listeLoca.add(l);
+				listeLoca.add(0,l);
 			}
 			listeLoca.addAll(listeTempLoca);
 
@@ -149,10 +142,11 @@ public class ServiceAnalysis extends IntentService {
 
 
 		if(!listeLoca.isEmpty()) {
-			finShift = (System.currentTimeMillis() - listeLoca.get(listeLoca.size() - 1).getTime() > DUREE_MIN_FIN);
+			Localisation l=listeLoca.get(listeLoca.size() - 1);
+			if(l.getIndication()!=IND_END) {
+				finShift = (System.currentTimeMillis() - l.getDuree() - l.getTime() > DUREE_MIN_FIN);
+			}
 			if(finShift){
-				Localisation l;
-				l=listeLoca.get(listeLoca.size() - 1);
 				l.setIndication(IND_END);
 				l.setDuree(1);
 				l.setTime(l.getTime() + 1);
@@ -163,7 +157,7 @@ public class ServiceAnalysis extends IntentService {
 		}
 		listeTempLoca=null;
 
-		if (listeLoca.size() < 15 && !finShift) {
+		if (listeLoca.size() < 3||(listeLoca.size() < 15&&!finShift) ) {
 
 
 			Log.d("ServiceAnalysis", "fin nbPoint<15");
@@ -177,19 +171,7 @@ public class ServiceAnalysis extends IntentService {
 
 			res = true;
 			Log.d("ServiceAnalysis", "fin lecture tempBDD");
-
-			SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-
-
-
-			SharedPreferences.Editor editor=preferences.edit();
-			editor.putFloat("precisionLastPointAnalysed",listeLoca.get(listeLoca.size()-1).getPrecision());
-
-
-			long lastPointAnalysed = listeLoca.get(listeLoca.size() - 1).getTime();
-
-			editor.putLong("lastPointAnalysed", lastPointAnalysed);
-			editor.apply();
+			lastPointAnalysed = listeLoca.get(listeLoca.size() - 1).getTime();
 
 
 			Localisation l;
@@ -198,50 +180,47 @@ public class ServiceAnalysis extends IntentService {
 //si le pas est supérieur a DUREE_MIN_FIN, on considere que le shift 'est arreté puis redemarré
 
 				if (listeLoca.get(i + 1).getTime() - listeLoca.get(i).getTime() > DUREE_MIN_FIN) {
-
 					l = listeLoca.get(i);
-					l.setIndication(IND_END);
-					l.setDuree(1);
-					l.setTime(l.getTime() + 1);
-					listeLoca.add(i,l);
-
+					if(l.getIndication()!=IND_END) {
+						l.setIndication(IND_END);
+						l.setDuree(1);
+						l.setTime(l.getTime() + 1);
+						listeLoca.add(i+1, l);
+						i++;
+					}
 					l = listeLoca.get(i + 1);
-					l.setIndication(IND_START);
-					l.setDuree(1);
-					l.setTime(l.getTime() - 1);
-					listeInsertLoca.add(i+1,l);
-					i+=2;
+					if(l.getIndication()!=IND_START) {
+						l.setIndication(IND_START);
+						l.setDuree(1);
+						l.setTime(l.getTime() - 1);
+						listeLoca.add(i + 1, l);
+						i++;
+						debutShift=true;
+					}
+
 				}
 			}
-
-
-
-
-
 		}
-
 		return res;
-
 	}
 
-
 	private void pointAberrant(){
-
-		for (int k=0;k<listeLoca.size()-3;k++){
-
-
-
-			boolean dist = distance2(k, k+1) > MAX_DISTANCE_ABERANT * MAX_DISTANCE_ABERANT;
-			boolean dist2 = distance2(k, k+2) < MIN_DISTANCE_ABERANT * MIN_DISTANCE_ABERANT;
-			boolean dist3 = distance2(k, k+3) < MIN_DISTANCE_ABERANT * MIN_DISTANCE_ABERANT;
-
-			if (dist && dist2) {
-				listeLoca.get(k+1).fixPosition(listeLoca.get(k));
+		if(listeLoca.size()>3) {
+			for (int k = 0; k < listeLoca.size() - 3; k++) {
 
 
-			} else if (dist && dist3) {
-				listeLoca.get(k+1).fixPosition(listeLoca.get(k));
-				listeLoca.get(k+2).fixPosition(listeLoca.get(k));
+				boolean dist = distance2(k, k + 1) > MAX_DISTANCE_ABERANT * MAX_DISTANCE_ABERANT;
+				boolean dist2 = distance2(k, k + 2) < MIN_DISTANCE_ABERANT * MIN_DISTANCE_ABERANT;
+				boolean dist3 = distance2(k, k + 3) < MIN_DISTANCE_ABERANT * MIN_DISTANCE_ABERANT;
+
+				if (dist && dist2) {
+					listeLoca.get(k + 1).fixPosition(listeLoca.get(k));
+
+
+				} else if (dist && dist3) {
+					listeLoca.get(k + 1).fixPosition(listeLoca.get(k));
+					listeLoca.get(k + 2).fixPosition(listeLoca.get(k));
+				}
 			}
 		}
 	}
@@ -448,7 +427,7 @@ public class ServiceAnalysis extends IntentService {
 
 		for (Localisation l : listeLoca) {
 
-			if (l.getIndication() == IND_ARRET_INCONNU) {
+			if (l.getIndication() >= IND_ARRET_INCONNU) {
 				int ind = bddAction.getIndicationBeetween(l.getTime(), l.getTime() + l.getDuree());
 				if (ind == IND_RESTO || ind == IND_CLIENT || ind == IND_ATTENTE)
 					l.setIndication(ind);
@@ -478,18 +457,35 @@ public class ServiceAnalysis extends IntentService {
 						l.setIndication(IND_HYPO_RESTO);
 						Log.d("Analyse", "resto trouvé!");
 					}
+					nameResto=bddRestaurant.getTextRestaurant(id);
 				}
 
+			}
+			if(l.getIndication()==IND_END){
+				result=true;
 			}
 
 		}
 
 		bddRestaurant.close();
-		if(finShift) result=true;
 		return  result;
 	}
 
 	private void rechClient(){
+
+		Log.d("Analyse", "recherche client");
+		//get last location
+		localisationBDD.openForRead();
+		ArrayList<Localisation> arrayTemp =localisationBDD.getLocalisationsInconnues();
+		localisationBDD.close();
+		if(arrayTemp!=null){
+
+
+			if(arrayTemp.get(arrayTemp.size()-1).getTime()==listeLoca.get(1).getTime()) arrayTemp.remove(arrayTemp.size()-1);
+			if(arrayTemp.get(arrayTemp.size()-1).getTime()==listeLoca.get(0).getTime()) arrayTemp.remove(arrayTemp.size()-1);
+			listeLoca.addAll(0,arrayTemp);
+		}
+
 		//recherche client
 		boolean hasCmd=false;
 		int maxDuree=0;
@@ -538,6 +534,7 @@ public class ServiceAnalysis extends IntentService {
 				case IND_DEPLACEMENT_INCONNU:
 					if (mode == 1) l.setIndication(IND_DEPLACEMENT_VERS_RESTO);
 					else if (mode == 2) l.setIndication(IND_DEPLACEMENT_VERS_CLIENT);
+					else if (mode == 3) l.setIndication(IND_ATTENTE);
 					break;
 				case IND_RESTO:
 				case IND_HYPO_RESTO:
@@ -548,6 +545,10 @@ public class ServiceAnalysis extends IntentService {
 				case IND_HYPO_CLIENT:
 				case IND_CLIENT_CONFIRME:
 					mode = 2;
+					break;
+
+				case IND_END:
+					mode=3;
 					break;
 				default:
 					mode = 0;
@@ -561,7 +562,7 @@ public class ServiceAnalysis extends IntentService {
 
 		localisationBDD.openForWrite();
 
-		Log.d("ServiceAnalysis", "debut ecriture");
+		Log.d("ServiceAnalysis", "debut ecriture, nb Point= "+String.valueOf(listeLoca.size()));
 
 		for (Localisation l: listeLoca) {
 			localisationBDD.replaceLocalisation(l);
@@ -574,14 +575,102 @@ public class ServiceAnalysis extends IntentService {
 //	tempBDD.close();
 		Log.d("ServiceAnalysis", "fin ecriture");
 
+
+
+
+		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+
+
+
+		SharedPreferences.Editor editor=preferences.edit();
+		editor.putFloat("precisionLastPointAnalysed",listeLoca.get(listeLoca.size()-1).getPrecision());
+
+
+
+		Log.d("ServiceAnalysis", "lastPointAnalysed  : " + String.valueOf(lastPointAnalysed ));
+		editor.putLong("lastPointAnalysed", lastPointAnalysed);
+		editor.apply();
+
 		listeLoca=null;
-		listeInsertLoca=null;
-
-
 
 
 	}
 
+	private void afficheNotification(){
+
+		int mode=-1;
+		if(finShift) mode=0;
+		if(debutShift) mode=1;
+		if(resto) mode=2;
+		NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+		if (notificationManager != null) {
+
+
+			if(mode>-1) {
+				String[] title=getResources().getStringArray(R.array.notification_title);
+
+				Intent notificationIntent = new Intent(this, ActivityMain.class);
+				notificationIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+				notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+				PendingIntent notificationPending = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+
+				Notification.Builder builder = new Notification.Builder(this);
+
+				builder.setAutoCancel(true);
+				//  builder.setTicker("this is ticker text");
+				builder.setContentTitle(title[mode]);
+
+				builder.setContentText(getResources().getString(R.string.ContentTextNotification));
+				builder.setSmallIcon(R.drawable.ic_notification_recording);
+				builder.setContentIntent(notificationPending);
+				builder.setOngoing(false);
+
+				builder.setPriority(Notification.PRIORITY_HIGH);
+
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+					builder.setTimeoutAfter(5000);
+				}
+
+				//resto
+				if(mode==2) {
+
+					builder.setContentText("Prise en charge d'une commande au "+nameResto+" ?");
+					Intent intentResto = new Intent(this, BroadcastAction.class);
+					intentResto.putExtra("action", IND_RESTO);
+					PendingIntent pendingResto = PendingIntent.getBroadcast(this, 1, intentResto, PendingIntent.FLAG_UPDATE_CURRENT);
+
+					Intent intentClient = new Intent(this, BroadcastAction.class);
+					intentClient.putExtra("action", IND_CLIENT);
+					PendingIntent pendingClient = PendingIntent.getBroadcast(this, 2, intentClient, PendingIntent.FLAG_UPDATE_CURRENT);
+
+
+					Intent intentAttente = new Intent(this, BroadcastAction.class);
+					intentAttente.putExtra("action", IND_ATTENTE);
+					PendingIntent pendingAttente = PendingIntent.getBroadcast(this, 3, intentClient, PendingIntent.FLAG_UPDATE_CURRENT);
+
+
+					if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
+						builder.addAction(new Notification.Action(R.drawable.ic_restaurant, "oui", pendingResto));
+						builder.addAction(new Notification.Action(R.drawable.ic_client, "non: livraison client", pendingClient));
+						builder.addAction(new Notification.Action(R.drawable.ic_stat_name, "non: attente", pendingClient));
+						if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+							builder.setVisibility(Notification.VISIBILITY_PUBLIC);
+						}
+					}
+				}
+
+				builder.build();
+				Notification myNotication = builder.getNotification();
+
+				notificationManager.notify(ID_NOTIFICATION_RESTO, myNotication);
+
+
+			}
+			else{
+				notificationManager.cancel(ID_NOTIFICATION_RESTO);
+			}
+		}
+	}
 }
 
 
