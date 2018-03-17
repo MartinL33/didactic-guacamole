@@ -155,7 +155,9 @@ class Localisation implements Comparable,Comparator {
 	@Override
 	public int compareTo(@NonNull Object o) {
     	if(o instanceof Localisation) {
-    		return (int) (this.time-((Localisation) o).time);
+    		if(this.time-((Localisation) o).time>0) return 1;
+    		else if (this.time==((Localisation) o).time) return 0;
+			else return -1;
 		}
 		else throw new AssertionError("compare Localisation to Objet");
 	}

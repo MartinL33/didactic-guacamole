@@ -58,7 +58,7 @@
             android:exported="false" />
         <service
             android:name=".ServiceInstallRestaurant"
-            android:exported="false"></service>
+            android:exported="false"/>
     </application>
 
 </manifest>

@@ -36,6 +36,7 @@ public class ServiceInstallRestaurant extends IntentService {
 
 				//telechargement des restaurant du pays
 				if (intent.hasExtra("pays")) {
+
 					int pays = intent.getIntExtra("pays", 0);
 					if (pays >= 0 && pays < textPays.length) {
 						String paysText = textPays[pays];
@@ -43,6 +44,7 @@ public class ServiceInstallRestaurant extends IntentService {
 						String adresseURL = "http://informatique-services-bordeaux.fr/" + paysText + ".csv";
 						Log.d("Install", "resto : " + adresseURL);
 						BDDRestaurant bddRestaurant = new BDDRestaurant(this);
+
 						bddRestaurant.openForWrite();
 
 

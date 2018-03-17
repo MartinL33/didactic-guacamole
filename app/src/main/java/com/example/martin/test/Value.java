@@ -140,8 +140,8 @@ import android.support.annotation.NonNull;
 
 
 	static final int SEUILZONE=10000; //en m
-	static final int SEUILRESTO =15; //en m
-	static final int SEUILSELECTRESTO =20; //en m
+	static final int SEUILRESTO =25; //en m
+	static final int SEUILSELECTRESTO =30; //en m
 
 
 

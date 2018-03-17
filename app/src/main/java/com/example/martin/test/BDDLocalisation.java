@@ -42,7 +42,7 @@ import static com.example.martin.test.Value.distence2;
  */
 
  class BDDLocalisation {
-    private static final int VERSION = 1;
+    private static final int VERSION = 2;
     private SQLiteDatabase bdd;
     private BaseSQLiteLocalisation localisations;
 	int distanceTotale=0;
@@ -109,7 +109,8 @@ import static com.example.martin.test.Value.distence2;
 			c.close();
 			return null;
 		}
-		while(c.moveToNext()){
+		c.moveToLast();
+		do{
 			Localisation l=new Localisation();
 			l.setTime(c.getLong(NUM_COL_TIME_LOCAL));
 			l.setLatitude(c.getFloat(NUM_COL_LATRAD_LOCAL));
@@ -117,8 +118,10 @@ import static com.example.martin.test.Value.distence2;
 			l.setIndication(c.getInt(NUM_COL_IND_LOCAL));
 			l.setDuree(c.getInt(NUM_COL_DUREE_LOCAL));
 			l.setIdResto(c.getInt(NUM_COL_IDRESTO_LOCAL));
-			res.add(0,l);
+			res.add(l);
 		}
+		while(c.moveToPrevious());
+
 		c.close();
 
 

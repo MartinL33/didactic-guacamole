@@ -26,8 +26,8 @@ public class ActivitySelectRestaurant extends Activity {
 
 private boolean restoConnu=true;
 
-private double latRad=0;
-private double lonRad=0;
+private float latRad=0;
+private float lonRad=0;
 private int z=1;
 private int p=1;
 private BDDRestaurant bddRestaurant=new BDDRestaurant(ActivitySelectRestaurant.this);
@@ -61,8 +61,8 @@ private BDDRestaurant bddRestaurant=new BDDRestaurant(ActivitySelectRestaurant.t
 
 
 	private void useLocation(Location location){
-		latRad=Math.toRadians(location.getLatitude());
-		lonRad=Math.toRadians(location.getLongitude());
+		latRad=(float) Math.toRadians(location.getLatitude());
+		lonRad=(float) Math.toRadians(location.getLongitude());
 		BDDZone bddZone = new BDDZone(ActivitySelectRestaurant.this);
 		bddZone.openForRead();
 		z= bddZone.getIdZone(latRad, lonRad);
@@ -72,9 +72,12 @@ private BDDRestaurant bddRestaurant=new BDDRestaurant(ActivitySelectRestaurant.t
         bddAction.openForRead();
 		p = bddAction.getLastPlateforme();
         bddAction.close();
+		Localisation l=new Localisation();
+		l.setLatitude(latRad);
+		l.setLongitude(lonRad);
 
         bddRestaurant.openForRead();
-		restoConnu =bddRestaurant.bddHasResto(latRad, lonRad,z,p);
+		restoConnu =bddRestaurant.bddHasResto(l,z,p);
         bddRestaurant.close();
 		Log.d("ActivitySelectResto","restaurant connu? : "+String.valueOf(restoConnu));
 

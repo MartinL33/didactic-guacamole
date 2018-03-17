@@ -82,7 +82,7 @@ public class ServiceRecording extends Service {
 		data.addLocalisations(listeTempLoca);
 		data.analyse(this);
 		int mode=-1;
-		
+
 		if(data.hasResto()) 		{
 			mode=2;
 			afficheNotification(mode,data.getResto().getName());

@@ -246,7 +246,7 @@ public class ActivityMain extends Activity
 						isWorking = true;
 
 						//enregistrement position
-						pendingRecording = PendingIntent.getBroadcast(ActivityMain.this, 2989, intentRecording, PendingIntent.FLAG_UPDATE_CURRENT);
+						pendingRecording = PendingIntent.getService(ActivityMain.this, 2989, intentRecording, PendingIntent.FLAG_UPDATE_CURRENT);
 
 						LocationManager myLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
@@ -257,67 +257,24 @@ public class ActivityMain extends Activity
 						if(gpsModeActif) {
 							mLocationRequest.setFastestInterval(50);
 							mLocationRequest.setInterval(1000);
-							mLocationRequest.setMaxWaitTime(10000);
+							mLocationRequest.setMaxWaitTime(25000);
 							mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 						}
 						else {
 							mLocationRequest.setFastestInterval(50);
 							mLocationRequest.setInterval(51);
-							mLocationRequest.setMaxWaitTime(10000);
+							mLocationRequest.setMaxWaitTime(25000);
 							mLocationRequest.setPriority(LocationRequest.PRIORITY_NO_POWER);
 						}
 
 						FusedLocationProviderClient mFusedLocationClient= LocationServices.getFusedLocationProviderClient(ActivityMain.this);
 						mFusedLocationClient.requestLocationUpdates(mLocationRequest,pendingRecording);
 
-
-
-
 						//mise a jour interface
 						textStatut.setText(R.string.StatutStart);
 						layoutAction.setVisibility(View.VISIBLE);
 						btnStartAndGo.setText(R.string.textStop);
 
-						// création notification
-/*
-						Intent notificationIntent = new Intent(ActivityMain.this, ActivityMain.class);
-						notificationIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-						notificationIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-						PendingIntent notificationPending = PendingIntent.getActivity(ActivityMain.this, 0, notificationIntent, 0);
-						NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-
-						Notification.Builder builder = new Notification.Builder(ActivityMain.this);
-
-						builder.setAutoCancel(false);
-						//  builder.setTicker("this is ticker text");
-						builder.setContentTitle(getResources().getString(R.string.TitleNotification));
-						builder.setContentText(getResources().getString(R.string.ContentTextNotification));
-						builder.setSmallIcon(R.drawable.ic_notification_recording);
-						builder.setContentIntent(notificationPending);
-						builder.setOngoing(true);
-
-						builder.setPriority(Notification.PRIORITY_HIGH);
-
-						Intent intentResto= new Intent(ActivityMain.this, BroadcastAction.class);
-						intentResto.putExtra("action", IND_RESTO);
-						PendingIntent pendingResto= PendingIntent.getBroadcast(ActivityMain.this, 1, intentResto, PendingIntent.FLAG_UPDATE_CURRENT);
-
-						Intent intentClient= new Intent(ActivityMain.this, BroadcastAction.class);
-						intentClient.putExtra("action", IND_CLIENT);
-						PendingIntent pendingClient= PendingIntent.getBroadcast(ActivityMain.this, 2, intentClient, PendingIntent.FLAG_UPDATE_CURRENT);
-
-
-						if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
-							builder.addAction(new Notification.Action(R.drawable.ic_restaurant,"restaurant",pendingResto));
-							builder.addAction(new Notification.Action(R.drawable.ic_client,getResources().getString(R.string.textCustomer),pendingClient));
-							if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-								builder.setVisibility(Notification.VISIBILITY_SECRET);
-							}
-						}
-						builder.build();
-						myNotication = builder.getNotification();
-						if (notificationManager != null) notificationManager.notify(ID_NOTIFICATION, myNotication);
-*/
 					}
 					else{
 					Toast.makeText(ActivityMain.this, R.string.taostPermissionRefusee, Toast.LENGTH_LONG).show();
