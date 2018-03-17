@@ -3,10 +3,8 @@ package com.example.martin.test;
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.AlarmManager;
 import android.app.DialogFragment;
 import android.app.FragmentTransaction;
-import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -34,11 +32,8 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 
-import static android.app.AlarmManager.ELAPSED_REALTIME_WAKEUP;
-import static android.app.AlarmManager.INTERVAL_FIFTEEN_MINUTES;
-import static android.os.SystemClock.elapsedRealtime;
 import static android.support.v4.content.PermissionChecker.PERMISSION_GRANTED;
-import static com.example.martin.test.Value.DUREE_MIN_FIN;
+import static com.example.martin.test.Value.ID_NOTIFICATION;
 import static com.example.martin.test.Value.IND_ATTENTE;
 import static com.example.martin.test.Value.IND_CLIENT;
 import static com.example.martin.test.Value.IND_PLATEFORME;
@@ -85,8 +80,8 @@ public class ActivityMain extends Activity
 
     private LinearLayout layoutCgtPlateforme;
 
-    private final static int ID_NOTIFICATION = 1989;
-    private Notification myNotication;
+
+
 	private DialogFragment selectPlateformeFragment;
 	private MyReceiver receiver;
 
@@ -99,7 +94,7 @@ public class ActivityMain extends Activity
 
 
 		preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        intentRecording = new Intent(ActivityMain.this, BroadcastRecording.class);
+        intentRecording = new Intent(ActivityMain.this, ServiceRecording.class);
         intentAction=new Intent(ActivityMain.this, BroadcastAction.class);
         textStatut = findViewById(R.id.idStatut);
         btnStartAndGo = findViewById(R.id.idStartAndStop);
@@ -179,7 +174,7 @@ public class ActivityMain extends Activity
 
         //test pour savoir si le serviceAction est lancé ou pas
 
-        isWorking = (PendingIntent.getBroadcast(ActivityMain.this, 2989, intentRecording, PendingIntent.FLAG_NO_CREATE) != null);
+        isWorking = (PendingIntent.getService(ActivityMain.this, 2989, intentRecording, PendingIntent.FLAG_NO_CREATE) != null);
         Log.d("ActivityMain", "serviceAction is " + (isWorking ? "" : "not") + " working");
         if (isWorking) {
             textStatut.setText(R.string.StatutStart);
@@ -205,7 +200,7 @@ public class ActivityMain extends Activity
                     isWorking = false;
 
                     //fin enregistrement position
-                    pendingRecording = PendingIntent.getBroadcast(ActivityMain.this, 2989, intentRecording, PendingIntent.FLAG_UPDATE_CURRENT);
+                    pendingRecording = PendingIntent.getService(ActivityMain.this, 2989, intentRecording, PendingIntent.FLAG_UPDATE_CURRENT);
                     LocationManager myLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
                     if (myLocationManager != null) {
                        // myLocationManager.removeUpdates(pendingRecording);
@@ -216,20 +211,7 @@ public class ActivityMain extends Activity
 
                     pendingRecording.cancel();
 
-                    //arret analyse
-
-                    Intent analysisIntent = new Intent(ActivityMain.this, ServiceAnalysis.class);
-
-                    startService(analysisIntent);
-                  	PendingIntent analysisPending = PendingIntent.getService(ActivityMain.this, 5, analysisIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-                   	AlarmManager alarmeManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-                    if (alarmeManager != null) {
-                    	alarmeManager.cancel(analysisPending);
-                    	alarmeManager.set(ELAPSED_REALTIME_WAKEUP,elapsedRealtime()+DUREE_MIN_FIN+1000,analysisPending);
-					}
-
-
-                    //mise a jour interface
+                   //mise a jour interface
                     textStatut.setText(R.string.StatutStop);
                     btnStartAndGo.setText(R.string.textStart);
                     layoutAction.setVisibility(View.INVISIBLE);
@@ -256,21 +238,15 @@ public class ActivityMain extends Activity
                     }
 
 
-
 					boolean gpsModeActif=preferences.getBoolean("GPSModeActif",false);
 					Log.d("MainActivity","gpsModeActif : "+String.valueOf(gpsModeActif));
 					//controle permission et GPS activé
 					if(verifPermissionLocation(ActivityMain.this)){
 
-
-
 						isWorking = true;
 
 						//enregistrement position
-
-
 						pendingRecording = PendingIntent.getBroadcast(ActivityMain.this, 2989, intentRecording, PendingIntent.FLAG_UPDATE_CURRENT);
-
 
 						LocationManager myLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
@@ -279,30 +255,22 @@ public class ActivityMain extends Activity
 						}
 						LocationRequest mLocationRequest = new LocationRequest();
 						if(gpsModeActif) {
-							mLocationRequest.setFastestInterval(10);
+							mLocationRequest.setFastestInterval(50);
 							mLocationRequest.setInterval(1000);
-							mLocationRequest.setMaxWaitTime(30000);
+							mLocationRequest.setMaxWaitTime(10000);
 							mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 						}
 						else {
-							mLocationRequest.setFastestInterval(10);
-							mLocationRequest.setInterval(11);
-							mLocationRequest.setMaxWaitTime(30000);
+							mLocationRequest.setFastestInterval(50);
+							mLocationRequest.setInterval(51);
+							mLocationRequest.setMaxWaitTime(10000);
 							mLocationRequest.setPriority(LocationRequest.PRIORITY_NO_POWER);
 						}
 
 						FusedLocationProviderClient mFusedLocationClient= LocationServices.getFusedLocationProviderClient(ActivityMain.this);
 						mFusedLocationClient.requestLocationUpdates(mLocationRequest,pendingRecording);
 
-						//lancement planification anlyse
 
-						Intent analysisIntent = new Intent(ActivityMain.this, ServiceAnalysis.class);
-						analysisIntent.putExtra("isWorkingName", true);
-						PendingIntent analysisPending = PendingIntent.getService(ActivityMain.this, 5, analysisIntent,0);
-						AlarmManager AlarmeManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-						if (AlarmeManager != null) {
-							  AlarmeManager.setInexactRepeating(ELAPSED_REALTIME_WAKEUP, elapsedRealtime() + 2000, INTERVAL_FIFTEEN_MINUTES/10, analysisPending);
-						}
 
 
 						//mise a jour interface

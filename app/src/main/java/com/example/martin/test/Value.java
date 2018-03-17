@@ -16,19 +16,20 @@ import android.support.annotation.NonNull;
 	final static int IND_DEFAUT=1;
 	//deplacement
 	final static int IND_DEPLACEMENT_INCONNU=2;
-
 	final static int IND_DEPLACEMENT_VERS_RESTO=3;
 	final static int IND_DEPLACEMENT_VERS_CLIENT=4;
+//attente
+	final static int IND_ATTENTE=5;
+	final static int IND_ATTENTE_CONFIRME=6;
 	//arrêt
-	final static int IND_ARRET_INCONNU=5;
-	final static int IND_RESTO=6;
-    final static int IND_CLIENT=7;
-    final static int IND_ATTENTE=8;
-	final static int IND_HYPO_RESTO=9;
-	final static int IND_HYPO_CLIENT=10;
-    final static int IND_RESTO_CONFIRME=11;
-    final static int IND_CLIENT_CONFIRME=12;
-    final static int IND_ATTENTE_CONFIRME=13;
+	final static int IND_ARRET_INCONNU=7;
+	final static int IND_RESTO=8;
+    final static int IND_CLIENT=9;
+	final static int IND_HYPO_RESTO=10;
+	final static int IND_HYPO_CLIENT=11;
+    final static int IND_RESTO_CONFIRME=12;
+    final static int IND_CLIENT_CONFIRME=13;
+
 	//autre
 	final static int IND_START=14;
 	final static int IND_END=15;
@@ -41,7 +42,7 @@ import android.support.annotation.NonNull;
 
 //notification:
 
-	final static int ID_NOTIFICATION_RESTO=10;
+	final static int ID_NOTIFICATION=10;
 
 
 	final static int DUREE_DEFAUT=0;  //en ms

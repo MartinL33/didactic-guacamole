@@ -29,6 +29,7 @@ class BDDAction {
 
 	}
 
+
 	void openForWrite() {
 		bdd = actions.getWritableDatabase();
 	}

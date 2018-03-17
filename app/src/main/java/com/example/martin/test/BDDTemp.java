@@ -44,6 +44,7 @@ class BDDTemp {
 	void openForRead() {
 		bdd = temp.getReadableDatabase();
 	}
+
 	void close() {
 		bdd.close();
 	}
@@ -56,6 +57,16 @@ class BDDTemp {
 		content.put(COL_LONRAD_TEMP, lonRad);
 		content.put(COL_PRECISION_TEMP, precision);
 		return bdd.insert(TABLE_TEMP, null, content);
+	}
+
+	long replaceTemp(long time, double latRad,double lonRad,int precision) {
+
+		ContentValues content = new ContentValues();
+		content.put(COL_TIME_TEMP, time);
+		content.put(COL_LATRAD_TEMP, latRad);
+		content.put(COL_LONRAD_TEMP, lonRad);
+		content.put(COL_PRECISION_TEMP, precision);
+		return bdd.replace(TABLE_TEMP, null, content);
 	}
 
 	void removeTempExceptLast(){

@@ -17,16 +17,15 @@ import static com.example.martin.test.Value.COL_PLATEFORME_RESTO;
 import static com.example.martin.test.Value.COL_TEXT_RESTO;
 import static com.example.martin.test.Value.COL_ZONE_RESTO;
 import static com.example.martin.test.Value.NOM_BDD_RESTO;
+import static com.example.martin.test.Value.NUM_COL_IDBASE_RESTO;
 import static com.example.martin.test.Value.NUM_COL_ID_RESTO;
 import static com.example.martin.test.Value.NUM_COL_LATRAD_RESTO;
 import static com.example.martin.test.Value.NUM_COL_LONRAD_RESTO;
 import static com.example.martin.test.Value.NUM_COL_TEXT_RESTO;
-import static com.example.martin.test.Value.RAYONTERRE;
 import static com.example.martin.test.Value.SEUILRESTO;
 import static com.example.martin.test.Value.SEUILSELECTRESTO;
 import static com.example.martin.test.Value.TABLE_RESTO;
 import static com.example.martin.test.Value.distence2;
-import static com.example.martin.test.Value.rayonPetitCercle;
 
 
 /**
@@ -93,11 +92,12 @@ import static com.example.martin.test.Value.rayonPetitCercle;
 		return res;
 	}
 
-	int getIdResto(double latRad1,double lonRad1,int zone,int plateforme){
+	Resto getResto(Localisation localisation,int zone,int plateforme){
 
+		float latRad1=localisation.getLatitude();
+		float lonRad1=localisation.getLongitude();
 
-		rayonPetitCercle = (int) (RAYONTERRE*Math.cos(latRad1));
-		int res=-1;
+		Resto res=null;
 		Cursor c=bdd.rawQuery("SELECT * FROM "+TABLE_RESTO+" WHERE "+COL_ZONE_RESTO + " = " + zone + " AND "+COL_PLATEFORME_RESTO + " = " + plateforme,null);
 
 		if (c.getCount()>0){
@@ -119,12 +119,18 @@ import static com.example.martin.test.Value.rayonPetitCercle;
 			}
 			if(minDistence2<SEUILRESTO*SEUILRESTO){
 				c.moveToPosition(index);
+				res=new Resto();
+				res.setId(c.getInt(NUM_COL_ID_RESTO));
+				res.setName(c.getString(NUM_COL_TEXT_RESTO));
+				res.setIdWeb(c.getInt(NUM_COL_IDBASE_RESTO));
+				res.setLat(c.getFloat(NUM_COL_LATRAD_RESTO));
+				res.setLon(c.getFloat(NUM_COL_LONRAD_RESTO));
 
-				res=c.getInt(NUM_COL_ID_RESTO);
 				Log.d("resto","idResto : "+res);
 			}
 			else{
 				Log.d("resto","pas de resto connu");
+
 			}
 		}
 		else{
@@ -137,8 +143,8 @@ import static com.example.martin.test.Value.rayonPetitCercle;
 		return res;
 	}
 
-	boolean bddHasResto(double latRad,double lonRad,int zone,int plateforme){
-		return getIdResto(latRad, lonRad, zone, plateforme) != -1;
+	boolean bddHasResto(Localisation localisation,int zone,int plateforme){
+		return getResto(localisation, zone, plateforme) != null;
 	}
 
 	void selectResto(double latRad1,double lonRad1,int zone,int plateforme){

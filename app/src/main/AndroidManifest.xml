@@ -29,11 +29,7 @@
         </activity>
 
         <service
-            android:name=".ServiceAnalysis"
-            android:exported="false" />
-
-        <receiver
-            android:name=".BroadcastRecording"
+            android:name=".ServiceRecording"
             android:exported="false" />
 
         <activity

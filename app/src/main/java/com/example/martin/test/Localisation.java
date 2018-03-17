@@ -1,5 +1,9 @@
 package com.example.martin.test;
 
+import android.support.annotation.NonNull;
+
+import java.util.Comparator;
+
 import static com.example.martin.test.Value.DUREE_DEFAUT;
 import static com.example.martin.test.Value.ID_RESTO_DEFAUT;
 import static com.example.martin.test.Value.IND_DEFAUT;
@@ -9,7 +13,7 @@ import static com.example.martin.test.Value.PRECISION_DEFAUT;
  * Created by martin on 02/02/18.
  */
 
-class Localisation {
+class Localisation implements Comparable,Comparator {
 
     private int id;
     private long time;
@@ -69,7 +73,8 @@ class Localisation {
         return idResto;
     }
 
-    long getTime(){  return time;
+    long getTime(){
+    	return time;
     }
 	float getLatitude(){ return latitude;}
 
@@ -88,7 +93,6 @@ class Localisation {
 
     void setLongitude(float longitude) {
         this.longitude = longitude;
-
     }
     void setIndication(int indication){
     	this.indication=indication;
@@ -107,9 +111,8 @@ class Localisation {
     @Override
     public String toString() {
 
-        String res="id: ";
-        res += String.valueOf(id);
-		res +="time : ";
+
+		String res ="time : ";
 		res += String.valueOf(time);
 		res +=" lat : ";
 		res += String.valueOf(latitude);
@@ -123,4 +126,37 @@ class Localisation {
 		res += String.valueOf(idResto);
         return res;
     }
+
+	@Override
+	public int compare(Object o1, Object o2) {
+		if((o1 instanceof Localisation)&&(o2 instanceof Localisation)) return ((Localisation) o1).compareTo(o2);
+		else throw new AssertionError("compare Localisation to Objet");
+	}
+
+	@Override
+    public boolean equals(Object o){
+    	if(!(o instanceof Localisation)) return false;
+    	return this.equals((Localisation) o);
+	}
+
+	public boolean equals(Localisation o){
+		if(this==o) return true;
+		if(o==null) return false;
+		else 	return time==o.time;
+
+	}
+
+	@Override
+	public int hashCode(){
+		return (int) (time);
+	}
+
+
+	@Override
+	public int compareTo(@NonNull Object o) {
+    	if(o instanceof Localisation) {
+    		return (int) (this.time-((Localisation) o).time);
+		}
+		else throw new AssertionError("compare Localisation to Objet");
+	}
 }

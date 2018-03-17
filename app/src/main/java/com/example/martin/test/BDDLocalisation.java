@@ -15,7 +15,6 @@ import static com.example.martin.test.Value.COL_LATRAD_LOCAL;
 import static com.example.martin.test.Value.COL_LONRAD_LOCAL;
 import static com.example.martin.test.Value.COL_TIME_LOCAL;
 import static com.example.martin.test.Value.IND_ARRET_INCONNU;
-import static com.example.martin.test.Value.IND_ATTENTE_CONFIRME;
 import static com.example.martin.test.Value.IND_CLIENT;
 import static com.example.martin.test.Value.IND_CLIENT_CONFIRME;
 import static com.example.martin.test.Value.IND_DEFAUT;
@@ -97,20 +96,13 @@ import static com.example.martin.test.Value.distence2;
         return bdd.update(TABLE_LOCALISATIONS, content, COL_TIME_LOCAL + " = " + localisation.getTime(), null);
     }
 
-    boolean isCountInferieurTo2(){
-
-		Cursor c=bdd.rawQuery("SELECT * FROM "+ TABLE_LOCALISATIONS ,null);
-		Boolean result=(c.getCount()<3);
-        c.close();
-		return result;
-    }
 
 	ArrayList<Localisation> getLastLocations(){
 
 		ArrayList<Localisation> res= new ArrayList<>();
 
 		Cursor c=bdd.rawQuery("SELECT * FROM "+ TABLE_LOCALISATIONS+
-				" ORDER BY "+ COL_TIME_LOCAL +" DESC LIMIT '2'" ,null);
+				" ORDER BY "+ COL_TIME_LOCAL +" DESC LIMIT '10'" ,null);
 
 
 		if(c.getCount()==0) {
@@ -125,7 +117,7 @@ import static com.example.martin.test.Value.distence2;
 			l.setIndication(c.getInt(NUM_COL_IND_LOCAL));
 			l.setDuree(c.getInt(NUM_COL_DUREE_LOCAL));
 			l.setIdResto(c.getInt(NUM_COL_IDRESTO_LOCAL));
-			res.add(l);
+			res.add(0,l);
 		}
 		c.close();
 
@@ -163,8 +155,8 @@ import static com.example.martin.test.Value.distence2;
 		return bdd.replace(TABLE_LOCALISATIONS,null,content);
 	}
 
-     int removeLocalisation(int id){
-        return bdd.delete(TABLE_LOCALISATIONS,COL_TIME_LOCAL+" = "+id,null);
+     int removeLocalisation(long time){
+        return bdd.delete(TABLE_LOCALISATIONS,COL_TIME_LOCAL+" = "+time,null);
     }
 
     void removeAll(){
@@ -194,13 +186,13 @@ import static com.example.martin.test.Value.distence2;
         return res;
     }
 
-    ArrayList<Localisation> getLocalisationsInconnues(){
+    ArrayList<Localisation> getLocalisationsInconnues(long stop){
 
      	long timeFirstLocatisationInconnue;
 		Cursor c=bdd.rawQuery("SELECT * FROM "+TABLE_LOCALISATIONS +
-				" WHERE "+COL_IND_LOCAL+" == "+IND_DEFAUT+
-				" OR "+COL_IND_LOCAL+" == "+IND_DEPLACEMENT_INCONNU+
-				" OR "+COL_IND_LOCAL+" == "+IND_ARRET_INCONNU +
+				" WHERE "+ COL_IND_LOCAL+" = "+IND_DEFAUT+
+				" OR "+COL_IND_LOCAL+" = "+IND_DEPLACEMENT_INCONNU+
+				" OR "+COL_IND_LOCAL+" = "+IND_ARRET_INCONNU +
 				" ORDER BY "+COL_TIME_LOCAL +" LIMIT '1'",null);
 
 		if(c.getCount()!=1) {
@@ -211,7 +203,7 @@ import static com.example.martin.test.Value.distence2;
 		timeFirstLocatisationInconnue=c.getLong(NUM_COL_TIME_LOCAL);
 		c.close();
 
-		c=getCursorFrom(timeFirstLocatisationInconnue);
+		c=getCursorBetween(timeFirstLocatisationInconnue,stop);
 
 		ArrayList<Localisation> res= new ArrayList<>();
 
@@ -269,7 +261,7 @@ import static com.example.martin.test.Value.distence2;
 
 			//deplacement
 			if(indication==IND_DEPLACEMENT_INCONNU||indication==IND_DEPLACEMENT_VERS_CLIENT||indication==IND_DEPLACEMENT_VERS_RESTO){
-				if(c.isFirst()||indicationPrecedante==IND_START){
+				if(c.isFirst()){
 					dateArretPrecedant= date;
 				}
 
@@ -283,7 +275,7 @@ import static com.example.martin.test.Value.distence2;
 
 			}
 			//arrêt
-			else if(indication>=IND_ARRET_INCONNU&&indication<=IND_ATTENTE_CONFIRME){
+			else if(indication>=IND_ARRET_INCONNU&&indication<=IND_CLIENT_CONFIRME){
 
 				//ajout déplacement
 				if(!c.isFirst()&&distance!=0) {
@@ -320,39 +312,43 @@ import static com.example.martin.test.Value.distence2;
 				distance=0;
 			}
 			//fin shift
-			else if(indication==IND_END||indication==IND_START){
+			else if(indication==IND_END) {
 
 				//ajout déplacement
-				if(!c.isFirst()&&distance!=0&&indication==IND_END) {
+				if (!c.isFirst() && distance != 0) {
 					//cas particulier dans lequel il n'y pas de point en déplacement
-					if(indicationPrecedante>=IND_ARRET_INCONNU) {
+					if (indicationPrecedante >= IND_ARRET_INCONNU) {
 						switch (indicationPrecedante) {
 							case IND_CLIENT:
 							case IND_HYPO_CLIENT:
 							case IND_CLIENT_CONFIRME:
-								indicationPrecedante=IND_DEPLACEMENT_VERS_RESTO;
+								indicationPrecedante = IND_DEPLACEMENT_VERS_RESTO;
 								break;
 							case IND_HYPO_RESTO:
 							case IND_RESTO:
 							case IND_RESTO_CONFIRME:
-								indicationPrecedante=IND_DEPLACEMENT_VERS_CLIENT;
+								indicationPrecedante = IND_DEPLACEMENT_VERS_CLIENT;
 								break;
 							default:
-								indicationPrecedante=IND_DEPLACEMENT_INCONNU;
+								indicationPrecedante = IND_DEPLACEMENT_INCONNU;
 						}
 					}
 					data.add(
-							new UneLigne(indicationPrecedante, dateArretPrecedant+dureeArretPrecedent, distance, (int) (date - dateArretPrecedant-dureeArretPrecedent))
+							new UneLigne(indicationPrecedante, dateArretPrecedant + dureeArretPrecedent, distance, (int) (date - dateArretPrecedant - dureeArretPrecedent))
 					);
 
 				}
 
 
-
+				data.add(new UneLigne(indication, date, 0, duree));
+				distance = 0;
+			}
+			else if(indication==IND_START)	{
 
 				data.add(new UneLigne(indication,date,0,duree));
 				distance=0;
 
+				dateArretPrecedant= date;
 
 			}
 

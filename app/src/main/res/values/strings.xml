@@ -57,15 +57,18 @@
         <item>trajet inconnu</item>
         <item>trajet resto</item>
         <item>trajet client</item>
+
+        <item>attente</item>
+        <item>attente</item>
+
         <item>arrêt inconnu</item>
         <item>restaurant</item>
         <item>client</item>
-        <item>attente</item>
         <item>restaurant</item>
         <item>client</item>
         <item>restaurant</item>
         <item>client</item>
-        <item>attente</item>
+
 
         <item>Début Shift</item>
         <item>Fin Shift</item>
