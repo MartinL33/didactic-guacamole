@@ -158,7 +158,7 @@ import static com.example.martin.test.Value.distence2;
 		return bdd.replace(TABLE_LOCALISATIONS,null,content);
 	}
 
-     int removeLocalisation(long time){
+	int removeLocalisation(long time){
         return bdd.delete(TABLE_LOCALISATIONS,COL_TIME_LOCAL+" = "+time,null);
     }
 
@@ -166,7 +166,7 @@ import static com.example.martin.test.Value.distence2;
         bdd.delete(TABLE_LOCALISATIONS,COL_TIME_LOCAL+" >= '0' ",null);
     }
 
-     ArrayList<Localisation> getAllLocalisation(){
+	ArrayList<Localisation> getAllLocalisation(){
         Cursor c=bdd.rawQuery("SELECT * FROM "+TABLE_LOCALISATIONS,null);
 
         if(c.getCount()==0) {
@@ -207,7 +207,10 @@ import static com.example.martin.test.Value.distence2;
 		c.close();
 
 		c=getCursorBetween(timeFirstLocatisationInconnue,stop);
-
+		if(c.getCount()!=1) {
+			c.close();
+			return null;
+		}
 		ArrayList<Localisation> res= new ArrayList<>();
 
 		while(c.moveToNext()){

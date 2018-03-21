@@ -13,6 +13,8 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import static com.example.martin.test.ActivityMain.MyReceiver.ZONE;
+
 
 public class ServiceInstallZone extends IntentService {
 
@@ -83,6 +85,7 @@ public class ServiceInstallZone extends IntentService {
 
 				broadcastIntent.setAction(ActivityMain.MyReceiver.ACTION_RESP);
 				broadcastIntent.addCategory(Intent.CATEGORY_DEFAULT);
+				broadcastIntent.putExtra(ZONE,true);
 				sendBroadcast(broadcastIntent);
 
 			}

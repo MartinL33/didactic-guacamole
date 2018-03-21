@@ -51,6 +51,7 @@ class ListLocations {
 	private Resto resto;
 	private int nbNewPoint=0;
 	private long timeLastAnalyse=0;
+	private int lastIndication=0;
 
 	ListLocations() {
 
@@ -64,6 +65,13 @@ class ListLocations {
 
 	Resto getResto() {
 		return resto;
+	}
+
+	int getLastInd() {
+
+		if(listeLoca==null||listeLoca.size()==0) return -1;
+
+		return lastIndication;
 	}
 
 	void addLocalisations(ArrayList<Localisation> dataTemp){
@@ -423,7 +431,7 @@ class ListLocations {
 		for(int i=0;i<listeLoca.size();i++){
 			Localisation l=listeLoca.get(i);
 			if(l.getIndication()==-1) {
-				if(l.getTime()<timeLastAnalyse) {
+				if(l.getTime()<=timeLastAnalyse) {
 					timePointRemove.add(l.getTime());
 				}
 				listeLoca.remove(i);
@@ -538,10 +546,7 @@ class ListLocations {
 		}
 
 
-		//clean petit arret
-		for (Localisation l: listeLoca) {
-			if(l.getIndication()==IND_ARRET_INCONNU) l.setIndication(IND_DEPLACEMENT_INCONNU);
-		}
+
 
 		//set indication deplacement
 		int mode=0;   //1-> deplacement vers resto  2-> deplacement vers client
@@ -554,6 +559,7 @@ class ListLocations {
 			switch (ind) {
 
 				case IND_DEPLACEMENT_INCONNU:
+				case IND_ARRET_INCONNU:
 					if (mode == 1) l.setIndication(IND_DEPLACEMENT_VERS_RESTO);
 					else if (mode == 2) l.setIndication(IND_DEPLACEMENT_VERS_CLIENT);
 					else if (mode == 3) l.setIndication(IND_ATTENTE);
@@ -603,6 +609,7 @@ class ListLocations {
 		if(debut<0) debut=0;
 		listeLoca= listeLoca.subList(debut,listeLoca.size());
 		timeLastAnalyse=listeLoca.get(listeLoca.size()-1).getTime();
+		lastIndication=listeLoca.get(listeLoca.size()-1).getIndication();
 		timePointRemove.clear();
 
 		Log.d("ListLocations", "fin ecriture");

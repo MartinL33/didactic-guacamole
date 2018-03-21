@@ -140,8 +140,8 @@ import android.support.annotation.NonNull;
 
 
 	static final int SEUILZONE=10000; //en m
-	static final int SEUILRESTO =25; //en m
-	static final int SEUILSELECTRESTO =30; //en m
+	static final int SEUILRESTO =20; //en m
+	static final int SEUILSELECTRESTO =1000; //en m
 
 
 
@@ -161,6 +161,7 @@ import android.support.annotation.NonNull;
 		return (int) ((RAYONTERRE * (latRad2 - latRad1)) *(RAYONTERRE *(latRad2 - latRad1) ) +
 				(rayonPetitCercle *(lonRad2 - lonRad1)) *( (lonRad2 - lonRad1) * rayonPetitCercle));
 	}
+
 	static boolean verifPermissionLocation(Context context) {
 		boolean res = false;
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {

@@ -15,6 +15,7 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.example.martin.test.ActivityMain.MyReceiver.RECORDING;
 import static com.example.martin.test.Value.ID_NOTIFICATION;
 import static com.example.martin.test.Value.IND_ATTENTE;
 import static com.example.martin.test.Value.IND_CLIENT;
@@ -38,59 +39,68 @@ public class ServiceRecording extends Service {
 
 	@Override
 	public void  onStart(Intent intent, int startId){
+		new Thread(new Runnable() {
 
-		ArrayList<Localisation> listeTempLoca= new ArrayList<>();
+			public void run() {
+				ArrayList<Localisation> listeTempLoca = new ArrayList<>();
 
-		Log.d("ServiceAnalysis", "onStart");
-		if (hasResult(intent)) {
+				Log.d("ServiceAnalysis", "onStart");
+				if (hasResult(intent)) {
 
-			List<Location> listLocation = extractResult(intent).getLocations();
-			if (listLocation.size() > 0) {
-				BDDTemp tempBDD = new BDDTemp(this);
-				tempBDD.openForWrite();
+					List<Location> listLocation = extractResult(intent).getLocations();
+					if (listLocation.size() > 0) {
+						BDDTemp tempBDD = new BDDTemp(ServiceRecording.this);
+						tempBDD.openForWrite();
 
+						for (Location l : listLocation) {
 
-				for (Location l : listLocation) {
-
-					if (l != null) {
-
-
-						float latRad = (float) (Math.toRadians(l.getLatitude()));
-						float lonRad = (float) (Math.toRadians(l.getLongitude()));
-						long time = l.getTime();
-
-						int precision = (int) l.getAccuracy();
-						tempBDD.replaceTemp(time, latRad, lonRad, precision);
+							if (l != null) {
 
 
-						Localisation localisation =new Localisation();
-						localisation.setTime(time);
-						localisation.setLatitude(latRad);
-						localisation.setLongitude(lonRad);
-						localisation.setPrecision(precision);
-						listeTempLoca.add(localisation);
+								float latRad = (float) (Math.toRadians(l.getLatitude()));
+								float lonRad = (float) (Math.toRadians(l.getLongitude()));
+								long time = l.getTime();
+
+								int precision = (int) l.getAccuracy();
+								tempBDD.replaceTemp(time, latRad, lonRad, precision);
+
+
+								Localisation localisation = new Localisation();
+								localisation.setTime(time);
+								localisation.setLatitude(latRad);
+								localisation.setLongitude(lonRad);
+								localisation.setPrecision(precision);
+								listeTempLoca.add(localisation);
+
+							}
+						}
+						tempBDD.close();
+
+						Log.d("ServiceAnalysis", "nb New Location = " + String.valueOf(listLocation.size()));
 
 					}
 				}
-				tempBDD.close();
 
-				Log.d("ServiceAnalysis", "nb New Location = " + String.valueOf(listLocation.size()));
+				data.addLocalisations(listeTempLoca);
+				data.analyse(ServiceRecording.this);
+				int mode = -1;
+
+				if (data.hasResto()) {
+					mode = 2;
+					afficheNotification(mode, data.getResto().getName());
+				} else {
+					afficheNotification(mode);
+				}
+
+				Intent broadcastIntent = new Intent();
+				broadcastIntent.setAction(ActivityMain.MyReceiver.ACTION_RESP);
+				broadcastIntent.addCategory(Intent.CATEGORY_DEFAULT);
+				broadcastIntent.putExtra(RECORDING,data.getLastInd());
+				sendBroadcast(broadcastIntent);
+
 
 			}
-		}
-
-		data.addLocalisations(listeTempLoca);
-		data.analyse(this);
-		int mode=-1;
-
-		if(data.hasResto()) 		{
-			mode=2;
-			afficheNotification(mode,data.getResto().getName());
-		}else{
-			afficheNotification(mode);
-		}
-
-
+		}).start();
 
 	}
 
@@ -137,9 +147,6 @@ public class ServiceRecording extends Service {
 
 				builder.setPriority(Notification.PRIORITY_HIGH);
 
-				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-					builder.setTimeoutAfter(5000);
-				}
 
 				//resto
 				if(mode==2) {
@@ -160,9 +167,9 @@ public class ServiceRecording extends Service {
 
 
 					if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
-						builder.addAction(new Notification.Action(R.drawable.ic_restaurant, "oui", pendingResto));
-						builder.addAction(new Notification.Action(R.drawable.ic_client, "non: livraison client", pendingClient));
-						builder.addAction(new Notification.Action(R.drawable.ic_stat_name, "non: attente", pendingClient));
+						builder.addAction(new Notification.Action(R.drawable.ic_restaurant, "confirmer", pendingResto));
+						builder.addAction(new Notification.Action(R.drawable.ic_client, "client", pendingClient));
+						builder.addAction(new Notification.Action(R.drawable.ic_stat_name, "pause", pendingClient));
 						if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 							builder.setVisibility(Notification.VISIBILITY_PUBLIC);
 						}

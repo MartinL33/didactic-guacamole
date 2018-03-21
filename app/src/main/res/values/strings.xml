@@ -3,7 +3,7 @@
     <string name="textStart">Démarrer</string>
     <string name="textStop">Arrêter</string>
     <string name="textRestaurant">Restaurant</string>
-    <string name="textWaiting">Attente/Pause</string>
+    <string name="textWaiting">Pause</string>
     <string name="textCustomer">Client</string>
     <string name="StatutStart">"En ligne"</string>
     <string name="StatutStop">"Hors ligne"</string>

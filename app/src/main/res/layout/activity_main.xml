@@ -20,7 +20,7 @@
 
 
     <TextView
-        android:id="@+id/idStatut"
+        android:id="@+id/idTextStartAndStop"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
@@ -70,20 +70,17 @@
         android:layout_height="match_parent"
         android:layout_marginEnd="8dp"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
         android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
 
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/idZone">
+        app:layout_constraintTop_toBottomOf="@+id/idStatut">
 
         <Button
             android:id="@+id/idRestaurant"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
-            android:layout_marginRight="8dp"
-            android:layout_marginTop="8dp"
+
             android:layout_weight="1"
             android:text="@string/textRestaurant"
             app:layout_constraintEnd_toEndOf="@+id/idLayoutAction"
@@ -93,9 +90,8 @@
             android:id="@+id/idWaiting"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="8dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
+
+
             android:layout_weight="1"
             android:text="@string/textWaiting"
             app:layout_constraintStart_toEndOf="@+id/idCustomer"
@@ -105,9 +101,8 @@
             android:id="@+id/idCustomer"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="8dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
+
+
             android:layout_weight="1"
             android:text="@string/textCustomer"
             app:layout_constraintStart_toStartOf="parent"
@@ -196,5 +191,17 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
     </LinearLayout>
+
+    <TextView
+        android:id="@+id/idStatut"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:text=""
+        app:layout_constraintEnd_toStartOf="@+id/idZone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/idStartAndStop" />
 
 </android.support.constraint.ConstraintLayout>

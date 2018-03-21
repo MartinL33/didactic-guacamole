@@ -34,8 +34,10 @@ import com.google.android.gms.tasks.OnSuccessListener;
 
 import static android.support.v4.content.PermissionChecker.PERMISSION_GRANTED;
 import static com.example.martin.test.Value.ID_NOTIFICATION;
+import static com.example.martin.test.Value.IND_ARRET_INCONNU;
 import static com.example.martin.test.Value.IND_ATTENTE;
 import static com.example.martin.test.Value.IND_CLIENT;
+import static com.example.martin.test.Value.IND_HYPO_RESTO;
 import static com.example.martin.test.Value.IND_PLATEFORME;
 import static com.example.martin.test.Value.verifPermissionLocation;
 
@@ -48,6 +50,7 @@ public class ActivityMain extends Activity
 	final int MY_PERMISSIONS_REQUEST_EXTERNAL_STORAGE = 3;
 	final int MY_PERMISSIONS_REQUEST= 4;
 
+	private TextView textStartAndStop;
 	private TextView textStatut;
     private Intent intentRecording;
     private Intent intentAction;
@@ -83,7 +86,7 @@ public class ActivityMain extends Activity
 
 
 	private DialogFragment selectPlateformeFragment;
-	private MyReceiver receiver;
+	private MyReceiver receiver=null;
 
     @SuppressLint("MissingPermission")
 	@Override
@@ -96,7 +99,8 @@ public class ActivityMain extends Activity
 		preferences = PreferenceManager.getDefaultSharedPreferences(this);
         intentRecording = new Intent(ActivityMain.this, ServiceRecording.class);
         intentAction=new Intent(ActivityMain.this, BroadcastAction.class);
-        textStatut = findViewById(R.id.idStatut);
+        textStartAndStop = findViewById(R.id.idTextStartAndStop);
+        textStatut= findViewById(R.id.idStatut);
         btnStartAndGo = findViewById(R.id.idStartAndStop);
         btnCustomer = findViewById(R.id.idCustomer);
         btnWaiting = findViewById(R.id.idWaiting);
@@ -115,7 +119,7 @@ public class ActivityMain extends Activity
 		btnExportDebug=findViewById((R.id.button3));
 
 
-
+		layoutAction.setVisibility(View.INVISIBLE);
 
 		//derniere plateforme utilisée
         BDDAction bddAction = new BDDAction(this);
@@ -128,9 +132,15 @@ public class ActivityMain extends Activity
 		//permission de localisation et ecriture carte SD
 
 
+// on déclare notre Broadcast Receiver
+		if(receiver==null) {
+			receiver = new MyReceiver();
+			IntentFilter filter = new IntentFilter(MyReceiver.ACTION_RESP);
+			filter.addCategory(Intent.CATEGORY_DEFAULT);
+			registerReceiver(receiver, filter);
 
 
-
+		}
 
 
 //zone
@@ -139,26 +149,12 @@ public class ActivityMain extends Activity
 		boolean bddEmpty=bddZone.isEmpty();
 		bddZone.close();
 		if(bddEmpty){
-
 			Log.d("MainActivity","bddZone Empty");
-			// on déclare notre Broadcast Receiver
-			receiver = new MyReceiver();
-			IntentFilter filter = new IntentFilter(MyReceiver.ACTION_RESP);
-			filter.addCategory(Intent.CATEGORY_DEFAULT);
-			registerReceiver(receiver, filter);
-
-
 			Intent i = new Intent(ActivityMain.this, ServiceInstallZone.class);
 			startService(i);
-
-
-
 		}else{
 			updateZone();
 		}
-
-
-
     }
 
     @Override
@@ -166,7 +162,15 @@ public class ActivityMain extends Activity
         Log.d("ActivityMain", "onResume()");
         super.onResume();
 
+// on déclare notre Broadcast Receiver
+		if(receiver==null) {
+			receiver = new MyReceiver();
+			IntentFilter filter = new IntentFilter(MyReceiver.ACTION_RESP);
+			filter.addCategory(Intent.CATEGORY_DEFAULT);
+			registerReceiver(receiver, filter);
 
+
+		}
 
         //masquage de layoutPlateforme
 
@@ -176,15 +180,18 @@ public class ActivityMain extends Activity
 
         isWorking = (PendingIntent.getService(ActivityMain.this, 2989, intentRecording, PendingIntent.FLAG_NO_CREATE) != null);
         Log.d("ActivityMain", "serviceAction is " + (isWorking ? "" : "not") + " working");
-        if (isWorking) {
-            textStatut.setText(R.string.StatutStart);
-            btnStartAndGo.setText(R.string.textStop);
-            layoutAction.setVisibility(View.VISIBLE);
-        } else {
-            textStatut.setText(R.string.StatutStop);
-            btnStartAndGo.setText(R.string.textStart);
-            layoutAction.setVisibility(View.INVISIBLE);
-        }
+
+
+//mise a jour interface
+		if(isWorking) {
+			textStartAndStop.setText(R.string.StatutStart);
+			btnStartAndGo.setText(R.string.textStop);
+		}
+		else{
+			textStartAndStop.setText(R.string.StatutStop);
+			btnStartAndGo.setText(R.string.textStart);
+		}
+
 
 	//setOnClickListener des boutons
 
@@ -198,7 +205,7 @@ public class ActivityMain extends Activity
                 if (isWorking) {
 
                     isWorking = false;
-
+					layoutAction.setVisibility(View.INVISIBLE);
                     //fin enregistrement position
                     pendingRecording = PendingIntent.getService(ActivityMain.this, 2989, intentRecording, PendingIntent.FLAG_UPDATE_CURRENT);
                     LocationManager myLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -212,9 +219,9 @@ public class ActivityMain extends Activity
                     pendingRecording.cancel();
 
                    //mise a jour interface
-                    textStatut.setText(R.string.StatutStop);
+                    textStartAndStop.setText(R.string.StatutStop);
                     btnStartAndGo.setText(R.string.textStart);
-                    layoutAction.setVisibility(View.INVISIBLE);
+
                     //anulation Notification
                     NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
                     if (manager != null) {
@@ -248,11 +255,12 @@ public class ActivityMain extends Activity
 						//enregistrement position
 						pendingRecording = PendingIntent.getService(ActivityMain.this, 2989, intentRecording, PendingIntent.FLAG_UPDATE_CURRENT);
 
-						LocationManager myLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+						//LocationManager myLocationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
 
-						if (myLocationManager != null) {
+						//if (myLocationManager != null) {
 							//myLocationManager.requestLocationUpdates(LocationManager.PASSIVE_PROVIDER, MIN_TIME_UPDATE_LOCATION, MIN_DISTANCE_UPDATE_LOCATION, pendingRecording);
-						}
+						//}
+
 						LocationRequest mLocationRequest = new LocationRequest();
 						if(gpsModeActif) {
 							mLocationRequest.setFastestInterval(50);
@@ -271,8 +279,7 @@ public class ActivityMain extends Activity
 						mFusedLocationClient.requestLocationUpdates(mLocationRequest,pendingRecording);
 
 						//mise a jour interface
-						textStatut.setText(R.string.StatutStart);
-						layoutAction.setVisibility(View.VISIBLE);
+						textStartAndStop.setText(R.string.StatutStart);
 						btnStartAndGo.setText(R.string.textStop);
 
 					}
@@ -463,7 +470,10 @@ public class ActivityMain extends Activity
         Log.d("myActivity","onPause()");
     }
     protected void onStop() {
-
+    	if(receiver!=null) {
+			unregisterReceiver(receiver);
+			receiver=null;
+		}
         super.onStop();
         Log.d("myActivity","onStop()");
     }
@@ -579,14 +589,28 @@ public class ActivityMain extends Activity
 	}
 
 	public class MyReceiver extends BroadcastReceiver {
-		public static final String ACTION_RESP ="com.myapp.intent.action.ZoneInstalled";
+		public static final String ACTION_RESP ="com.RideTimer.intent.MainActivityBroadcast";
+		public static final String ZONE="zoneInstalled";
+		public static final String RECORDING="recording";
 
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			Log.d("MainActivity","onReceiveBroadcast");
-			updateZone();
-			// on désenregistre notre broadcast
-			unregisterReceiver(receiver);
+			if(intent.hasExtra(ZONE)){
+				if(intent.getBooleanExtra(ZONE,false))  updateZone();
+			}
+
+			else if(intent.hasExtra(RECORDING)){
+
+				int mode =intent.getIntExtra(RECORDING,-1);
+				String[] statut =getResources().getStringArray(R.array.indication);
+				if(mode>1) textStatut.setText(statut[mode]);
+
+				if(mode!=IND_ARRET_INCONNU&&mode!=IND_HYPO_RESTO)  layoutAction.setVisibility(View.INVISIBLE);
+				else layoutAction.setVisibility(View.VISIBLE);
+			}
+
+
 		}
 	}
 
@@ -602,8 +626,5 @@ public class ActivityMain extends Activity
 		}
 
 	}
-
-
-
 }
 
