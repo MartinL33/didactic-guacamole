@@ -18,8 +18,14 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
 
+import java.util.ArrayList;
+
 import static com.example.martin.test.Value.ID_RESTO_DEFAUT;
+import static com.example.martin.test.Value.IND_ATTENTE;
+import static com.example.martin.test.Value.IND_CLIENT;
+import static com.example.martin.test.Value.IND_DEPLACEMENT_INCONNU;
 import static com.example.martin.test.Value.IND_RESTO;
+import static com.example.martin.test.Value.SEUILSELECTRESTO;
 import static com.example.martin.test.Value.verifPermissionLocation;
 
 public class ActivitySelectRestaurant extends Activity {
@@ -77,7 +83,7 @@ private BDDRestaurant bddRestaurant=new BDDRestaurant(ActivitySelectRestaurant.t
 		l.setLongitude(lonRad);
 
         bddRestaurant.openForRead();
-		restoConnu =bddRestaurant.bddHasResto(l,z,p);
+		restoConnu =bddRestaurant.bddHasResto(latRad,lonRad,z,p,SEUILSELECTRESTO);
         bddRestaurant.close();
 		Log.d("ActivitySelectResto","restaurant connu? : "+String.valueOf(restoConnu));
 
@@ -99,18 +105,29 @@ private BDDRestaurant bddRestaurant=new BDDRestaurant(ActivitySelectRestaurant.t
 			Log.d("ActivitySelectResto","selectresto");
 			findViewById(R.id.idNewResto).setVisibility(View.INVISIBLE);
 			findViewById(R.id.idSelectResto).setVisibility(View.VISIBLE);
+			ArrayList<Resto> restos;
+
 
 			bddRestaurant.openForRead();
-			bddRestaurant.selectResto(latRad, lonRad, z, p);
+			restos=bddRestaurant.getArrayResto(latRad, lonRad, z, p,SEUILSELECTRESTO);
 			bddRestaurant.close();
 
-			//assertion  les tableaux nameRestoSelect et idRestoSelect doivent être non vide
-			// car il existe un restaurant à proximité connu et de même taille
-			if(BuildConfig.DEBUG&&!(bddRestaurant.nameRestoSelect.length>0)) throw new AssertionError();
-			if(BuildConfig.DEBUG&&!(bddRestaurant.idRestoSelect.length==bddRestaurant.nameRestoSelect.length)) throw new AssertionError();
+			String[] nameRestos=new String[restos.size()+3];
+			int[] idRestos=new int[restos.size()+3];
+			int i=0;
+			for(Resto r:restos){
+				nameRestos[i]=r.getName();
+				idRestos[i]=r.getId();
+				i++;
+			}
+			nameRestos[nameRestos.length-3]="trajet";
+			idRestos[nameRestos.length-3]=-1;
+			nameRestos[nameRestos.length-2]="pause";
+			idRestos[nameRestos.length-2]=-1;
+			nameRestos[nameRestos.length-1]="client";
+			idRestos[nameRestos.length-1]=-1;
 
-
-			ArrayAdapter<String> adapter= new android.widget.ArrayAdapter<>(this,android.R.layout.simple_list_item_1,bddRestaurant.nameRestoSelect);
+			ArrayAdapter<String> adapter= new android.widget.ArrayAdapter<>(this,android.R.layout.simple_list_item_1,nameRestos);
 
 			ListView mylistView=findViewById(R.id.idListViewSelectResto);
 			mylistView.setAdapter(adapter);
@@ -119,16 +136,22 @@ private BDDRestaurant bddRestaurant=new BDDRestaurant(ActivitySelectRestaurant.t
 				@Override
 				public void onItemClick(AdapterView<?> adapterView, View view, int positionClic, long l) {
 					Log.d("ActivitySelectResto","clic position : "+String.valueOf(positionClic));
-
-					Intent intentAction=new Intent(ActivitySelectRestaurant.this, BroadcastAction.class);
+					Intent intentAction = new Intent(ActivitySelectRestaurant.this, BroadcastAction.class);
 					intentAction.removeExtra("action");
-					intentAction.putExtra("action", IND_RESTO);
-					bddRestaurant.openForRead();
-					int idResto=bddRestaurant.idRestoSelect[positionClic];
-					bddRestaurant.close();
-					if (idResto>0) intentAction.putExtra("idResto", idResto);
-					sendBroadcast(intentAction);
 
+					if(positionClic>=0&&positionClic<nameRestos.length-3) {
+
+						intentAction.putExtra("action", IND_RESTO);
+						int idResto = idRestos[positionClic];
+						if (idResto > 0) intentAction.putExtra("idResto", idResto);
+
+					}
+					else if(positionClic>=nameRestos.length-3&&positionClic<nameRestos.length){
+						if(positionClic==nameRestos.length-3) intentAction.putExtra("action", IND_DEPLACEMENT_INCONNU);
+						if(positionClic==nameRestos.length-2) intentAction.putExtra("action", IND_ATTENTE);
+						if(positionClic==nameRestos.length-1) intentAction.putExtra("action", IND_CLIENT);
+					}
+					sendBroadcast(intentAction);
 					finish();
 
 

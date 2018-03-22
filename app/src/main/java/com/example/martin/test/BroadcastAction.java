@@ -28,7 +28,8 @@ public class BroadcastAction extends BroadcastReceiver {
 			bddAction.openForWrite();
 
 			if(intent.hasExtra("idResto")){
-				l = bddAction.insertAction(time, indication);
+				int idResto = intent.getIntExtra("idResto", 0);
+				l = bddAction.insertAction(time, indication,idResto);
 			}
 			else{
 				l = bddAction.insertAction(time, indication);

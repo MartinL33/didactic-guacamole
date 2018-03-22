@@ -7,7 +7,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import static com.example.martin.test.Value.COL_IDBASE_RESTO;
 import static com.example.martin.test.Value.COL_ID_RESTO;
@@ -23,7 +22,6 @@ import static com.example.martin.test.Value.NUM_COL_LATRAD_RESTO;
 import static com.example.martin.test.Value.NUM_COL_LONRAD_RESTO;
 import static com.example.martin.test.Value.NUM_COL_TEXT_RESTO;
 import static com.example.martin.test.Value.SEUILRESTO;
-import static com.example.martin.test.Value.SEUILSELECTRESTO;
 import static com.example.martin.test.Value.TABLE_RESTO;
 import static com.example.martin.test.Value.distence2;
 
@@ -38,8 +36,7 @@ import static com.example.martin.test.Value.distence2;
 	private static final int VERSION = 1;
 	private SQLiteDatabase bdd;
 	private BaseSQLiteRestaurant restos;
-	Integer[] idRestoSelect;
-	String[] nameRestoSelect;
+
 
 
 	BDDRestaurant(Context context) {
@@ -92,7 +89,7 @@ import static com.example.martin.test.Value.distence2;
 		return res;
 	}
 
-	Resto getResto(Localisation localisation,int zone,int plateforme){
+	Resto getBestResto(Localisation localisation,int zone,int plateforme){
 
 		float latRad1=localisation.getLatitude();
 		float lonRad1=localisation.getLongitude();
@@ -143,14 +140,14 @@ import static com.example.martin.test.Value.distence2;
 		return res;
 	}
 
-	boolean bddHasResto(Localisation localisation,int zone,int plateforme){
-		return getResto(localisation, zone, plateforme) != null;
+	boolean bddHasResto(double latRad1,double lonRad1,int zone,int plateforme,int seuil){
+		return getArrayResto( latRad1, lonRad1, zone, plateforme, seuil) != null;
 	}
 
-	void selectResto(double latRad1,double lonRad1,int zone,int plateforme){
+	ArrayList<Resto> getArrayResto(double latRad1,double lonRad1,int zone,int plateforme,int seuil){
 
-		List<Integer> idResto= new ArrayList<>();
-		List<String> nameResto= new ArrayList<>();
+		ArrayList<Resto> res=new ArrayList<>();
+
 
 		Cursor c=bdd.rawQuery("SELECT * FROM "+TABLE_RESTO+" WHERE "+COL_ZONE_RESTO + " = " + zone + " AND "+COL_PLATEFORME_RESTO + " = " + plateforme,null);
 
@@ -162,10 +159,16 @@ import static com.example.martin.test.Value.distence2;
 				latRad2=c.getDouble(NUM_COL_LATRAD_RESTO);
 				lonRad2=c.getDouble(NUM_COL_LONRAD_RESTO);
 
-				if (distence2(latRad1,latRad2,lonRad1,lonRad2)<SEUILSELECTRESTO*SEUILSELECTRESTO) {
+				if (distence2(latRad1,latRad2,lonRad1,lonRad2)<seuil*seuil) {
+					Resto resto=new Resto();
 
-					idResto.add(c.getInt(NUM_COL_ID_RESTO));
-					nameResto.add(c.getString(NUM_COL_TEXT_RESTO));
+					resto.setId(c.getInt(NUM_COL_ID_RESTO));
+					resto.setName(c.getString(NUM_COL_TEXT_RESTO));
+					resto.setIdWeb(c.getInt(NUM_COL_IDBASE_RESTO));
+					resto.setLat(c.getFloat(NUM_COL_LATRAD_RESTO));
+					resto.setLon(c.getFloat(NUM_COL_LONRAD_RESTO));
+
+					res.add(resto);
 					Log.d("resto",c.getString(NUM_COL_TEXT_RESTO));
 				}
 			}
@@ -175,14 +178,10 @@ import static com.example.martin.test.Value.distence2;
 
 		}
 		c.close();
-		if( idResto.isEmpty()) Log.d("activity","erreur : bddRestaurant.idResto.isEmpty");
-		if( nameResto.isEmpty()) Log.d("activity","erreur : bddRestaurant.nameResto.isEmpty");
-		Integer[] para={0};
-		idRestoSelect=idResto.toArray(para);
 
-		String [] parametre={" "};
-		nameRestoSelect= nameResto.toArray(parametre);
+		if(res.size()==0) res=null;
 
+		return res;
 
 	}
 

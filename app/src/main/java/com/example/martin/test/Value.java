@@ -73,6 +73,9 @@ import android.support.annotation.NonNull;
 	static final int NUM_COL_TIME_ACTION = 0;
 	static final String COL_IND_ACTION = "INDICATION";
 	static final int NUM_COL_IND_ACTION = 1;
+	static final String COL_ID_ACTION = "IDRESTO";
+	static final int NUM_COL_ID_ACTION = 2;
+
 
 //base de donnee temp
 	static final String NOM_BDD_TEMP = "temp.db";
@@ -141,7 +144,7 @@ import android.support.annotation.NonNull;
 
 	static final int SEUILZONE=10000; //en m
 	static final int SEUILRESTO =20; //en m
-	static final int SEUILSELECTRESTO =1000; //en m
+	static final int SEUILSELECTRESTO =50; //en m
 
 
 

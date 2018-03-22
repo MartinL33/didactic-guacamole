@@ -122,9 +122,6 @@ class ListLocations {
 
 		if(listeTempLoca!=null&&listeTempLoca.size()>0) {
 
-
-
-
 			if(listeLoca==null) {
 				BDDLocalisation bddLocalisation=new BDDLocalisation(context);
 				bddLocalisation.openForRead();
@@ -150,16 +147,9 @@ class ListLocations {
 
 			}
 
-
-
-
-
 			listeLoca.addAll(listeTempLoca);
 
 			nbNewPoint+=listeTempLoca.size();
-
-
-
 
 		}
 		listeTempLoca=null;
@@ -170,13 +160,10 @@ class ListLocations {
 
 		}
 
-
-
 		Localisation l=listeLoca.get(listeLoca.size() - 1);
 		if(l.getIndication()!=IND_END) {
 			finShift = (System.currentTimeMillis() - l.getDuree() - l.getTime()) > DUREE_MIN_FIN;
 		}
-
 
 		if (nbNewPoint < 10&&!finShift ) {
 
@@ -230,6 +217,7 @@ class ListLocations {
 			}
 		}
 		Log.d("ListLocations", "fin initialisation");
+
 		for(Localisation l3:listeLoca) {
 			Log.d("listeLoca",l3.toString());
 		}
@@ -237,21 +225,23 @@ class ListLocations {
 	}
 
 	private void pointAberrant(){
+
 		if(listeLoca.size()>3) {
 			for (int k = 0; k < listeLoca.size() - 3; k++) {
-
 
 				boolean dist = distance2(k, k + 1) > MAX_DISTANCE_ABERANT * MAX_DISTANCE_ABERANT;
 				boolean dist2 = distance2(k, k + 2) < MIN_DISTANCE_ABERANT * MIN_DISTANCE_ABERANT;
 				boolean dist3 = distance2(k, k + 3) < MIN_DISTANCE_ABERANT * MIN_DISTANCE_ABERANT;
+				boolean ind=listeLoca.get(k+1).getIndication()==IND_DEFAUT;
+				boolean ind2=listeLoca.get(k+2).getIndication()==IND_DEFAUT;
 
-				if (dist && dist2) {
-					listeLoca.get(k + 1).fixPosition(listeLoca.get(k));
-
-
-				} else if (dist && dist3) {
+				if (dist && dist3&&ind&&ind2) {
 					listeLoca.get(k + 1).fixPosition(listeLoca.get(k));
 					listeLoca.get(k + 2).fixPosition(listeLoca.get(k));
+				}
+
+				else if (dist && dist2&&ind) {
+					listeLoca.get(k + 1).fixPosition(listeLoca.get(k));
 				}
 			}
 		}
@@ -442,7 +432,6 @@ class ListLocations {
 
 	}
 
-
 	//resto a faire
 	private boolean rechResto(Context context) {
 		boolean result=false;
@@ -464,8 +453,14 @@ class ListLocations {
 
 			if (l.getIndication() >= IND_ARRET_INCONNU) {
 				int ind = bddAction.getIndicationBeetween(l.getTime(), l.getTime() + l.getDuree());
-				if (ind == IND_RESTO || ind == IND_CLIENT || ind == IND_ATTENTE||ind==IND_HYPO_RESTO||ind==IND_HYPO_CLIENT)
+				if (ind == IND_RESTO || ind == IND_CLIENT || ind == IND_ATTENTE){
 					l.setIndication(ind);
+					if(ind == IND_RESTO){
+						int idResto=bddAction.getIdRestoBeetween(l.getTime(), l.getTime() + l.getDuree());
+						if(idResto>0) l.setIdResto(idResto);
+					}
+				}
+
 			}
 
 		}
@@ -481,7 +476,7 @@ class ListLocations {
 			int dur = l.getDuree();
 			if (dur > DUREE_MIN_RESTO && (ind == IND_ARRET_INCONNU || ind == IND_RESTO || ind == IND_RESTO_CONFIRME)) {
 
-				resto = bddRestaurant.getResto(l, zone, plateformeEnCours);
+				resto = bddRestaurant.getBestResto(l, zone, plateformeEnCours);
 				//si on trouve un resto
 				if (resto != null) {
 
@@ -609,8 +604,12 @@ class ListLocations {
 		if(debut<0) debut=0;
 		listeLoca= listeLoca.subList(debut,listeLoca.size());
 		timeLastAnalyse=listeLoca.get(listeLoca.size()-1).getTime();
-		lastIndication=listeLoca.get(listeLoca.size()-1).getIndication();
 		timePointRemove.clear();
+
+		if(boolResto) lastIndication=IND_HYPO_RESTO;
+		else if(debutShift) lastIndication=IND_START;
+		else if(finShift) lastIndication=IND_END;
+		else lastIndication=listeLoca.get(listeLoca.size()-1).getIndication();
 
 		Log.d("ListLocations", "fin ecriture");
 

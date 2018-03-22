@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Test</string>
+    <string name="app_name">Ride Timer</string>
     <string name="textStart">Démarrer</string>
     <string name="textStop">Arrêter</string>
     <string name="textRestaurant">Restaurant</string>
@@ -7,8 +7,6 @@
     <string name="textCustomer">Client</string>
     <string name="StatutStart">"En ligne"</string>
     <string name="StatutStop">"Hors ligne"</string>
-    <string name="TitleNotification">Texte Notification</string>
-    <string name="ContentTextNotification">"Votre position s'enregistre"</string>
     <string name="taostGPSInactive">"Veuillez activer votre GPS."</string>
     <string name="taostPermissionRefusee">"L'application a besoin de votre autorisation de relever votre position."</string>
     <string name="textPlateforme">"Plateforme"</string>
@@ -54,14 +52,14 @@
 
         <item>""</item>
         <item>indication par défaut</item>
-        <item>trajet inconnu</item>
+        <item>trajet</item>
         <item>trajet resto</item>
         <item>trajet client</item>
 
         <item>attente</item>
         <item>attente</item>
 
-        <item>arrêt inconnu</item>
+        <item>arrêt</item>
         <item>restaurant</item>
         <item>client</item>
         <item>restaurant</item>
@@ -81,12 +79,9 @@
 
     </string-array>
 
-    <string-array name="notification_title">
-        <item>Fin Shift</item>
-        <item>Début Shift</item>
-        <item>Arrêt Restaurant</item>
-
-    </string-array>
+    <string name="notification_title_Fin_Shift">Fin Shift</string>
+    <string name="notification_title_Debut_Shift">Début Shift</string>
+    <string name="notification_title_Arret_Restaurant">Arrêt Restaurant</string>
 
 
 

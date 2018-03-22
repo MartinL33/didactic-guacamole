@@ -39,6 +39,8 @@ import static com.example.martin.test.Value.IND_ATTENTE;
 import static com.example.martin.test.Value.IND_CLIENT;
 import static com.example.martin.test.Value.IND_HYPO_RESTO;
 import static com.example.martin.test.Value.IND_PLATEFORME;
+import static com.example.martin.test.Value.IND_RESTO;
+import static com.example.martin.test.Value.IND_RESTO_CONFIRME;
 import static com.example.martin.test.Value.verifPermissionLocation;
 
 public class ActivityMain extends Activity
@@ -221,7 +223,7 @@ public class ActivityMain extends Activity
                    //mise a jour interface
                     textStartAndStop.setText(R.string.StatutStop);
                     btnStartAndGo.setText(R.string.textStart);
-
+					textStatut.setText("");
                     //anulation Notification
                     NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
                     if (manager != null) {
@@ -459,7 +461,10 @@ public class ActivityMain extends Activity
 
 
 	protected void onDestroy () {
-
+		if(receiver!=null) {
+			unregisterReceiver(receiver);
+			receiver=null;
+		}
         super.onDestroy();
         Log.d("myActivity","onDestroy ()");
 
@@ -470,10 +475,7 @@ public class ActivityMain extends Activity
         Log.d("myActivity","onPause()");
     }
     protected void onStop() {
-    	if(receiver!=null) {
-			unregisterReceiver(receiver);
-			receiver=null;
-		}
+
         super.onStop();
         Log.d("myActivity","onStop()");
     }
@@ -591,7 +593,8 @@ public class ActivityMain extends Activity
 	public class MyReceiver extends BroadcastReceiver {
 		public static final String ACTION_RESP ="com.RideTimer.intent.MainActivityBroadcast";
 		public static final String ZONE="zoneInstalled";
-		public static final String RECORDING="recording";
+		public static final String LASTIND="LastInd";
+		public static final String NAMERESTO="NameRest";
 
 		@Override
 		public void onReceive(Context context, Intent intent) {
@@ -600,14 +603,33 @@ public class ActivityMain extends Activity
 				if(intent.getBooleanExtra(ZONE,false))  updateZone();
 			}
 
-			else if(intent.hasExtra(RECORDING)){
+			else if(intent.hasExtra(LASTIND)){
+				String statut="";
+				int lastInd =intent.getIntExtra(LASTIND,0);
+				String[] resourceStatut =getResources().getStringArray(R.array.indication);
+				if(lastInd>=0&&lastInd<resourceStatut.length) statut=resourceStatut[lastInd];
 
-				int mode =intent.getIntExtra(RECORDING,-1);
-				String[] statut =getResources().getStringArray(R.array.indication);
-				if(mode>1) textStatut.setText(statut[mode]);
-
-				if(mode!=IND_ARRET_INCONNU&&mode!=IND_HYPO_RESTO)  layoutAction.setVisibility(View.INVISIBLE);
+				if(lastInd!=IND_ARRET_INCONNU&&lastInd!=IND_HYPO_RESTO)  layoutAction.setVisibility(View.INVISIBLE);
 				else layoutAction.setVisibility(View.VISIBLE);
+
+				if(lastInd==IND_HYPO_RESTO||lastInd==IND_RESTO||lastInd==IND_RESTO_CONFIRME){
+					layoutAction.setVisibility(View.VISIBLE);
+					btnCustomer.setVisibility(View.INVISIBLE);
+					btnWaiting.setVisibility(View.INVISIBLE);
+					btnRestaurant.setText("Modifier");
+					if(intent.hasExtra(NAMERESTO)){
+						statut=statut+" "+intent.getStringExtra(NAMERESTO);
+
+					}
+				}else{
+					btnCustomer.setVisibility(View.VISIBLE);
+					btnWaiting.setVisibility(View.VISIBLE);
+					btnRestaurant.setText(R.string.textRestaurant);
+				}
+
+				if(lastInd>=0&&lastInd<resourceStatut.length) textStatut.setText(statut);
+
+
 			}
 
 

@@ -15,18 +15,23 @@ import android.util.Log;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.example.martin.test.ActivityMain.MyReceiver.RECORDING;
+import static com.example.martin.test.ActivityMain.MyReceiver.LASTIND;
+import static com.example.martin.test.ActivityMain.MyReceiver.NAMERESTO;
 import static com.example.martin.test.Value.ID_NOTIFICATION;
 import static com.example.martin.test.Value.IND_ATTENTE;
 import static com.example.martin.test.Value.IND_CLIENT;
+import static com.example.martin.test.Value.IND_DEFAUT;
+import static com.example.martin.test.Value.IND_DEPLACEMENT_INCONNU;
+import static com.example.martin.test.Value.IND_END;
+import static com.example.martin.test.Value.IND_HYPO_RESTO;
 import static com.example.martin.test.Value.IND_RESTO;
+import static com.example.martin.test.Value.IND_START;
 import static com.google.android.gms.location.LocationResult.extractResult;
 import static com.google.android.gms.location.LocationResult.hasResult;
 
 public class ServiceRecording extends Service {
 
 	private ListLocations data;
-
 
 	@Override
 	public void onCreate() {
@@ -83,19 +88,23 @@ public class ServiceRecording extends Service {
 
 				data.addLocalisations(listeTempLoca);
 				data.analyse(ServiceRecording.this);
-				int mode = -1;
-
-				if (data.hasResto()) {
-					mode = 2;
-					afficheNotification(mode, data.getResto().getName());
-				} else {
-					afficheNotification(mode);
-				}
+				int lastInd = data.getLastInd();
 
 				Intent broadcastIntent = new Intent();
 				broadcastIntent.setAction(ActivityMain.MyReceiver.ACTION_RESP);
 				broadcastIntent.addCategory(Intent.CATEGORY_DEFAULT);
-				broadcastIntent.putExtra(RECORDING,data.getLastInd());
+				broadcastIntent.putExtra(LASTIND,lastInd);
+
+
+				if (data.hasResto()) {
+
+					afficheNotification(lastInd, data.getResto().getName());
+					broadcastIntent.putExtra(NAMERESTO,data.getResto().getName());
+				} else {
+					afficheNotification(lastInd);
+				}
+
+
 				sendBroadcast(broadcastIntent);
 
 
@@ -115,19 +124,18 @@ public class ServiceRecording extends Service {
 		return null;
 	}
 
-	private void afficheNotification(int mode){
-		afficheNotification(mode,"");
+	private void afficheNotification(int lastInd){
+		afficheNotification(lastInd,"");
 	}
 
-	private void afficheNotification(int mode,String nameResto){
+	private void afficheNotification(int lastInd,String nameResto){
 
 
 		NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 		if (notificationManager != null) {
 
 
-			if(mode>-1) {
-				String[] title=getResources().getStringArray(R.array.notification_title);
+			if(lastInd==IND_START||lastInd==IND_END||lastInd==IND_HYPO_RESTO) {
 
 				Intent notificationIntent = new Intent(this, ActivityMain.class);
 				notificationIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -138,20 +146,25 @@ public class ServiceRecording extends Service {
 
 				builder.setAutoCancel(true);
 
-				builder.setContentTitle(title[mode]);
-
-				builder.setContentText(getResources().getString(R.string.ContentTextNotification));
 				builder.setSmallIcon(R.drawable.ic_notification_recording);
 				builder.setContentIntent(notificationPending);
 				builder.setOngoing(false);
-
 				builder.setPriority(Notification.PRIORITY_HIGH);
+				builder.setContentTitle(getResources().getString(R.string.app_name));
 
+					//debut shift
+				if(lastInd==IND_START) {
+					builder.setContentText(getResources().getString(R.string.notification_title_Debut_Shift));
+				}
+				//fin shift
+				else if(lastInd==IND_END) {
+					builder.setContentText(getResources().getString(R.string.notification_title_Fin_Shift));
+				}
 
 				//resto
-				if(mode==2) {
+				else if(lastInd==IND_HYPO_RESTO) {
 
-					builder.setContentText("Prise en charge d'une commande au "+nameResto+" ?");
+					builder.setContentText("Pick up : "+nameResto+" ?");
 					Intent intentResto = new Intent(this, BroadcastAction.class);
 					intentResto.putExtra("action", IND_RESTO);
 					PendingIntent pendingResto = PendingIntent.getBroadcast(this, 1, intentResto, PendingIntent.FLAG_UPDATE_CURRENT);
@@ -160,16 +173,14 @@ public class ServiceRecording extends Service {
 					intentClient.putExtra("action", IND_CLIENT);
 					PendingIntent pendingClient = PendingIntent.getBroadcast(this, 2, intentClient, PendingIntent.FLAG_UPDATE_CURRENT);
 
-
 					Intent intentAttente = new Intent(this, BroadcastAction.class);
 					intentAttente.putExtra("action", IND_ATTENTE);
 					PendingIntent pendingAttente = PendingIntent.getBroadcast(this, 3, intentClient, PendingIntent.FLAG_UPDATE_CURRENT);
 
-
 					if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
-						builder.addAction(new Notification.Action(R.drawable.ic_restaurant, "confirmer", pendingResto));
+						builder.addAction(new Notification.Action(R.drawable.ic_restaurant, getResources().getString(R.string.ok), pendingResto));
 						builder.addAction(new Notification.Action(R.drawable.ic_client, "client", pendingClient));
-						builder.addAction(new Notification.Action(R.drawable.ic_stat_name, "pause", pendingClient));
+						builder.addAction(new Notification.Action(R.drawable.ic_stat_name, "pause", pendingAttente));
 						if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 							builder.setVisibility(Notification.VISIBILITY_PUBLIC);
 						}
@@ -181,9 +192,9 @@ public class ServiceRecording extends Service {
 
 				notificationManager.notify(ID_NOTIFICATION, myNotication);
 
-
 			}
-			else{
+			else if(lastInd==IND_DEFAUT||lastInd==IND_DEPLACEMENT_INCONNU){
+
 				notificationManager.cancel(ID_NOTIFICATION);
 			}
 		}
