@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 import static com.example.martin.test.Value.COL_IND_ACTION;
-import static com.example.martin.test.Value.COL_IND_ID_ACTION;
+import static com.example.martin.test.Value.COL_ID_ACTION;
 import static com.example.martin.test.Value.COL_TIME_ACTION;
 import static com.example.martin.test.Value.IND_PLATEFORME;
 import static com.example.martin.test.Value.TABLE_ACTIONS;
@@ -20,7 +20,7 @@ class BaseSQLiteAction extends SQLiteOpenHelper {
 	private static final String CREATE_BDD="CREATE TABLE " + TABLE_ACTIONS + " (" +
 			COL_TIME_ACTION + "  INTEGER PRIMARY KEY, " +
 			COL_IND_ACTION + " INTEGER, " +
-			COL_IND_ID_ACTION + " INTEGER);";
+			COL_ID_ACTION + " INTEGER);";
 
 
 	public BaseSQLiteAction(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {

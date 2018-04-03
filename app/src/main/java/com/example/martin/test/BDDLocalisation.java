@@ -198,17 +198,20 @@ import static com.example.martin.test.Value.distence2;
 				" OR "+COL_IND_LOCAL+" = "+IND_ARRET_INCONNU +
 				" ORDER BY "+COL_TIME_LOCAL +" LIMIT '1'",null);
 
-		if(c.getCount()!=1) {
+		if(!(c.getCount()==1)) {
 			c.close();
+            Log.d("BBD Localisation","timeFirstLocatisationInconnue non trouvée");
 			return null;
+
 		}
 		c.moveToFirst();
 		timeFirstLocatisationInconnue=c.getLong(NUM_COL_TIME_LOCAL);
 		c.close();
 
 		c=getCursorBetween(timeFirstLocatisationInconnue,stop);
-		if(c.getCount()!=1) {
+		if(c.getCount()>0) {
 			c.close();
+            Log.d("BBD Localisation","pas Localisation entre "+timeFirstLocatisationInconnue+" et "+stop);
 			return null;
 		}
 		ArrayList<Localisation> res= new ArrayList<>();

@@ -32,6 +32,7 @@ import static com.google.android.gms.location.LocationResult.hasResult;
 public class ServiceRecording extends Service {
 
 	private ListLocations data;
+	private boolean hasNotify=false;
 
 	@Override
 	public void onCreate() {
@@ -135,7 +136,7 @@ public class ServiceRecording extends Service {
 		if (notificationManager != null) {
 
 
-			if(lastInd==IND_START||lastInd==IND_END||lastInd==IND_HYPO_RESTO) {
+			if(!hasNotify&&(lastInd==IND_START||lastInd==IND_END||lastInd==IND_HYPO_RESTO)) {
 
 				Intent notificationIntent = new Intent(this, ActivityMain.class);
 				notificationIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
@@ -191,10 +192,11 @@ public class ServiceRecording extends Service {
 				Notification myNotication = builder.getNotification();
 
 				notificationManager.notify(ID_NOTIFICATION, myNotication);
+				hasNotify=true;
 
 			}
 			else if(lastInd==IND_DEFAUT||lastInd==IND_DEPLACEMENT_INCONNU){
-
+                hasNotify=false;
 				notificationManager.cancel(ID_NOTIFICATION);
 			}
 		}
