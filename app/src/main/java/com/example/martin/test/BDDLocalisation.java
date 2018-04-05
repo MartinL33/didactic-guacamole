@@ -211,7 +211,7 @@ import static com.example.martin.test.Value.distence2;
 		c=getCursorBetween(timeFirstLocatisationInconnue,stop);
 		if(c.getCount()>0) {
 			c.close();
-            Log.d("BBD Localisation","pas Localisation entre "+timeFirstLocatisationInconnue+" et "+stop);
+            Log.d("BBD Localisation","pas de Localisation entre "+timeFirstLocatisationInconnue+" et "+stop);
 			return null;
 		}
 		ArrayList<Localisation> res= new ArrayList<>();
